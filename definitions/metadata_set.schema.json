@@ -1,0 +1,88 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "MetadataSet",
+  "type": "object",
+  "description": "A set of metadata fields (system and custom) for an asset. This schema is suitable for standalone export/import of complete metadata field definitions—including field types and enum values—independently from assets.",
+  "properties": {
+    "set_id": {
+      "type": "string",
+      "description": "Unique identifier for the metadata set."
+    },
+    "label": {
+      "type": "string",
+      "description": "Human-readable label for the metadata set."
+    },
+    "fields": {
+      "type": "array",
+      "description": "Flat array of metadata fields.",
+      "items": {
+        "type": "object",
+        "required": ["name", "type"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Field key or name."
+          },
+          "label": {
+            "type": "string",
+            "description": "Human-readable field label."
+          },
+          "type": {
+            "type": "string",
+            "enum": ["string", "number", "integer", "boolean", "date", "enum"],
+            "description": "Data type of the field. Use 'enum' for dropdown or multi-select fields."
+          },
+          "required": {
+            "type": "boolean",
+            "description": "Whether the field is required."
+          },
+          "enum_values": {
+            "type": "array",
+            "description": "Allowed values if type is enum (dropdown or multi-select).",
+            "items": { "type": "string" }
+          },
+          "multi_select": {
+            "type": "boolean",
+            "description": "If true, field is a multi-select (user can select multiple values). If false or omitted, field is a single-select dropdown. Applies only to type 'enum'."
+          },
+          "minLength": {
+            "type": "integer",
+            "description": "Minimum length for string fields."
+          },
+          "maxLength": {
+            "type": "integer",
+            "description": "Maximum length for string fields."
+          },
+          "minimum": {
+            "type": "number",
+            "description": "Minimum value for number/integer fields."
+          },
+          "maximum": {
+            "type": "number",
+            "description": "Maximum value for number/integer fields."
+          },
+          "pattern": {
+            "type": "string",
+            "description": "Regex pattern for string fields."
+          },
+          "description": {
+            "type": "string",
+            "description": "Field description/help text."
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "schema_version": {
+      "type": "string",
+      "description": "Version of the metadata set schema used to create this record. Follows semantic versioning (e.g., '1.0.0'). Optional but recommended for evolution and compatibility checks."
+    },
+    "extensions": {
+      "type": "object",
+      "description": "Extension point for custom fields or plugin data. Keys SHOULD be prefixed with 'x_' or 'custom_' to avoid collision with future standard fields.",
+      "additionalProperties": true
+    }
+  },
+  "required": ["fields"],
+  "additionalProperties": true
+}

@@ -1,0 +1,560 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://lodestar-schema-design.local/schemas/migration-report-output-v1.0.0.json",
+  "title": "Migration Analytics Report Output",
+  "description": "JSON Schema for CatDV migration analytics report output structure",
+  "type": "object",
+  "required": [
+    "report_id",
+    "report_version",
+    "generated_at",
+    "database_info",
+    "asset_summary"
+  ],
+  "properties": {
+    "report_id": {
+      "type": "string",
+      "description": "Unique report identifier (timestamp-based)",
+      "pattern": "^\\d{8}_\\d{6}$",
+      "examples": ["20251022_143022"]
+    },
+    "report_version": {
+      "type": "string",
+      "description": "Report schema version (semantic versioning)",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "examples": ["1.0.0"]
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 datetime when report was generated"
+    },
+    "database_info": {
+      "$ref": "#/$defs/DatabaseInfo"
+    },
+    "asset_summary": {
+      "$ref": "#/$defs/AssetSummary"
+    },
+    "storage_distribution": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/StorageVolume"
+      },
+      "description": "Storage volume distribution metrics"
+    },
+    "file_type_distribution": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/FileTypeMetrics"
+      },
+      "description": "Asset counts and sizes by file type"
+    },
+    "file_size_statistics": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/FileSizeStats"
+      },
+      "description": "File size distribution statistics per asset type"
+    },
+    "codec_breakdown": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/CodecMetrics"
+      },
+      "description": "Format/codec analysis (optional)"
+    },
+    "migration_readiness": {
+      "$ref": "#/$defs/ReadinessIndex"
+    },
+    "metadata_field_usage": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/MetadataFieldUsage"
+      },
+      "description": "Custom metadata field usage statistics"
+    },
+    "advanced_metrics": {
+      "$ref": "#/$defs/AdvancedMetrics",
+      "description": "Optional detailed analysis (when --include-advanced)"
+    },
+    "extensions": {
+      "type": "object",
+      "description": "Custom metrics with x_ prefix",
+      "patternProperties": {
+        "^x_": {
+          "description": "Custom extension field"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "DatabaseInfo": {
+      "type": "object",
+      "required": ["database_name", "total_assets", "query_timestamp"],
+      "properties": {
+        "database_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "host": {
+          "type": "string",
+          "description": "Database host (anonymized if sensitive)"
+        },
+        "schema_version": {
+          "type": "string",
+          "description": "CatDV database schema version"
+        },
+        "total_assets": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "query_timestamp": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "AssetSummary": {
+      "type": "object",
+      "required": [
+        "total_count",
+        "total_size_bytes",
+        "total_size_display",
+        "assets_with_files",
+        "assets_missing_files"
+      ],
+      "properties": {
+        "total_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "total_size_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "total_size_display": {
+          "type": "string",
+          "description": "Human-readable size (e.g., '340.2 TB')"
+        },
+        "asset_types": {
+          "type": "object",
+          "description": "Count per type",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "assets_with_files": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "assets_missing_files": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "assets_offline": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "StorageVolume": {
+      "type": "object",
+      "required": [
+        "volume_name",
+        "file_count",
+        "total_size_bytes",
+        "total_size_display",
+        "percentage_of_total"
+      ],
+      "properties": {
+        "volume_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "file_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "total_size_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "total_size_display": {
+          "type": "string"
+        },
+        "percentage_of_total": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        }
+      }
+    },
+    "FileTypeMetrics": {
+      "type": "object",
+      "required": [
+        "type_label",
+        "count",
+        "total_size_bytes",
+        "average_size_bytes",
+        "percentage_of_total"
+      ],
+      "properties": {
+        "type_label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type_id": {
+          "type": "integer"
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "total_size_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "average_size_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "percentage_of_total": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        }
+      }
+    },
+    "FileSizeStats": {
+      "type": "object",
+      "required": [
+        "asset_type",
+        "min_size_bytes",
+        "max_size_bytes",
+        "mean_size_bytes",
+        "median_size_bytes",
+        "sample_count"
+      ],
+      "properties": {
+        "asset_type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "min_size_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "max_size_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "mean_size_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "median_size_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "p25_size_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "p75_size_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "p95_size_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sample_count": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "CodecMetrics": {
+      "type": "object",
+      "required": [
+        "asset_type",
+        "codec_name",
+        "count",
+        "total_size_bytes",
+        "percentage_of_type"
+      ],
+      "properties": {
+        "asset_type": {
+          "type": "string",
+          "enum": ["video", "audio"]
+        },
+        "codec_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "total_size_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "percentage_of_type": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        }
+      }
+    },
+    "ReadinessIndex": {
+      "type": "object",
+      "required": [
+        "readiness_percentage",
+        "calculation_method",
+        "assets_ready",
+        "assets_not_ready"
+      ],
+      "properties": {
+        "readiness_percentage": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "calculation_method": {
+          "type": "string",
+          "minLength": 1
+        },
+        "assets_ready": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "assets_not_ready": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "blocking_issues": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/BlockingIssue"
+          }
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Warning"
+          }
+        }
+      }
+    },
+    "BlockingIssue": {
+      "type": "object",
+      "required": ["issue_type", "affected_count", "description", "remediation"],
+      "properties": {
+        "issue_type": {
+          "type": "string",
+          "enum": [
+            "missing_file",
+            "orphaned_record",
+            "schema_incompatibility",
+            "permission_issue",
+            "corrupted_data"
+          ]
+        },
+        "affected_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "remediation": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "Warning": {
+      "type": "object",
+      "required": ["warning_type", "affected_count", "description"],
+      "properties": {
+        "warning_type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "affected_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "AdvancedMetrics": {
+      "type": "object",
+      "properties": {
+        "asset_age_distribution": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AgeDistribution"
+          }
+        },
+        "metadata_completeness": {
+          "$ref": "#/$defs/MetadataCompleteness"
+        },
+        "duplicate_detection": {
+          "$ref": "#/$defs/DuplicateStats"
+        },
+        "catalog_distribution": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CatalogMetrics"
+          }
+        }
+      }
+    },
+    "AgeDistribution": {
+      "type": "object",
+      "required": ["year", "created_count", "modified_count"],
+      "properties": {
+        "year": {
+          "type": "integer",
+          "minimum": 1990,
+          "maximum": 2100
+        },
+        "created_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "modified_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "MetadataCompleteness": {
+      "type": "object",
+      "required": [
+        "total_fields_available",
+        "fields_with_data",
+        "completeness_percentage"
+      ],
+      "properties": {
+        "total_fields_available": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "fields_with_data": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "completeness_percentage": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "field_details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/FieldCompleteness"
+          }
+        }
+      }
+    },
+    "FieldCompleteness": {
+      "type": "object",
+      "required": ["field_name", "population_percentage"],
+      "properties": {
+        "field_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "population_percentage": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        }
+      }
+    },
+    "DuplicateStats": {
+      "type": "object",
+      "required": [
+        "total_files_analyzed",
+        "duplicate_groups_found",
+        "duplicate_file_count",
+        "storage_wasted_bytes",
+        "detection_method"
+      ],
+      "properties": {
+        "total_files_analyzed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "duplicate_groups_found": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "duplicate_file_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "storage_wasted_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "detection_method": {
+          "type": "string",
+          "enum": ["file_hash", "file_path", "file_size_and_name"]
+        }
+      }
+    },
+    "CatalogMetrics": {
+      "type": "object",
+      "required": ["catalog_name", "catalog_id", "asset_count", "percentage_of_total"],
+      "properties": {
+        "catalog_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "catalog_id": {
+          "type": "integer"
+        },
+        "asset_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "percentage_of_total": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        }
+      }
+    },
+    "MetadataFieldUsage": {
+      "type": "object",
+      "required": ["field_name", "field_slug", "usage_count"],
+      "properties": {
+        "field_name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Human-readable field name"
+        },
+        "field_slug": {
+          "type": "string",
+          "description": "Technical identifier/slug for the field"
+        },
+        "usage_count": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of clips with values for this field"
+        }
+      }
+    }
+  }
+}

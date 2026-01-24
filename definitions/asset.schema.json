@@ -1,0 +1,261 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Asset",
+  "type": "object",
+  "description": "A generic asset entity for DAM/MAM systems.",
+  "required": ["asset_id", "title", "type"],
+  "properties": {
+    "asset_id": {
+      "type": "string",
+      "description": "Unique identifier for the asset."
+    },
+    "title": {
+      "type": "string",
+      "description": "Human-readable title."
+    },
+    "type": {
+      "type": "string",
+      "description": "Asset type/category (free-form, not system-specific)."
+    },
+    "status": {
+      "type": "string",
+      "description": "Status of the asset (e.g., active, archived)."
+    },
+    "description": {
+      "type": "string",
+      "description": "Description or summary."
+    },
+    "category": {
+      "type": "string",
+      "description": "Logical grouping/category."
+    },
+    "rights_information": {
+      "type": "string",
+      "description": "Rights or licensing info."
+    },
+    "created_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Creation timestamp."
+    },
+    "modified_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last modified timestamp."
+    },
+    "version": {
+      "type": "string",
+      "description": "Version identifier."
+    },
+    "schema_version": {
+      "type": "string",
+      "description": "Version of the asset schema used to create this record. Follows semantic versioning (e.g., '1.0.0'). Optional but recommended for evolution and compatibility checks."
+    },
+    "extensions": {
+      "type": "object",
+      "description": "Extension point for custom fields or plugin data. Keys SHOULD be prefixed with 'x_' or 'custom_' to avoid collision with future standard fields.",
+      "additionalProperties": true
+    },
+    "files": {
+      "type": "array",
+      "description": "Embedded file objects for this asset.",
+      "items": {
+        "type": "object",
+        "required": ["type", "role", "uri", "storage_location"],
+        "properties": {
+          "type": { "type": "string", "description": "File type (e.g., video, audio, image, document)." },
+          "role": { "type": "string", "description": "Role of the file (e.g., original, proxy, thumbnail)." },
+          "uri": { "type": "string", "description": "URI or path to the file." },
+          "size": { "type": "integer", "description": "File size in bytes." },
+          "checksum": { "type": "string", "description": "Checksum or hash of the file." },
+          "created_date": { "type": "string", "format": "date-time", "description": "File creation timestamp." },
+          "modified_date": { "type": "string", "format": "date-time", "description": "File last modified timestamp." },
+          "technical_metadata": { "type": "object", "description": "Optional technical metadata.", "additionalProperties": true },
+          "derivatives": {
+            "type": "array",
+            "description": "List of embedded derivative file objects.",
+            "items": { "$ref": "#/properties/files/items" }
+          },
+          "storage_location": {
+            "$ref": "#/definitions/StorageLocation",
+            "description": "Embedded storage location object."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "metadata_sets": {
+      "type": "array",
+      "description": "Embedded metadata set objects for this asset.",
+      "items": {
+        "$ref": "#/definitions/MetadataSet"
+      }
+    },
+    "collections": {
+      "type": "array",
+      "description": "Embedded collection objects for this asset.",
+      "items": {
+        "$ref": "#/definitions/Collection"
+      }
+    },
+    "temporal_annotations": {
+      "type": "array",
+      "description": "Time-based markers, segments, and annotations for this asset.",
+      "items": {
+        "$ref": "#/definitions/TemporalAnnotation"
+      }
+    }
+  },
+  "additionalProperties": true,
+  "definitions": {
+    "StorageLocation": {
+      "type": "object",
+      "description": "A fully embedded storage location object.",
+      "required": ["storage_id", "system", "path"],
+      "properties": {
+        "storage_id": { "type": "string" },
+        "system": { "type": "string" },
+        "path": { "type": "string" },
+        "connection_details": { "type": "object", "additionalProperties": true },
+        "security": { "type": "object", "additionalProperties": true },
+        "description": { "type": "string" },
+        "created_date": { "type": "string", "format": "date-time" },
+        "modified_date": { "type": "string", "format": "date-time" }
+      },
+      "additionalProperties": false
+    },
+    "MetadataSet": {
+      "type": "object",
+      "description": "A fully embedded metadata set object.",
+      "required": ["set_id", "fields"],
+      "properties": {
+        "set_id": { "type": "string" },
+        "label": { "type": "string" },
+        "fields": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "type"],
+            "properties": {
+              "name": { "type": "string" },
+              "label": { "type": "string" },
+              "type": { "type": "string", "enum": ["string", "number", "integer", "boolean", "date", "enum"] },
+              "required": { "type": "boolean" },
+              "enum_values": { "type": "array", "items": { "type": "string" } },
+              "multi_select": { "type": "boolean" },
+              "minLength": { "type": "integer" },
+              "maxLength": { "type": "integer" },
+              "minimum": { "type": "number" },
+              "maximum": { "type": "number" },
+              "pattern": { "type": "string" },
+              "description": { "type": "string" },
+              "value": {}
+            },
+            "additionalProperties": true
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "Collection": {
+      "type": "object",
+      "description": "A fully embedded collection object.",
+      "required": ["collection_id", "label"],
+      "properties": {
+        "collection_id": { "type": "string" },
+        "label": { "type": "string" },
+        "description": { "type": "string" },
+        "created_date": { "type": "string", "format": "date-time" },
+        "modified_date": { "type": "string", "format": "date-time" },
+        "parent": { "type": ["string", "null"] },
+        "parent_storage": { "$ref": "#/definitions/StorageLocation" },
+        "permissions": { "type": "object", "additionalProperties": true },
+        "metadata_sets": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/MetadataSet" }
+        },
+        "assets": { "type": "array", "items": {} }
+      },
+      "additionalProperties": false
+    },
+    "TemporalAnnotation": {
+      "type": "object",
+      "description": "Time-based marker, segment, or annotation for video/audio assets.",
+      "required": ["source_id"],
+      "properties": {
+        "source_id": {
+          "type": "string",
+          "description": "Unique identifier from source system (e.g., CatDV marker ID)",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name or title of the marker"
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed description or notes"
+        },
+        "category": {
+          "type": "string",
+          "description": "Source system category (e.g., 'Shot Sheet', 'Marker')"
+        },
+        "annotation_type": {
+          "type": "string",
+          "description": "Target system annotation type",
+          "enum": ["Generic", "Comments", "QualityControlMarker", "Transcription"],
+          "default": "Generic"
+        },
+        "color": {
+          "type": "string",
+          "description": "Display color (name or hex code)"
+        },
+        "start_frame": {
+          "type": "integer",
+          "description": "Start position in frames (64-bit integer)",
+          "minimum": 0
+        },
+        "end_frame": {
+          "type": "integer",
+          "description": "End position in frames (64-bit integer)",
+          "minimum": 0
+        },
+        "start_seconds": {
+          "type": "number",
+          "description": "Start position in seconds (float64)",
+          "minimum": 0
+        },
+        "end_seconds": {
+          "type": "number",
+          "description": "End position in seconds (float64)",
+          "minimum": 0
+        },
+        "start_timecode": {
+          "type": "string",
+          "description": "Start position as SMPTE timecode (HH:MM:SS[:FF] or H:MM:SS'FF)"
+        },
+        "end_timecode": {
+          "type": "string",
+          "description": "End position as SMPTE timecode"
+        },
+        "frame_rate": {
+          "type": "number",
+          "description": "Frame rate used for timecode conversion",
+          "minimum": 0
+        },
+        "is_point_marker": {
+          "type": "boolean",
+          "description": "True if this is a point marker (single moment, no duration)",
+          "default": false
+        },
+        "metadata": {
+          "type": "object",
+          "description": "Additional custom metadata fields",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
+

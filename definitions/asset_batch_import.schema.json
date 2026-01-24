@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AssetBatchImport",
+  "type": "object",
+  "description": "Batch import wrapper for multiple asset records. Each record is fully embedded and validated independently. No referenced entities. Records are imported to a tracking database for status management, not written directly to JSON.",
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "description": "Version of the batch import schema (semantic versioning, e.g., '1.0.0')."
+    },
+    "extensions": {
+      "type": "object",
+      "description": "Extension point for batch-level custom fields or plugin data. Keys SHOULD be prefixed with 'x_' or 'custom_' to avoid collision with future standard fields.",
+      "additionalProperties": true
+    },
+    "assets": {
+      "type": "array",
+      "description": "Array of fully embedded asset records. Each must conform to the Asset schema.",
+      "items": { "$ref": "./asset.schema.json" },
+      "minItems": 1
+    }
+  },
+  "required": ["assets"],
+  "additionalProperties": true
+}

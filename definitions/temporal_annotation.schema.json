@@ -1,0 +1,107 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://lodestar.nsa.dev/schemas/temporal_annotation.schema.json",
+  "title": "TemporalAnnotation",
+  "description": "Time-based marker, segment, or annotation for video/audio assets",
+  "type": "object",
+  "required": ["source_id"],
+  "properties": {
+    "source_id": {
+      "type": "string",
+      "description": "Unique identifier from source system (e.g., CatDV marker ID)",
+      "minLength": 1
+    },
+    "name": {
+      "type": "string",
+      "description": "Display name or title of the marker"
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed description or notes"
+    },
+    "category": {
+      "type": "string",
+      "description": "Source system category (e.g., 'Shot Sheet', 'Marker')"
+    },
+    "annotation_type": {
+      "type": "string",
+      "description": "Target system annotation type",
+      "enum": ["Generic", "Comments", "QualityControlMarker", "Transcription"],
+      "default": "Generic"
+    },
+    "color": {
+      "type": "string",
+      "description": "Display color (name or hex code)",
+      "examples": ["white", "red", "#FF0000"]
+    },
+    "start_frame": {
+      "type": "integer",
+      "description": "Start position in frames (64-bit integer)",
+      "minimum": 0
+    },
+    "end_frame": {
+      "type": "integer",
+      "description": "End position in frames (64-bit integer)",
+      "minimum": 0
+    },
+    "start_seconds": {
+      "type": "number",
+      "description": "Start position in seconds (float64)",
+      "minimum": 0
+    },
+    "end_seconds": {
+      "type": "number",
+      "description": "End position in seconds (float64)",
+      "minimum": 0
+    },
+    "start_timecode": {
+      "type": "string",
+      "description": "Start position as SMPTE timecode (HH:MM:SS[:FF] or H:MM:SS'FF)",
+      "pattern": "^\\d{1,2}:\\d{2}:\\d{2}[:'\\.]?\\d{0,2}$"
+    },
+    "end_timecode": {
+      "type": "string",
+      "description": "End position as SMPTE timecode",
+      "pattern": "^\\d{1,2}:\\d{2}:\\d{2}[:'\\.]?\\d{0,2}$"
+    },
+    "frame_rate": {
+      "type": "number",
+      "description": "Frame rate used for timecode conversion",
+      "minimum": 0,
+      "examples": [23.976, 24, 25, 29.97, 30, 50, 59.94, 60]
+    },
+    "is_point_marker": {
+      "type": "boolean",
+      "description": "True if this is a point marker (single moment, no duration)",
+      "default": false
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional custom metadata fields",
+      "additionalProperties": true
+    }
+  },
+  "allOf": [
+    {
+      "description": "At least one timing representation required",
+      "anyOf": [
+        { "required": ["start_frame"] },
+        { "required": ["start_seconds"] },
+        { "required": ["start_timecode"] }
+      ]
+    }
+  ],
+  "if": {
+    "properties": {
+      "is_point_marker": { "const": false }
+    }
+  },
+  "then": {
+    "description": "Range markers should have end values",
+    "anyOf": [
+      { "required": ["end_frame"] },
+      { "required": ["end_seconds"] },
+      { "required": ["end_timecode"] }
+    ]
+  }
+}
