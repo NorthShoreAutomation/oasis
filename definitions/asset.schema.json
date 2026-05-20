@@ -64,7 +64,7 @@
         "required": ["type", "role", "uri", "storage_location"],
         "properties": {
           "type": { "type": "string", "description": "File type (e.g., video, audio, image, document)." },
-          "role": { "type": "string", "description": "Role of the file (e.g., original, proxy, thumbnail)." },
+          "role": { "type": "string", "description": "Role this file plays in the asset. Conventional values: 'essence' (primary media content), 'proxy' (lower-resolution derivative), 'thumbnail', 'sidecar' (companion non-media file, e.g. camera metadata). Files in one asset sharing the same role form a single logical media group." },
           "uri": { "type": "string", "description": "URI or path to the file." },
           "size": { "type": "integer", "description": "File size in bytes." },
           "checksum": { "type": "string", "description": "Checksum or hash of the file." },
