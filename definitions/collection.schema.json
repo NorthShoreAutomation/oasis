@@ -15,7 +15,11 @@
     },
     "parent": {
       "type": ["string", "null"],
-      "description": "Optional parent collection ID for hierarchy."
+      "description": "Optional parent collection ID for hierarchy. For a mapped collection this is the parent folder's collection_id; for a logical collection it is the parent collection's collection_id."
+    },
+    "full_name": {
+      "type": "string",
+      "description": "Full slash-delimited NAME path of a LOGICAL collection (a named catalog hierarchy, e.g. 'Projects/2024/Launch'). Its presence marks the record as a logical collection. A record is EITHER logical (full_name) OR mapped (extensions.full_path) — never both, and never a per-asset junction row. NOTE: Exodus's collection-type detection (CollectionTypeFromData) and path resolution (GetFullName) read this marker from `extensions.full_name`; place the value under `extensions` for Exodus to consume it. This top-level field is an optional, human-readable mirror for interchange/readability."
     },
     "parent_storage": {
       "$ref": "#/definitions/StorageLocation",
@@ -60,7 +64,7 @@
     },
     "extensions": {
       "type": "object",
-      "description": "Extension point for custom fields or plugin data. Keys SHOULD be prefixed with 'x_' or 'custom_' to avoid collision with future standard fields.",
+      "description": "Extension point for custom fields or plugin data. Custom keys SHOULD be prefixed with 'x_' or 'custom_' to avoid collision with future standard fields. Recognized standard extension keys (read by Exodus): `full_path` (string) marks a MAPPED (storage-mirror) collection — the source storage folder path this record mirrors, one record per folder; its presence makes the collection mapped (Exodus CollectionTypeFromData → 'mapped_collections'). `full_name` (string) marks a LOGICAL collection — the full slash-delimited named-hierarchy path; its presence makes the collection logical (→ 'collections'). A record carries EITHER `full_name` (logical) OR `full_path` (mapped), not both. `storage_id` (string) is the Iconik storage a mapped folder binds to; it is NOT supplied in the source file — Exodus injects it at import from the config `unified_mappings` (source path prefix → Iconik storage id), keyed by the normalized `full_path`.",
       "additionalProperties": true
     }
   },

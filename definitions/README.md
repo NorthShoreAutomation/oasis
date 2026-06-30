@@ -89,11 +89,14 @@ Validation errors are captured with detailed messages and suggestions for fixes.
       "collection_id": "collection-id",
       "label": "Collection Name",
       "parent": "parent-id-or-null",
-      "path": "/full/path"
+      "extensions": { "full_name": "Projects/2024/Launch" }
     }
   ]
 }
 ```
+
+See [Collection file roles](#collection-file-roles) for the difference between
+logical and mapped collection files.
 
 ### Metadata Set Format
 ```json
@@ -111,6 +114,100 @@ Validation errors are captured with detailed messages and suggestions for fixes.
   ]
 }
 ```
+
+## Collection file roles
+
+A collection-batch file (`collection_batch_import.schema.json`, records under the
+`collections` key) plays **one of two roles**. Both use the same `Collection`
+schema; the role is determined by which marker each record carries. Exodus
+auto-detects the role from the data (`CollectionTypeFromData`: `full_path` =>
+mapped, `full_name` => logical) or you can force it with
+`collections import --type collections|mapped_collections`.
+
+> **Where the markers live:** Exodus reads `full_name` and `full_path` from
+> **`extensions`** (`extensions.full_name` / `extensions.full_path`). A
+> top-level `full_name` is also defined on the schema as an optional
+> human-readable mirror, but the importer's type detection and path resolution
+> read the `extensions` values — put the marker under `extensions`.
+
+### 1. Logical collections file
+
+A named catalog hierarchy. Each record carries `extensions.full_name` (the full
+slash-delimited name path). `parent` is the parent collection's `collection_id`.
+
+```json
+{
+  "schema_version": "1.0.0",
+  "collections": [
+    {
+      "collection_id": "4808",
+      "label": "Launch",
+      "parent": "4807",
+      "extensions": { "full_name": "Projects/2024/Launch" }
+    }
+  ]
+}
+```
+
+### 2. Mapped collections file
+
+A storage-mirror tree that recreates the source storage's physical folder
+hierarchy as Iconik collections, **one record per folder**. Each record carries
+`extensions.full_path` (the real source storage path of that folder).
+`label` is the **leaf folder name** and `parent` is the **parent folder's
+`collection_id`**. At import, Exodus binds each folder to an Iconik storage via
+the config's `unified_mappings` (source path prefix => `iconik_storage_id`),
+keyed by the normalized `full_path` — the `storage_id` is therefore NOT carried
+in the file.
+
+```json
+{
+  "collections": [
+    {
+      "collection_id": "Vm9sdW1lcy9Qcm9kdWN0aW9uLU5BUy9DYXRhbG9ncw==",
+      "label": "Catalogs",
+      "parent": "Vm9sdW1lcy9Qcm9kdWN0aW9uLU5BUw==",
+      "extensions": { "full_path": "Volumes/Production-NAS/Catalogs" }
+    },
+    {
+      "collection_id": "Vm9sdW1lcy9Qcm9kdWN0aW9uLU5BUy9DYXRhbG9ncy8yMDI0",
+      "label": "2024",
+      "parent": "Vm9sdW1lcy9Qcm9kdWN0aW9uLU5BUy9DYXRhbG9ncw==",
+      "extensions": { "full_path": "Volumes/Production-NAS/Catalogs/2024" }
+    }
+  ]
+}
+```
+
+`collection_id` here is conventionally a stable, deterministic id derived from
+the folder's `full_path` (e.g. base64 of the path), so a child's `parent` can be
+computed from its parent folder's path without a second pass.
+
+### Anti-pattern (NOT a mapped collections file)
+
+A flat **asset-to-folder junction table** is **not** a mapped collections file.
+The following is wrong: it is one row per asset (not one per folder), has no
+`extensions.full_path`, and encodes membership inline.
+
+```json
+{
+  "mapped_collections": [
+    { "asset_id": "a1", "collection_id": "c1", "label": "Catalogs" },
+    { "asset_id": "a2", "collection_id": "c1", "label": "Catalogs" }
+  ]
+}
+```
+
+A mapped file defines **folders** (one record per folder, with
+`extensions.full_path`). Asset placement is resolved separately, at
+`assets import`, by matching each asset's file path to a folder record.
+
+### Membership is not a junction file
+
+Which assets belong to a collection is expressed on the entities themselves —
+via the asset's `collections[]` (references by `collection_id`) and/or the
+collection's `assets[]` (array of asset ids) — **not** as a standalone
+`{asset_id, collection_id, label}` junction file.
 
 ## Modifying Schemas
 

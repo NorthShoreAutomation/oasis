@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "CollectionBatchImport",
   "type": "object",
-  "description": "Batch import wrapper for multiple collection records. Each record is fully embedded and validated independently. No referenced entities. Records are imported to a tracking database for status management, not written directly to JSON.",
+  "description": "Batch import wrapper for multiple collection records under the `collections` key. Each record is fully embedded and validated independently. No referenced entities. Records are imported to a tracking database for status management, not written directly to JSON. A collection-batch file plays ONE of two ROLES (see definitions/README.md > 'Collection file roles'): a LOGICAL collections file (records carry `extensions.full_name`, a named catalog hierarchy) OR a MAPPED collections file (records carry `extensions.full_path`, a storage-mirror tree: one record PER FOLDER, `label` = leaf folder name, `parent` = parent folder's collection_id). Exodus auto-detects the role from the records (full_path => mapped, full_name => logical) or via `--type`. IMPORTANT: a mapped collections file is a set of FOLDER DEFINITIONS, NOT a per-asset junction table — a flat list of `{asset_id, collection_id, label}` rows is NOT a valid mapped collections file. Asset membership is expressed separately on `asset.collections[]` and/or `collection.assets[]`, never as junction rows here.",
   "properties": {
     "schema_version": {
       "type": "string",
