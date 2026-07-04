@@ -1,4 +1,4 @@
-# Lodestar Schema Definitions
+# OASIS Schema Definitions
 
 JSON Schema definitions for universal media asset management operations.
 
@@ -132,10 +132,10 @@ make test
 
 ## Schema Ownership
 
-These schemas are now maintained as part of the exodus project. They were originally sourced from the lodestar-schema-design repository but are now independently managed here.
+These schemas are now maintained as part of the exodus project. They were originally sourced from an external schema-design repository but are now independently managed here.
 
 **Migration History**:
-- Previously synced from external `lodestar-schema-design` repository
+- Previously synced from an external schema-design repository
 - Migrated to `internal/schema/definitions/` on 2025-11-05
 - Now version-controlled as part of exodus source tree
 
