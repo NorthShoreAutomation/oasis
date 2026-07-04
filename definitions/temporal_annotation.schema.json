@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://lodestar.nsa.dev/schemas/temporal_annotation.schema.json",
+  "$id": "https://www.northshoreautomation.com/schemas/temporal_annotation.schema.json",
   "title": "TemporalAnnotation",
   "description": "Time-based marker, segment, or annotation for video/audio assets",
   "type": "object",
