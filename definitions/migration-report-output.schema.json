@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://lodestar-schema-design.local/schemas/migration-report-output-v1.0.0.json",
+  "$id": "https://www.northshoreautomation.com/schemas/migration-report-output-v1.0.0.json",
   "title": "Migration Analytics Report Output",
   "description": "JSON Schema for CatDV migration analytics report output structure",
   "type": "object",
@@ -335,6 +335,16 @@
         "assets_not_ready": {
           "type": "integer",
           "minimum": 0
+        },
+        "assets_non_migratable": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "non_migratable_types": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "blocking_issues": {
           "type": "array",
