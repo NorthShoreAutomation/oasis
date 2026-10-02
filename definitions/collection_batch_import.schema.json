@@ -2,11 +2,11 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "CollectionBatchImport",
   "type": "object",
-  "description": "Batch import wrapper for multiple collection records. Each record is fully embedded and validated independently. No referenced entities. Records are imported to a tracking database for status management, not written directly to JSON.",
+  "description": "Batch wrapper for multiple collection records exchanged together. Each record is a complete collection record and is validated independently against the collection schema. Records can refer to other entities by identifier, such as a parent collection or member assets. The array length does not establish that the batch is complete. How records are stored or tracked after exchange is outside this schema.",
   "properties": {
     "schema_version": {
       "type": "string",
-      "description": "Version of the batch import schema (semantic versioning, e.g., '1.0.0')."
+      "description": "Version of the batch schema (semantic versioning, e.g., '1.0.0')."
     },
     "extensions": {
       "type": "object",

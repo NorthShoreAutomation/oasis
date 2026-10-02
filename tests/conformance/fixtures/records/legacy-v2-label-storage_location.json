@@ -1,0 +1,6 @@
+{
+  "storage_id": "storage-a",
+  "system": "filesystem",
+  "path": "/synthetic/media",
+  "schema_version": "2.0.0"
+}

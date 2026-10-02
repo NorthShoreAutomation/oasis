@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "MetadataSet",
   "type": "object",
-  "description": "A set of metadata fields (system and custom) for an asset. This schema is suitable for standalone export/import of complete metadata field definitions—including field types and enum values—independently from assets.",
+  "description": "A set of metadata fields (system and custom). This standalone schema carries field definitions, including data types and allowed values, independently from assets. A field may also carry a value as open extra data; this schema does not define that value's representation.",
   "properties": {
     "set_id": {
       "type": "string",
@@ -30,7 +30,7 @@
           "type": {
             "type": "string",
             "enum": ["string", "number", "integer", "boolean", "date", "enum"],
-            "description": "Data type of the field. Use 'enum' for dropdown or multi-select fields."
+            "description": "Data type of the field. Use 'enum' when values come from a fixed list of allowed values."
           },
           "required": {
             "type": "boolean",
@@ -38,12 +38,12 @@
           },
           "enum_values": {
             "type": "array",
-            "description": "Allowed values if type is enum (dropdown or multi-select).",
+            "description": "Allowed values if type is enum.",
             "items": { "type": "string" }
           },
           "multi_select": {
             "type": "boolean",
-            "description": "If true, field is a multi-select (user can select multiple values). If false or omitted, field is a single-select dropdown. Applies only to type 'enum'."
+            "description": "Cardinality for type 'enum'. If true, the field can hold more than one allowed value. If false or omitted, it holds one value. This schema does not define how multiple values are represented. Applies only to type 'enum'."
           },
           "minLength": {
             "type": "integer",

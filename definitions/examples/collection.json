@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.2.0-draft.1",
+  "collection_id": "collection-coastal",
+  "label": "Coastal Footage",
+  "description": "Synthetic example collection for documentation.",
+  "parent": null,
+  "created_date": "2026-03-01T08:00:00Z",
+  "parent_storage": {
+    "storage_id": "storage-primary",
+    "system": "object-storage",
+    "path": "https://media.example.invalid/library/coastal/"
+  },
+  "metadata_sets": [
+    {
+      "set_id": "set-collection-info",
+      "label": "Collection information",
+      "fields": [
+        { "name": "season", "label": "Season", "type": "enum", "enum_values": ["spring", "summer", "autumn", "winter"] }
+      ]
+    }
+  ],
+  "assets": ["asset-0001", "asset-0002"],
+  "extensions": {
+    "x_example_curator_note": "Selected for the coastal series."
+  }
+}

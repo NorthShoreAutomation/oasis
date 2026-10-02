@@ -2,77 +2,70 @@
 
 **Open Asset Standard Interchange Schema**
 
-Universal JSON Schema definitions for media asset management (MAM/DAM) operations.
+> **DRAFT 1.2.0-draft.1, not a final release.**
+> These rules are approved as a draft and can change before the final release.
 
-## Overview
+## What OASIS is
 
-OASIS provides platform-agnostic schema definitions for asset migration, metadata handling, and collection management across MAM/DAM systems. Think of it as an oasis in the desert of vendor lock-in—a universal interchange format that lets you migrate between CatDV, Dalet, EditShare, Iconik, and other media asset management platforms.
+OASIS is a set of JSON Schema (Draft 7) files that describe media asset records.
+A record can describe an asset, its files, where those files are stored, its metadata, the collections it belongs to, and timed annotations.
+The goal is a neutral format that any media asset management system can read and write.
 
-Used by the [exodus](https://github.com/NorthShoreAutomation/exodus) migration tool.
+OASIS makes no claim of certification, demonstrated interoperability, production readiness, or endorsement by any organization.
 
 ## Schemas
 
-See [definitions/README.md](definitions/README.md) for detailed documentation.
+The schema files are in [definitions/](definitions/README.md).
+Seven are interchange entry points. The eighth is an application report.
 
-| Schema | Purpose |
-|--------|---------|
-| `asset.schema.json` | Individual asset structure with files and metadata |
-| `asset_batch_import.schema.json` | Batch asset import format |
-| `collection.schema.json` | Collection hierarchy structure |
-| `collection_batch_import.schema.json` | Batch collection import format |
-| `metadata_set.schema.json` | Metadata field definitions |
-| `storage_location.schema.json` | Storage location references |
-| `temporal_annotation.schema.json` | Time-based annotations for video/audio |
-| `migration-report-output.schema.json` | Migration reporting format |
+| File | Purpose |
+| --- | --- |
+| `asset.schema.json` | One asset, with its files and metadata. |
+| `asset_batch_import.schema.json` | A batch of assets. |
+| `collection.schema.json` | One collection. |
+| `collection_batch_import.schema.json` | A batch of collections. |
+| `metadata_set.schema.json` | Metadata field definitions. |
+| `storage_location.schema.json` | One storage location. |
+| `temporal_annotation.schema.json` | One timed annotation. |
+| `migration-report-output.schema.json` | An application report. It is not part of the exchange profile. |
 
-## Usage
+## Quick start
 
-### As Git Submodule (Recommended)
+The conformance harness checks the schemas and the example records.
+It needs Python 3 and works offline after the packages are installed.
+Run these commands from the repository root.
 
-```bash
-git submodule add https://github.com/NorthShoreAutomation/oasis.git schemas
+```sh
+git clone https://github.com/NorthShoreAutomation/oasis.git
+cd oasis
+python3 -m venv tmp/oasis-conformance
+. tmp/oasis-conformance/bin/activate
+python3 -m pip install -r tests/conformance/requirements-lock.txt
+python3 -W error -m unittest discover -s tests/conformance -t . -p 'test_*.py'
 ```
 
-### Direct Download
+The conformance README describes a script for setup, other test commands, and the Go adapter.
 
-```bash
-curl -L https://github.com/NorthShoreAutomation/oasis/archive/main.tar.gz | tar xz
-```
+## Documentation
 
-### Validation Example
+- [Adopter guide](docs/ADOPTION.md): how to read, validate, and exchange OASIS 1.x records.
+- [Schema definitions](definitions/README.md): the schema files and the bundle manifest.
+- [Examples](definitions/examples/): synthetic example records for the seven entry points.
+- [Contract](docs/specification/1.2.0-draft.1/CONTRACT.md): the normative rules for this draft.
+- [Glossary](docs/specification/1.2.0-draft.1/GLOSSARY.md): the terms used in the documents.
+- [Conformance harness](tests/conformance/README.md): how the schemas are tested.
 
-```bash
-# Using jq to validate syntax
-jq . definitions/asset.schema.json > /dev/null && echo "Valid JSON"
-```
+## Version history
+
+- The frozen schema baseline is v1.1.1. The harness keeps a copy of it for comparison.
+- 1.2.0-draft.1 is a draft. It is not a release.
 
 ## Contributing
 
-We welcome contributions! Please:
-
-1. Fork this repository
-2. Create a feature branch (`git checkout -b feature/my-change`)
-3. Make your changes to schema files
-4. Validate JSON syntax: `jq . definitions/*.schema.json`
-5. Submit a pull request
-
-### Schema Guidelines
-
-- Follow [JSON Schema Draft 7](https://json-schema.org/draft-07/schema) specification
-- Use descriptive field names and documentation
-- Include examples in schema descriptions
-- Maintain backward compatibility when possible
-- Document breaking changes in PR description
-
-## Version History
-
-- **v1.0.0** (2026-01-24) - Initial release extracted from exodus repository
+See [CONTRIBUTING.md](CONTRIBUTING.md). Every commit needs a Developer Certificate of Origin sign-off (`git commit -s`).
 
 ## License
 
-Apache 2.0
-
-## Support
-
-- Issues: [GitHub Issues](https://github.com/NorthShoreAutomation/oasis/issues)
-- Main Project: [exodus](https://github.com/NorthShoreAutomation/exodus)
+OASIS is licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE).
+Copyright 2026 North Shore Automation, LLC.
+The license covers the schemas, documentation, examples, and the synthetic conformance corpus.

@@ -8,7 +8,7 @@
   "properties": {
     "source_id": {
       "type": "string",
-      "description": "Unique identifier from source system (e.g., CatDV marker ID)",
+      "description": "Identifier of this annotation as assigned by the system that produced the record. This schema does not define its namespace or require any particular source system.",
       "minLength": 1
     },
     "name": {
@@ -21,11 +21,11 @@
     },
     "category": {
       "type": "string",
-      "description": "Source system category (e.g., 'Shot Sheet', 'Marker')"
+      "description": "Category label as recorded by the source, kept as free-form text (e.g., 'Shot Sheet', 'Marker'). It is raw source data, not a standardized classification."
     },
     "annotation_type": {
       "type": "string",
-      "description": "Target system annotation type",
+      "description": "Legacy 1.x classification token: 'Generic', 'Comments', 'QualityControlMarker', or 'Transcription'. The tokens define no destination behavior. The default 'Generic' is a schema annotation for legacy readers, not proof of equivalent meaning; validators do not insert it.",
       "enum": ["Generic", "Comments", "QualityControlMarker", "Transcription"],
       "default": "Generic"
     },

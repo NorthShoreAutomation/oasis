@@ -1,0 +1,13 @@
+{
+  "asset_id": "asset-a",
+  "title": "Synthetic interview",
+  "type": "video",
+  "files": [
+    {
+      "type": "video",
+      "role": "essence",
+      "uri": "/synthetic/media/interview.mov",
+      "storage_id": "storage-a"
+    }
+  ]
+}

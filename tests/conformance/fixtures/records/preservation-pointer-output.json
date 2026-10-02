@@ -1,0 +1,9 @@
+{
+  "asset_id": "asset-a",
+  "title": "Synthetic interview",
+  "type": "video",
+  "extensions": {
+    "a/b": 2,
+    "a0": 2
+  }
+}

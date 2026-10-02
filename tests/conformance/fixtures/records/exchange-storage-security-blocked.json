@@ -1,0 +1,8 @@
+{
+  "storage_id": "storage-a",
+  "system": "filesystem",
+  "path": "/synthetic/media",
+  "security": {
+    "synthetic_restriction": true
+  }
+}

@@ -1,0 +1,4 @@
+# Preserve the exact public schema and conformance artifact bytes.
+/definitions/*.schema.json -text -filter
+/definitions/bundle-manifest.json -text -filter
+/tests/conformance/**/*.json -text -filter

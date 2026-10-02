@@ -1,0 +1,5589 @@
+{
+  "manifest_version": "1.0.0",
+  "status": "proposed",
+  "contract_revision": "1.2.0-draft.1-proposal",
+  "baseline_public_commit": "1e2849b287bba42fbe6c1767a49f6016ddaff58a",
+  "profiles": [
+    "legacy-1x",
+    "exchange-1x"
+  ],
+  "provenance": {
+    "kind": "synthetic",
+    "source": "Newly authored OASIS conformance examples",
+    "reuse_terms": "Apache License 2.0"
+  },
+  "cases": [
+    {
+      "id": "minimal-asset",
+      "schema_name": "asset.schema.json",
+      "path": "records/minimal-asset.json",
+      "profile": "legacy-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "missing-required-asset",
+      "schema_name": "asset.schema.json",
+      "path": "records/missing-required-asset.json",
+      "profile": "legacy-1x",
+      "context": "standalone",
+      "expected_valid": false,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": false,
+          "historical-unchecked": false,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": false,
+          "historical-unchecked": false,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "minimal-collection",
+      "schema_name": "collection.schema.json",
+      "path": "records/minimal-collection.json",
+      "profile": "legacy-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "missing-required-collection",
+      "schema_name": "collection.schema.json",
+      "path": "records/missing-required-collection.json",
+      "profile": "legacy-1x",
+      "context": "standalone",
+      "expected_valid": false,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": false,
+          "historical-unchecked": false,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": false,
+          "historical-unchecked": false,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "minimal-metadata_set",
+      "schema_name": "metadata_set.schema.json",
+      "path": "records/minimal-metadata_set.json",
+      "profile": "legacy-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "missing-required-metadata_set",
+      "schema_name": "metadata_set.schema.json",
+      "path": "records/missing-required-metadata_set.json",
+      "profile": "legacy-1x",
+      "context": "standalone",
+      "expected_valid": false,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": false,
+          "historical-unchecked": false,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": false,
+          "historical-unchecked": false,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "minimal-storage_location",
+      "schema_name": "storage_location.schema.json",
+      "path": "records/minimal-storage_location.json",
+      "profile": "legacy-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "missing-required-storage_location",
+      "schema_name": "storage_location.schema.json",
+      "path": "records/missing-required-storage_location.json",
+      "profile": "legacy-1x",
+      "context": "standalone",
+      "expected_valid": false,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": false,
+          "historical-unchecked": false,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": false,
+          "historical-unchecked": false,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "minimal-temporal_annotation",
+      "schema_name": "temporal_annotation.schema.json",
+      "path": "records/minimal-temporal_annotation.json",
+      "profile": "legacy-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "missing-required-temporal_annotation",
+      "schema_name": "temporal_annotation.schema.json",
+      "path": "records/missing-required-temporal_annotation.json",
+      "profile": "legacy-1x",
+      "context": "standalone",
+      "expected_valid": false,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": false,
+          "historical-unchecked": false,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": false,
+          "historical-unchecked": false,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "minimal-asset_batch_import",
+      "schema_name": "asset_batch_import.schema.json",
+      "path": "records/minimal-asset_batch_import.json",
+      "profile": "legacy-1x",
+      "context": "asset-batch",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "missing-required-asset_batch_import",
+      "schema_name": "asset_batch_import.schema.json",
+      "path": "records/missing-required-asset_batch_import.json",
+      "profile": "legacy-1x",
+      "context": "asset-batch",
+      "expected_valid": false,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": false,
+          "historical-unchecked": false,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": false,
+          "historical-unchecked": false,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "minimal-collection_batch_import",
+      "schema_name": "collection_batch_import.schema.json",
+      "path": "records/minimal-collection_batch_import.json",
+      "profile": "legacy-1x",
+      "context": "collection-batch",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "missing-required-collection_batch_import",
+      "schema_name": "collection_batch_import.schema.json",
+      "path": "records/missing-required-collection_batch_import.json",
+      "profile": "legacy-1x",
+      "context": "collection-batch",
+      "expected_valid": false,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": false,
+          "historical-unchecked": false,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": false,
+          "historical-unchecked": false,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "minimal-migration-report-output",
+      "schema_name": "migration-report-output.schema.json",
+      "path": "records/minimal-migration-report-output.json",
+      "profile": "legacy-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "missing-required-migration-report-output",
+      "schema_name": "migration-report-output.schema.json",
+      "path": "records/missing-required-migration-report-output.json",
+      "profile": "legacy-1x",
+      "context": "standalone",
+      "expected_valid": false,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": false,
+          "historical-unchecked": false,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": false,
+          "historical-unchecked": false,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "embedded-metadata-missing-id",
+      "schema_name": "asset.schema.json",
+      "path": "records/embedded-metadata-missing-id.json",
+      "profile": "legacy-1x",
+      "context": "asset-embedded",
+      "expected_valid": false,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": false,
+          "historical-unchecked": false,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": false,
+          "historical-unchecked": false,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "standalone-metadata-value",
+      "schema_name": "metadata_set.schema.json",
+      "path": "records/standalone-metadata-value.json",
+      "profile": "legacy-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "embedded-metadata-value",
+      "schema_name": "asset.schema.json",
+      "path": "records/embedded-metadata-value.json",
+      "profile": "legacy-1x",
+      "context": "asset-embedded",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "standalone-object-membership",
+      "schema_name": "collection.schema.json",
+      "path": "records/standalone-object-membership.json",
+      "profile": "legacy-1x",
+      "context": "standalone",
+      "expected_valid": false,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": false,
+          "historical-unchecked": false,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": false,
+          "historical-unchecked": false,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "embedded-object-membership",
+      "schema_name": "asset.schema.json",
+      "path": "records/embedded-object-membership.json",
+      "profile": "legacy-1x",
+      "context": "asset-embedded",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "standalone-storage-extension",
+      "schema_name": "storage_location.schema.json",
+      "path": "records/standalone-storage-extension.json",
+      "profile": "legacy-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "embedded-storage-extension",
+      "schema_name": "asset.schema.json",
+      "path": "records/embedded-storage-extension.json",
+      "profile": "legacy-1x",
+      "context": "asset-embedded",
+      "expected_valid": false,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": false,
+          "historical-unchecked": false,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": false,
+          "historical-unchecked": false,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "file-filename-closed",
+      "schema_name": "asset.schema.json",
+      "path": "records/file-filename-closed.json",
+      "profile": "legacy-1x",
+      "context": "standalone",
+      "expected_valid": false,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": false,
+          "historical-unchecked": false,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": false,
+          "historical-unchecked": false,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "file-storage-id-only",
+      "schema_name": "asset.schema.json",
+      "path": "records/file-storage-id-only.json",
+      "profile": "legacy-1x",
+      "context": "standalone",
+      "expected_valid": false,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": false,
+          "historical-unchecked": false,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": false,
+          "historical-unchecked": false,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "asset-custom-key-collision",
+      "schema_name": "asset.schema.json",
+      "path": "records/asset-custom-key-collision.json",
+      "profile": "legacy-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "asset-whitespace-identity",
+      "schema_name": "asset.schema.json",
+      "path": "records/asset-whitespace-identity.json",
+      "profile": "legacy-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "asset-empty-title",
+      "schema_name": "asset.schema.json",
+      "path": "records/asset-empty-title.json",
+      "profile": "legacy-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "asset-invalid-date",
+      "schema_name": "asset.schema.json",
+      "path": "records/asset-invalid-date.json",
+      "profile": "legacy-1x",
+      "context": "standalone",
+      "expected_valid": false,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": false,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": false,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "embedded-annotation-no-timing",
+      "schema_name": "asset.schema.json",
+      "path": "records/embedded-annotation-no-timing.json",
+      "profile": "legacy-1x",
+      "context": "asset-embedded",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "standalone-annotation-no-timing",
+      "schema_name": "temporal_annotation.schema.json",
+      "path": "records/standalone-annotation-no-timing.json",
+      "profile": "legacy-1x",
+      "context": "standalone",
+      "expected_valid": false,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": false,
+          "historical-unchecked": false,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": false,
+          "historical-unchecked": false,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "annotation-zero-rate",
+      "schema_name": "temporal_annotation.schema.json",
+      "path": "records/annotation-zero-rate.json",
+      "profile": "legacy-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "annotation-reversed-range",
+      "schema_name": "temporal_annotation.schema.json",
+      "path": "records/annotation-reversed-range.json",
+      "profile": "legacy-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "annotation-mixed-units",
+      "schema_name": "temporal_annotation.schema.json",
+      "path": "records/annotation-mixed-units.json",
+      "profile": "legacy-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "annotation-invalid-clock",
+      "schema_name": "temporal_annotation.schema.json",
+      "path": "records/annotation-invalid-clock.json",
+      "profile": "legacy-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "annotation-trailing-separator",
+      "schema_name": "temporal_annotation.schema.json",
+      "path": "records/annotation-trailing-separator.json",
+      "profile": "legacy-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "annotation-semicolon-standalone",
+      "schema_name": "temporal_annotation.schema.json",
+      "path": "records/annotation-semicolon-standalone.json",
+      "profile": "legacy-1x",
+      "context": "standalone",
+      "expected_valid": false,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": false,
+          "historical-unchecked": false,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": false,
+          "historical-unchecked": false,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "annotation-semicolon-embedded",
+      "schema_name": "asset.schema.json",
+      "path": "records/annotation-semicolon-embedded.json",
+      "profile": "legacy-1x",
+      "context": "asset-embedded",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "annotation-token-Generic",
+      "schema_name": "temporal_annotation.schema.json",
+      "path": "records/annotation-token-Generic.json",
+      "profile": "legacy-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "embedded-token-Generic",
+      "schema_name": "asset.schema.json",
+      "path": "records/embedded-token-Generic.json",
+      "profile": "legacy-1x",
+      "context": "asset-embedded",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "batch-token-Generic",
+      "schema_name": "asset_batch_import.schema.json",
+      "path": "records/batch-token-Generic.json",
+      "profile": "legacy-1x",
+      "context": "asset-batch-embedded",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "annotation-token-Comments",
+      "schema_name": "temporal_annotation.schema.json",
+      "path": "records/annotation-token-Comments.json",
+      "profile": "legacy-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "embedded-token-Comments",
+      "schema_name": "asset.schema.json",
+      "path": "records/embedded-token-Comments.json",
+      "profile": "legacy-1x",
+      "context": "asset-embedded",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "batch-token-Comments",
+      "schema_name": "asset_batch_import.schema.json",
+      "path": "records/batch-token-Comments.json",
+      "profile": "legacy-1x",
+      "context": "asset-batch-embedded",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "annotation-token-QualityControlMarker",
+      "schema_name": "temporal_annotation.schema.json",
+      "path": "records/annotation-token-QualityControlMarker.json",
+      "profile": "legacy-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "embedded-token-QualityControlMarker",
+      "schema_name": "asset.schema.json",
+      "path": "records/embedded-token-QualityControlMarker.json",
+      "profile": "legacy-1x",
+      "context": "asset-embedded",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "batch-token-QualityControlMarker",
+      "schema_name": "asset_batch_import.schema.json",
+      "path": "records/batch-token-QualityControlMarker.json",
+      "profile": "legacy-1x",
+      "context": "asset-batch-embedded",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "annotation-token-Transcription",
+      "schema_name": "temporal_annotation.schema.json",
+      "path": "records/annotation-token-Transcription.json",
+      "profile": "legacy-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "embedded-token-Transcription",
+      "schema_name": "asset.schema.json",
+      "path": "records/embedded-token-Transcription.json",
+      "profile": "legacy-1x",
+      "context": "asset-embedded",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "batch-token-Transcription",
+      "schema_name": "asset_batch_import.schema.json",
+      "path": "records/batch-token-Transcription.json",
+      "profile": "legacy-1x",
+      "context": "asset-batch-embedded",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "annotation-token-absent",
+      "schema_name": "temporal_annotation.schema.json",
+      "path": "records/annotation-token-absent.json",
+      "profile": "legacy-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "embedded-token-absent",
+      "schema_name": "asset.schema.json",
+      "path": "records/embedded-token-absent.json",
+      "profile": "legacy-1x",
+      "context": "asset-embedded",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "batch-token-absent",
+      "schema_name": "asset_batch_import.schema.json",
+      "path": "records/batch-token-absent.json",
+      "profile": "legacy-1x",
+      "context": "asset-batch-embedded",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "legacy-v2-label-asset",
+      "schema_name": "asset.schema.json",
+      "path": "records/legacy-v2-label-asset.json",
+      "profile": "legacy-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "legacy-v2-label-collection",
+      "schema_name": "collection.schema.json",
+      "path": "records/legacy-v2-label-collection.json",
+      "profile": "legacy-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "legacy-v2-label-metadata_set",
+      "schema_name": "metadata_set.schema.json",
+      "path": "records/legacy-v2-label-metadata_set.json",
+      "profile": "legacy-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "legacy-v2-label-storage_location",
+      "schema_name": "storage_location.schema.json",
+      "path": "records/legacy-v2-label-storage_location.json",
+      "profile": "legacy-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "legacy-v2-label-temporal_annotation",
+      "schema_name": "temporal_annotation.schema.json",
+      "path": "records/legacy-v2-label-temporal_annotation.json",
+      "profile": "legacy-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "legacy-v2-label-asset_batch_import",
+      "schema_name": "asset_batch_import.schema.json",
+      "path": "records/legacy-v2-label-asset_batch_import.json",
+      "profile": "legacy-1x",
+      "context": "asset-batch",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "legacy-v2-label-collection_batch_import",
+      "schema_name": "collection_batch_import.schema.json",
+      "path": "records/legacy-v2-label-collection_batch_import.json",
+      "profile": "legacy-1x",
+      "context": "collection-batch",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "legacy-v2-label-migration-report-output",
+      "schema_name": "migration-report-output.schema.json",
+      "path": "records/legacy-v2-label-migration-report-output.json",
+      "profile": "legacy-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-minimal-asset",
+      "schema_name": "asset.schema.json",
+      "path": "records/minimal-asset.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-v1-supported",
+      "schema_name": "asset.schema.json",
+      "path": "records/exchange-v1-supported.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-v2-blocked",
+      "schema_name": "asset.schema.json",
+      "path": "records/legacy-v2-label-asset.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [
+        {
+          "code": "VERSION_UNSUPPORTED",
+          "path": "/schema_version"
+        }
+      ],
+      "expected_execution_status": "unsupported",
+      "expected_routing": "unsupported",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-unknown-version",
+      "schema_name": "asset.schema.json",
+      "path": "records/exchange-unknown-version.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [
+        {
+          "code": "VERSION_UNSUPPORTED",
+          "path": "/schema_version"
+        }
+      ],
+      "expected_execution_status": "unsupported",
+      "expected_routing": "unsupported",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-asset-version-is-data",
+      "schema_name": "asset.schema.json",
+      "path": "records/exchange-asset-version-is-data.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-mixed-version-batch",
+      "schema_name": "asset_batch_import.schema.json",
+      "path": "records/exchange-mixed-version-batch.json",
+      "profile": "exchange-1x",
+      "context": "asset-batch",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [
+        {
+          "code": "VERSION_UNSUPPORTED",
+          "path": "/assets/0/schema_version"
+        }
+      ],
+      "expected_execution_status": "unsupported",
+      "expected_routing": "unsupported",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-report-excluded",
+      "schema_name": "migration-report-output.schema.json",
+      "path": "records/minimal-migration-report-output.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [
+        {
+          "code": "PROFILE_UNSUPPORTED",
+          "path": ""
+        }
+      ],
+      "expected_execution_status": "unsupported",
+      "expected_routing": "unsupported",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-whitespace-identity",
+      "schema_name": "asset.schema.json",
+      "path": "records/asset-whitespace-identity.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [
+        {
+          "code": "IDENTITY_UNUSABLE",
+          "path": "/asset_id"
+        }
+      ],
+      "expected_execution_status": "blocked",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-empty-title",
+      "schema_name": "asset.schema.json",
+      "path": "records/asset-empty-title.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-custom-value-preserved",
+      "schema_name": "asset.schema.json",
+      "path": "records/asset-custom-key-collision.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-duplicate-asset",
+      "schema_name": "asset_batch_import.schema.json",
+      "path": "records/exchange-duplicate-asset.json",
+      "profile": "exchange-1x",
+      "context": "asset-batch",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [
+        {
+          "code": "COMPLETENESS_UNVERIFIED",
+          "path": ""
+        },
+        {
+          "code": "IDENTITY_DUPLICATE",
+          "path": "/assets/1/asset_id"
+        }
+      ],
+      "expected_execution_status": "blocked",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-unresolved-parent",
+      "schema_name": "collection.schema.json",
+      "path": "records/exchange-unresolved-parent.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [
+        {
+          "code": "REFERENCE_UNRESOLVED",
+          "path": "/parent"
+        }
+      ],
+      "expected_execution_status": "complete",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-parent-cycle",
+      "schema_name": "collection_batch_import.schema.json",
+      "path": "records/exchange-parent-cycle.json",
+      "profile": "exchange-1x",
+      "context": "collection-batch",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [
+        {
+          "code": "COMPLETENESS_UNVERIFIED",
+          "path": ""
+        },
+        {
+          "code": "COLLECTION_CYCLE",
+          "path": "/collections/0/parent"
+        },
+        {
+          "code": "COLLECTION_CYCLE",
+          "path": "/collections/1/parent"
+        }
+      ],
+      "expected_execution_status": "blocked",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-membership-omitted",
+      "schema_name": "collection.schema.json",
+      "path": "records/minimal-collection.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-membership-empty",
+      "schema_name": "collection.schema.json",
+      "path": "records/exchange-membership-empty.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-membership-resolved",
+      "schema_name": "collection.schema.json",
+      "path": "records/exchange-membership-resolved.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [
+          "asset-a"
+        ],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-membership-unresolved",
+      "schema_name": "collection.schema.json",
+      "path": "records/exchange-membership-unresolved.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [
+        {
+          "code": "REFERENCE_UNRESOLVED",
+          "path": "/assets/0"
+        }
+      ],
+      "expected_execution_status": "complete",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-embedded-membership-opaque",
+      "schema_name": "asset.schema.json",
+      "path": "records/embedded-object-membership.json",
+      "profile": "exchange-1x",
+      "context": "asset-embedded",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [
+        {
+          "code": "MEMBERSHIP_UNINTERPRETED",
+          "path": "/collections/0/assets/0"
+        }
+      ],
+      "expected_execution_status": "complete",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-metadata-opaque",
+      "schema_name": "metadata_set.schema.json",
+      "path": "records/standalone-metadata-value.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [
+        {
+          "code": "VALUE_SEMANTICS_UNSPECIFIED",
+          "path": "/fields/0/value"
+        }
+      ],
+      "expected_execution_status": "complete",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-zero-rate",
+      "schema_name": "temporal_annotation.schema.json",
+      "path": "records/annotation-zero-rate.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [
+        {
+          "code": "TIMING_UNINTERPRETED",
+          "path": ""
+        },
+        {
+          "code": "RATE_UNUSABLE",
+          "path": "/frame_rate"
+        }
+      ],
+      "expected_execution_status": "blocked",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-reversed-range",
+      "schema_name": "temporal_annotation.schema.json",
+      "path": "records/annotation-reversed-range.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [
+        {
+          "code": "RANGE_REVERSED",
+          "path": "/end_seconds"
+        }
+      ],
+      "expected_execution_status": "blocked",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-mixed-timing",
+      "schema_name": "temporal_annotation.schema.json",
+      "path": "records/annotation-mixed-units.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [
+        {
+          "code": "TIMING_UNINTERPRETED",
+          "path": ""
+        }
+      ],
+      "expected_execution_status": "complete",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-timecode-opaque",
+      "schema_name": "temporal_annotation.schema.json",
+      "path": "records/annotation-invalid-clock.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [
+        {
+          "code": "TIMING_UNINTERPRETED",
+          "path": ""
+        }
+      ],
+      "expected_execution_status": "complete",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-embedded-no-timing",
+      "schema_name": "asset.schema.json",
+      "path": "records/embedded-annotation-no-timing.json",
+      "profile": "exchange-1x",
+      "context": "asset-embedded",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [
+        {
+          "code": "TIMING_UNINTERPRETED",
+          "path": "/temporal_annotations/0"
+        }
+      ],
+      "expected_execution_status": "complete",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-negative-size",
+      "schema_name": "asset.schema.json",
+      "path": "records/exchange-negative-size.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [
+        {
+          "code": "INTEGRITY_UNVERIFIED",
+          "path": "/files/0"
+        },
+        {
+          "code": "SIZE_UNUSABLE",
+          "path": "/files/0/size"
+        }
+      ],
+      "expected_execution_status": "blocked",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-checksum-opaque",
+      "schema_name": "asset.schema.json",
+      "path": "records/exchange-checksum-opaque.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [
+        {
+          "code": "CHECKSUM_UNINTERPRETED",
+          "path": "/files/0/checksum"
+        }
+      ],
+      "expected_execution_status": "complete",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-connection-blocked",
+      "schema_name": "storage_location.schema.json",
+      "path": "records/exchange-connection-blocked.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [
+        {
+          "code": "CONNECTION_DATA_UNREVIEWED",
+          "path": "/connection_details"
+        }
+      ],
+      "expected_execution_status": "blocked",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-rights-blocked",
+      "schema_name": "asset.schema.json",
+      "path": "records/exchange-rights-blocked.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [
+        {
+          "code": "RIGHTS_UNSUPPORTED",
+          "path": "/rights_information"
+        }
+      ],
+      "expected_execution_status": "blocked",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-storage-security-blocked",
+      "schema_name": "storage_location.schema.json",
+      "path": "records/exchange-storage-security-blocked.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [
+        {
+          "code": "RIGHTS_UNSUPPORTED",
+          "path": "/security"
+        }
+      ],
+      "expected_execution_status": "blocked",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-completeness-unknown",
+      "schema_name": "asset_batch_import.schema.json",
+      "path": "records/exchange-completeness-unknown.json",
+      "profile": "exchange-1x",
+      "context": "asset-batch",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [
+        {
+          "code": "COMPLETENESS_UNVERIFIED",
+          "path": ""
+        }
+      ],
+      "expected_execution_status": "complete",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-disputed-count",
+      "schema_name": "asset_batch_import.schema.json",
+      "path": "records/exchange-disputed-count.json",
+      "profile": "exchange-1x",
+      "context": "asset-batch",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [
+        {
+          "code": "COMPLETENESS_UNVERIFIED",
+          "path": ""
+        }
+      ],
+      "expected_execution_status": "complete",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "same-role-distinct-intent",
+      "schema_name": "asset.schema.json",
+      "path": "records/same-role-distinct-intent.json",
+      "profile": "legacy-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "one-file-multiple-location-intent",
+      "schema_name": "asset.schema.json",
+      "path": "records/one-file-multiple-location-intent.json",
+      "profile": "legacy-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "metadata-without-ui-control",
+      "schema_name": "metadata_set.schema.json",
+      "path": "records/metadata-without-ui-control.json",
+      "profile": "legacy-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-structural-rejection",
+      "schema_name": "asset.schema.json",
+      "path": "records/exchange-structural-rejection.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": false,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": false,
+          "historical-unchecked": false,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": false,
+          "historical-unchecked": false,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "blocked",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-nonstring-selector",
+      "schema_name": "asset.schema.json",
+      "path": "records/exchange-nonstring-selector.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": false,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": false,
+          "historical-unchecked": false,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": false,
+          "historical-unchecked": false,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [
+        {
+          "code": "VERSION_UNSUPPORTED",
+          "path": "/schema_version"
+        }
+      ],
+      "expected_execution_status": "unsupported",
+      "expected_routing": "unsupported",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-version-and-shape-failure",
+      "schema_name": "asset.schema.json",
+      "path": "records/exchange-version-and-shape-failure.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": false,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": false,
+          "historical-unchecked": false,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": false,
+          "historical-unchecked": false,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [
+        {
+          "code": "VERSION_UNSUPPORTED",
+          "path": "/schema_version"
+        }
+      ],
+      "expected_execution_status": "unsupported",
+      "expected_routing": "unsupported",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-original-version-unsupported",
+      "schema_name": "asset.schema.json",
+      "path": "records/exchange-original-version-unsupported.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-final-label-not-draft",
+      "schema_name": "asset.schema.json",
+      "path": "records/exchange-final-label-not-draft.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [
+        {
+          "code": "VERSION_UNSUPPORTED",
+          "path": "/schema_version"
+        }
+      ],
+      "expected_execution_status": "unsupported",
+      "expected_routing": "unsupported",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-published-1-1-label",
+      "schema_name": "asset.schema.json",
+      "path": "records/exchange-published-1-1-label.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-custom-annotation-selector",
+      "schema_name": "temporal_annotation.schema.json",
+      "path": "records/legacy-v2-label-temporal_annotation.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-opaque-key-names",
+      "schema_name": "asset.schema.json",
+      "path": "records/exchange-opaque-key-names.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-opaque-membership-identity",
+      "schema_name": "asset.schema.json",
+      "path": "records/exchange-opaque-membership-identity.json",
+      "profile": "exchange-1x",
+      "context": "asset-embedded",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [
+        {
+          "code": "MEMBERSHIP_UNINTERPRETED",
+          "path": "/collections/0/assets/0"
+        }
+      ],
+      "expected_execution_status": "complete",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-self-parent",
+      "schema_name": "collection.schema.json",
+      "path": "records/exchange-self-parent.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [
+        {
+          "code": "COLLECTION_CYCLE",
+          "path": "/parent"
+        }
+      ],
+      "expected_execution_status": "blocked",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-embedded-reference-scope",
+      "schema_name": "asset.schema.json",
+      "path": "records/exchange-embedded-reference-scope.json",
+      "profile": "exchange-1x",
+      "context": "asset-embedded",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [
+        {
+          "code": "REFERENCE_UNRESOLVED",
+          "path": "/collections/0/parent"
+        }
+      ],
+      "expected_execution_status": "complete",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-duplicate-collection-graph",
+      "schema_name": "collection_batch_import.schema.json",
+      "path": "records/exchange-duplicate-collection-graph.json",
+      "profile": "exchange-1x",
+      "context": "collection-batch",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [
+        {
+          "code": "COMPLETENESS_UNVERIFIED",
+          "path": ""
+        },
+        {
+          "code": "REFERENCE_UNRESOLVED",
+          "path": "/collections/1/parent"
+        },
+        {
+          "code": "IDENTITY_DUPLICATE",
+          "path": "/collections/2/collection_id"
+        }
+      ],
+      "expected_execution_status": "blocked",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-point-reversed-pair",
+      "schema_name": "temporal_annotation.schema.json",
+      "path": "records/exchange-point-reversed-pair.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [
+        {
+          "code": "RANGE_REVERSED",
+          "path": "/end_seconds"
+        }
+      ],
+      "expected_execution_status": "blocked",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-seconds-with-rate",
+      "schema_name": "temporal_annotation.schema.json",
+      "path": "records/exchange-seconds-with-rate.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-exact-large-frame-comparison",
+      "schema_name": "temporal_annotation.schema.json",
+      "path": "records/exchange-exact-large-frame-comparison.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [
+        {
+          "code": "RANGE_REVERSED",
+          "path": "/end_frame"
+        }
+      ],
+      "expected_execution_status": "blocked",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-collection-permissions",
+      "schema_name": "collection.schema.json",
+      "path": "records/exchange-collection-permissions.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [
+        {
+          "code": "RIGHTS_UNSUPPORTED",
+          "path": "/permissions"
+        }
+      ],
+      "expected_execution_status": "blocked",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-embedded-connection-and-security",
+      "schema_name": "asset.schema.json",
+      "path": "records/exchange-embedded-connection-and-security.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [
+        {
+          "code": "INTEGRITY_UNVERIFIED",
+          "path": "/files/0"
+        },
+        {
+          "code": "CONNECTION_DATA_UNREVIEWED",
+          "path": "/files/0/storage_location/connection_details"
+        },
+        {
+          "code": "RIGHTS_UNSUPPORTED",
+          "path": "/files/0/storage_location/security"
+        }
+      ],
+      "expected_execution_status": "blocked",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-embedded-semicolon-timing",
+      "schema_name": "asset.schema.json",
+      "path": "records/annotation-semicolon-embedded.json",
+      "profile": "exchange-1x",
+      "context": "asset-embedded",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [
+        {
+          "code": "TIMING_UNINTERPRETED",
+          "path": "/temporal_annotations/0"
+        }
+      ],
+      "expected_execution_status": "complete",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-lexical-diagnostic-order",
+      "schema_name": "asset_batch_import.schema.json",
+      "path": "records/exchange-lexical-diagnostic-order.json",
+      "profile": "exchange-1x",
+      "context": "asset-batch",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [
+        {
+          "code": "COMPLETENESS_UNVERIFIED",
+          "path": ""
+        },
+        {
+          "code": "IDENTITY_DUPLICATE",
+          "path": "/assets/1/asset_id"
+        },
+        {
+          "code": "IDENTITY_DUPLICATE",
+          "path": "/assets/10/asset_id"
+        },
+        {
+          "code": "IDENTITY_DUPLICATE",
+          "path": "/assets/11/asset_id"
+        },
+        {
+          "code": "IDENTITY_DUPLICATE",
+          "path": "/assets/2/asset_id"
+        },
+        {
+          "code": "IDENTITY_DUPLICATE",
+          "path": "/assets/3/asset_id"
+        },
+        {
+          "code": "IDENTITY_DUPLICATE",
+          "path": "/assets/4/asset_id"
+        },
+        {
+          "code": "IDENTITY_DUPLICATE",
+          "path": "/assets/5/asset_id"
+        },
+        {
+          "code": "IDENTITY_DUPLICATE",
+          "path": "/assets/6/asset_id"
+        },
+        {
+          "code": "IDENTITY_DUPLICATE",
+          "path": "/assets/7/asset_id"
+        },
+        {
+          "code": "IDENTITY_DUPLICATE",
+          "path": "/assets/8/asset_id"
+        },
+        {
+          "code": "IDENTITY_DUPLICATE",
+          "path": "/assets/9/asset_id"
+        }
+      ],
+      "expected_execution_status": "blocked",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-date-space",
+      "schema_name": "asset.schema.json",
+      "path": "records/exchange-date-space.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": false,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": false,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": false,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "blocked",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-date-compact-offset",
+      "schema_name": "asset.schema.json",
+      "path": "records/exchange-date-compact-offset.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": false,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": false,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": false,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "blocked",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-date-leap-second",
+      "schema_name": "asset.schema.json",
+      "path": "records/exchange-date-leap-second.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": false,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": false,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": false,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "blocked",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-date-fraction-and-offset",
+      "schema_name": "asset.schema.json",
+      "path": "records/exchange-date-fraction-and-offset.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-date-lowercase",
+      "schema_name": "asset.schema.json",
+      "path": "records/exchange-date-lowercase.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-date-invalid-calendar",
+      "schema_name": "asset.schema.json",
+      "path": "records/exchange-date-invalid-calendar.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": false,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": false,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": false,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "blocked",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-input-duplicate-members",
+      "schema_name": "asset.schema.json",
+      "path": "records/exchange-input-duplicate-members.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": null,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": null,
+          "historical-unchecked": null,
+          "adapter_status": "input-invalid",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": null,
+          "historical-unchecked": null,
+          "adapter_status": "input-invalid",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [
+        {
+          "code": "INPUT_INVALID",
+          "path": ""
+        }
+      ],
+      "expected_execution_status": "input-invalid",
+      "expected_routing": "not-applied",
+      "input_kind": "raw-json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-input-nan-number",
+      "schema_name": "asset.schema.json",
+      "path": "records/exchange-input-nan-number.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": null,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": null,
+          "historical-unchecked": null,
+          "adapter_status": "input-invalid",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": null,
+          "historical-unchecked": null,
+          "adapter_status": "input-invalid",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [
+        {
+          "code": "INPUT_INVALID",
+          "path": ""
+        }
+      ],
+      "expected_execution_status": "input-invalid",
+      "expected_routing": "not-applied",
+      "input_kind": "raw-json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-input-unpaired-surrogate",
+      "schema_name": "asset.schema.json",
+      "path": "records/exchange-input-unpaired-surrogate.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": null,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": null,
+          "historical-unchecked": null,
+          "adapter_status": "input-invalid",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": null,
+          "historical-unchecked": null,
+          "adapter_status": "input-invalid",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [
+        {
+          "code": "INPUT_INVALID",
+          "path": ""
+        }
+      ],
+      "expected_execution_status": "input-invalid",
+      "expected_routing": "not-applied",
+      "input_kind": "raw-json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "numeric-equality-source",
+      "schema_name": "temporal_annotation.schema.json",
+      "path": "records/numeric-equality-source.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "numeric-equality-equivalent-output",
+      "schema_name": "temporal_annotation.schema.json",
+      "path": "records/numeric-equality-equivalent-output.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "boolean-equality-source",
+      "schema_name": "asset.schema.json",
+      "path": "records/boolean-equality-source.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "boolean-equality-changed-output",
+      "schema_name": "asset.schema.json",
+      "path": "records/boolean-equality-changed-output.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "rights-retention-dropped-output",
+      "schema_name": "asset.schema.json",
+      "path": "records/minimal-asset.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-broadcast-frame-rate",
+      "schema_name": "temporal_annotation.schema.json",
+      "path": "records/exchange-broadcast-frame-rate.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-broadcast-frame-rate-23.976",
+      "schema_name": "temporal_annotation.schema.json",
+      "path": "records/exchange-broadcast-frame-rate-23.976.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-broadcast-frame-rate-59.94",
+      "schema_name": "temporal_annotation.schema.json",
+      "path": "records/exchange-broadcast-frame-rate-59.94.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-integer-decimal-frames",
+      "schema_name": "temporal_annotation.schema.json",
+      "path": "records/exchange-integer-decimal-frames.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-exact-decimal-seconds",
+      "schema_name": "temporal_annotation.schema.json",
+      "path": "records/exchange-exact-decimal-seconds.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-date-trailing-newline",
+      "schema_name": "asset.schema.json",
+      "path": "records/exchange-date-trailing-newline.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": false,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": false,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": false,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "blocked",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-published-batch-version-example",
+      "schema_name": "asset_batch_import.schema.json",
+      "path": "records/exchange-published-batch-version-example.json",
+      "profile": "exchange-1x",
+      "context": "asset-batch",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [
+        {
+          "code": "COMPLETENESS_UNVERIFIED",
+          "path": ""
+        }
+      ],
+      "expected_execution_status": "complete",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-mixed-documented-version-labels",
+      "schema_name": "asset_batch_import.schema.json",
+      "path": "records/exchange-mixed-documented-version-labels.json",
+      "profile": "exchange-1x",
+      "context": "asset-batch",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [
+        {
+          "code": "COMPLETENESS_UNVERIFIED",
+          "path": ""
+        }
+      ],
+      "expected_execution_status": "complete",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "preservation-array-source",
+      "schema_name": "asset.schema.json",
+      "path": "records/preservation-array-source.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "preservation-array-output",
+      "schema_name": "asset.schema.json",
+      "path": "records/preservation-array-output.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "preservation-pointer-source",
+      "schema_name": "asset.schema.json",
+      "path": "records/preservation-pointer-source.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "preservation-pointer-output",
+      "schema_name": "asset.schema.json",
+      "path": "records/preservation-pointer-output.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": true,
+          "historical-unchecked": true,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-timecode-pattern-newline",
+      "schema_name": "temporal_annotation.schema.json",
+      "path": "records/exchange-timecode-pattern-newline.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": false,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": false,
+          "historical-unchecked": false,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": false,
+          "historical-unchecked": false,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "blocked",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-timecode-pattern-unicode-digits",
+      "schema_name": "temporal_annotation.schema.json",
+      "path": "records/exchange-timecode-pattern-unicode-digits.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": false,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": false,
+          "historical-unchecked": false,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": false,
+          "historical-unchecked": false,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "blocked",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "legacy-report-pattern-newline",
+      "schema_name": "migration-report-output.schema.json",
+      "path": "records/legacy-report-pattern-newline.json",
+      "profile": "legacy-1x",
+      "context": "standalone",
+      "expected_valid": false,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": false,
+          "historical-unchecked": false,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": false,
+          "historical-unchecked": false,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "legacy-report-pattern-unicode-digits",
+      "schema_name": "migration-report-output.schema.json",
+      "path": "records/legacy-report-pattern-unicode-digits.json",
+      "profile": "legacy-1x",
+      "context": "standalone",
+      "expected_valid": false,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": false,
+          "historical-unchecked": false,
+          "adapter_status": "complete",
+          "limitation": null
+        },
+        "go-jsonschema": {
+          "required": false,
+          "historical-unchecked": false,
+          "adapter_status": "complete",
+          "limitation": null
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "not-applied",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": []
+    },
+    {
+      "id": "exchange-numeric-resource-large-integer",
+      "schema_name": "asset.schema.json",
+      "path": "records/exchange-numeric-resource-large-integer.json",
+      "profile": "exchange-1x",
+      "context": "standalone",
+      "expected_valid": true,
+      "validator_expectations": {
+        "python-jsonschema": {
+          "required": null,
+          "historical-unchecked": null,
+          "adapter_status": "setup-failed",
+          "limitation": "Input exceeds the proposed 1024-byte numeric token resource threshold; no structural evaluation runs."
+        },
+        "go-jsonschema": {
+          "required": null,
+          "historical-unchecked": null,
+          "adapter_status": "setup-failed",
+          "limitation": "Input exceeds the proposed 1024-byte numeric token resource threshold; no structural evaluation runs."
+        }
+      },
+      "expected_diagnostics": [],
+      "expected_execution_status": "complete",
+      "expected_routing": "selected",
+      "input_kind": "json",
+      "reference_context": {
+        "asset_ids": [],
+        "collection_ids": []
+      },
+      "provenance": {
+        "kind": "synthetic",
+        "source": "Newly authored OASIS conformance examples",
+        "reuse_terms": "Apache License 2.0"
+      },
+      "exclusions": [
+        {
+          "validator": "python-jsonschema",
+          "status": "proposed",
+          "reason": "Input exceeds the proposed 1024-byte numeric token resource threshold; no structural evaluation runs."
+        },
+        {
+          "validator": "go-jsonschema",
+          "status": "proposed",
+          "reason": "Input exceeds the proposed 1024-byte numeric token resource threshold; no structural evaluation runs."
+        }
+      ]
+    }
+  ],
+  "preservation_comparisons": [
+    {
+      "id": "array-length-and-shared-prefix",
+      "source_case_id": "preservation-array-source",
+      "output_case_id": "preservation-array-output",
+      "expected_status": "changed",
+      "paths": [
+        "/extensions/x_sequence",
+        "/extensions/x_sequence/0"
+      ]
+    },
+    {
+      "id": "escaped-pointer-order",
+      "source_case_id": "preservation-pointer-source",
+      "output_case_id": "preservation-pointer-output",
+      "expected_status": "changed",
+      "paths": [
+        "/extensions/a0",
+        "/extensions/a~1b"
+      ]
+    },
+    {
+      "id": "numeric-value-equality",
+      "source_case_id": "numeric-equality-source",
+      "output_case_id": "numeric-equality-equivalent-output",
+      "expected_status": "preserved",
+      "paths": []
+    },
+    {
+      "id": "boolean-number-distinction",
+      "source_case_id": "boolean-equality-source",
+      "output_case_id": "boolean-equality-changed-output",
+      "expected_status": "changed",
+      "paths": [
+        "/extensions/x_sample"
+      ]
+    },
+    {
+      "id": "blocked-rights-opaque-retention",
+      "source_case_id": "exchange-rights-blocked",
+      "output_case_id": "exchange-rights-blocked",
+      "expected_status": "preserved",
+      "paths": []
+    },
+    {
+      "id": "blocked-rights-dropped-detection",
+      "source_case_id": "exchange-rights-blocked",
+      "output_case_id": "rights-retention-dropped-output",
+      "expected_status": "changed",
+      "paths": [
+        "/rights_information"
+      ]
+    }
+  ]
+}

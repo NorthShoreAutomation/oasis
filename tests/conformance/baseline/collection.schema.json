@@ -1,0 +1,119 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Collection",
+  "type": "object",
+  "description": "A generic grouping entity for organizing assets in DAM/MAM systems.",
+  "required": ["collection_id", "label"],
+  "properties": {
+    "collection_id": {
+      "type": "string",
+      "description": "Unique identifier for the collection."
+    },
+    "label": {
+      "type": "string",
+      "description": "Human-readable label for the collection."
+    },
+    "parent": {
+      "type": ["string", "null"],
+      "description": "Optional parent collection ID for hierarchy."
+    },
+    "parent_storage": {
+      "$ref": "#/definitions/StorageLocation",
+      "description": "Optional storage location object for the collection's parent storage context."
+    },
+    "description": {
+      "type": "string",
+      "description": "Collection description or summary."
+    },
+    "created_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Creation timestamp."
+    },
+    "modified_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last modified timestamp."
+    },
+    "permissions": {
+      "type": "object",
+      "description": "Optional permissions structure (implementation-defined).",
+      "additionalProperties": true
+    },
+    "metadata_sets": {
+      "type": "array",
+      "description": "Embedded metadata set objects for this collection.",
+      "items": {
+        "$ref": "#/definitions/MetadataSet"
+      }
+    },
+    "assets": {
+      "type": "array",
+      "description": "List of asset IDs directly assigned to this collection.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "schema_version": {
+      "type": "string",
+      "description": "Version of the collection schema used to create this record. Follows semantic versioning (e.g., '1.0.0'). Optional but recommended for evolution and compatibility checks."
+    },
+    "extensions": {
+      "type": "object",
+      "description": "Extension point for custom fields or plugin data. Keys SHOULD be prefixed with 'x_' or 'custom_' to avoid collision with future standard fields.",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true,
+  "definitions": {
+    "StorageLocation": {
+      "type": "object",
+      "description": "A fully embedded storage location object.",
+      "required": ["storage_id", "system", "path"],
+      "properties": {
+        "storage_id": { "type": "string" },
+        "system": { "type": "string" },
+        "path": { "type": "string" },
+        "connection_details": { "type": "object", "additionalProperties": true },
+        "security": { "type": "object", "additionalProperties": true },
+        "description": { "type": "string" },
+        "created_date": { "type": "string", "format": "date-time" },
+        "modified_date": { "type": "string", "format": "date-time" }
+      },
+      "additionalProperties": false
+    },
+    "MetadataSet": {
+      "type": "object",
+      "description": "A fully embedded metadata set object.",
+      "required": ["set_id", "fields"],
+      "properties": {
+        "set_id": { "type": "string" },
+        "label": { "type": "string" },
+        "fields": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "type"],
+            "properties": {
+              "name": { "type": "string" },
+              "label": { "type": "string" },
+              "type": { "type": "string", "enum": ["string", "number", "integer", "boolean", "date", "enum"] },
+              "required": { "type": "boolean" },
+              "enum_values": { "type": "array", "items": { "type": "string" } },
+              "multi_select": { "type": "boolean" },
+              "minLength": { "type": "integer" },
+              "maxLength": { "type": "integer" },
+              "minimum": { "type": "number" },
+              "maximum": { "type": "number" },
+              "pattern": { "type": "string" },
+              "description": { "type": "string" },
+              "value": {}
+            },
+            "additionalProperties": true
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

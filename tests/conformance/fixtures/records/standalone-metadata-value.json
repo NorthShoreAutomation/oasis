@@ -1,0 +1,12 @@
+{
+  "fields": [
+    {
+      "name": "review_state",
+      "type": "enum",
+      "enum_values": [
+        "ready"
+      ],
+      "value": "unknown"
+    }
+  ]
+}

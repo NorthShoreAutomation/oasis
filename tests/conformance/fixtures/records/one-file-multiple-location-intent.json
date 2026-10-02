@@ -1,0 +1,22 @@
+{
+  "asset_id": "asset-a",
+  "title": "Synthetic interview",
+  "type": "video",
+  "files": [
+    {
+      "type": "video",
+      "role": "essence",
+      "uri": "/synthetic/media/interview.mov",
+      "storage_location": {
+        "storage_id": "storage-a",
+        "system": "filesystem",
+        "path": "/synthetic/media"
+      },
+      "technical_metadata": {
+        "x_other_copy_locations": [
+          "/synthetic/offline-copy/interview.mov"
+        ]
+      }
+    }
+  ]
+}
