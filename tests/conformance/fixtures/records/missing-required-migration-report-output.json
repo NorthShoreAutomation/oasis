@@ -1,0 +1,16 @@
+{
+  "report_version": "1.0.0",
+  "generated_at": "2026-09-29T12:00:00Z",
+  "database_info": {
+    "database_name": "synthetic-catalog",
+    "total_assets": 0,
+    "query_timestamp": "2026-09-29T12:00:00Z"
+  },
+  "asset_summary": {
+    "total_count": 0,
+    "total_size_bytes": 0,
+    "total_size_display": "0 B",
+    "assets_with_files": 0,
+    "assets_missing_files": 0
+  }
+}

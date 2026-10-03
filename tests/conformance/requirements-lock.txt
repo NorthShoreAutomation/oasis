@@ -1,0 +1,10 @@
+# Generated from pip freeze on 2026-09-30 with Python 3.12.3.
+# Direct pins are in requirements.txt. Do not edit by hand.
+attrs==26.1.0
+jsonschema==4.26.0
+jsonschema-specifications==2025.9.1
+referencing==0.37.0
+rfc3339-validator==0.1.4
+rpds-py==2026.6.3
+six==1.17.0
+typing-extensions==4.16.0

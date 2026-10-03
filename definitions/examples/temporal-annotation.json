@@ -1,0 +1,14 @@
+{
+  "source_id": "marker-0042",
+  "name": "Interview begins",
+  "description": "Synthetic example annotation for documentation.",
+  "category": "Segment",
+  "color": "#3366CC",
+  "start_frame": 1440,
+  "end_frame": 4320,
+  "frame_rate": 23.976,
+  "is_point_marker": false,
+  "metadata": {
+    "x_example_reviewer_initials": "QA"
+  }
+}

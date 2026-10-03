@@ -1,0 +1,19 @@
+{
+  "collections": [
+    {
+      "collection_id": "a",
+      "label": "A",
+      "parent": "b"
+    },
+    {
+      "collection_id": "b",
+      "label": "B",
+      "parent": "a"
+    },
+    {
+      "collection_id": "a",
+      "label": "A duplicate",
+      "parent": null
+    }
+  ]
+}

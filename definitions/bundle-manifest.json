@@ -1,0 +1,74 @@
+{
+  "manifest_version": "1.0.0",
+  "bundle_revision": "1.2.0-draft.1",
+  "schemas": [
+    {
+      "name": "asset.schema.json",
+      "path": "asset.schema.json",
+      "sha256": "0f36ff3fe4120ea7830acc18261ff75e3cf947ab91c58b16f4140569e38040d8",
+      "id": null,
+      "base_uri": "https://schemas.oasis.invalid/bundles/1.2.0-draft.1/asset.schema.json",
+      "aliases": []
+    },
+    {
+      "name": "asset_batch_import.schema.json",
+      "path": "asset_batch_import.schema.json",
+      "sha256": "a4f39ace03e6e5282987711eae83182fdbe9c76f9e055ed0b03dc6e1d5920ac6",
+      "id": null,
+      "base_uri": "https://schemas.oasis.invalid/bundles/1.2.0-draft.1/asset_batch_import.schema.json",
+      "aliases": []
+    },
+    {
+      "name": "collection.schema.json",
+      "path": "collection.schema.json",
+      "sha256": "693e12e89c08a67d0b5a6959ada7988893d977f660729f3fd855707cda37c656",
+      "id": null,
+      "base_uri": "https://schemas.oasis.invalid/bundles/1.2.0-draft.1/collection.schema.json",
+      "aliases": []
+    },
+    {
+      "name": "collection_batch_import.schema.json",
+      "path": "collection_batch_import.schema.json",
+      "sha256": "70ef166a031910b6fc30c3c602cc6f962779cf72dd9f6896b2364263a84731bd",
+      "id": null,
+      "base_uri": "https://schemas.oasis.invalid/bundles/1.2.0-draft.1/collection_batch_import.schema.json",
+      "aliases": []
+    },
+    {
+      "name": "metadata_set.schema.json",
+      "path": "metadata_set.schema.json",
+      "sha256": "2fe74fb9ebbb3a6687795c42ccd2a35051caa90f2377abfba62eaec266e94154",
+      "id": null,
+      "base_uri": "https://schemas.oasis.invalid/bundles/1.2.0-draft.1/metadata_set.schema.json",
+      "aliases": []
+    },
+    {
+      "name": "migration-report-output.schema.json",
+      "path": "migration-report-output.schema.json",
+      "sha256": "8a8578824351bb2c5ebff46177407ad83a8da0f306d3b572ae9e71a95e6d22c0",
+      "id": "https://www.northshoreautomation.com/schemas/migration-report-output-v1.0.0.json",
+      "base_uri": "https://www.northshoreautomation.com/schemas/migration-report-output-v1.0.0.json",
+      "aliases": [
+        "https://schemas.oasis.invalid/bundles/1.2.0-draft.1/migration-report-output.schema.json"
+      ]
+    },
+    {
+      "name": "storage_location.schema.json",
+      "path": "storage_location.schema.json",
+      "sha256": "1c1e180151326bd947061208bdcba4cce82b460d9ebf0b03e27399ff87eda10e",
+      "id": null,
+      "base_uri": "https://schemas.oasis.invalid/bundles/1.2.0-draft.1/storage_location.schema.json",
+      "aliases": []
+    },
+    {
+      "name": "temporal_annotation.schema.json",
+      "path": "temporal_annotation.schema.json",
+      "sha256": "69b9ce46aed52f45ab5d6e81d655df7066550288a3be1ec948b885db5dd1b0cb",
+      "id": "https://www.northshoreautomation.com/schemas/temporal_annotation.schema.json",
+      "base_uri": "https://www.northshoreautomation.com/schemas/temporal_annotation.schema.json",
+      "aliases": [
+        "https://schemas.oasis.invalid/bundles/1.2.0-draft.1/temporal_annotation.schema.json"
+      ]
+    }
+  ]
+}

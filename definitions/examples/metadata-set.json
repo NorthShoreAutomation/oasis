@@ -1,0 +1,12 @@
+{
+  "schema_version": "1.2.0-draft.1",
+  "set_id": "set-descriptive",
+  "label": "Descriptive",
+  "fields": [
+    { "name": "location", "label": "Location", "type": "string", "maxLength": 200, "description": "Where the material was recorded." },
+    { "name": "rating", "label": "Rating", "type": "integer", "minimum": 1, "maximum": 5 },
+    { "name": "subjects", "label": "Subjects", "type": "enum", "enum_values": ["people", "places", "wildlife", "events"], "multi_select": true },
+    { "name": "reviewed", "label": "Reviewed", "type": "boolean", "required": false },
+    { "name": "air_date", "label": "Air date", "type": "date" }
+  ]
+}

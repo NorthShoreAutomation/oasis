@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Collection",
   "type": "object",
-  "description": "A generic grouping entity for organizing assets in DAM/MAM systems.",
+  "description": "A generic grouping entity for organizing assets in DAM/MAM systems. A collection is a logical grouping and need not match a storage folder.",
   "required": ["collection_id", "label"],
   "properties": {
     "collection_id": {
@@ -19,7 +19,7 @@
     },
     "parent_storage": {
       "$ref": "#/definitions/StorageLocation",
-      "description": "Optional storage location object for the collection's parent storage context."
+      "description": "Optional storage location object associated with the collection. It is separate from the logical parent hierarchy and from asset membership."
     },
     "description": {
       "type": "string",
@@ -68,7 +68,7 @@
   "definitions": {
     "StorageLocation": {
       "type": "object",
-      "description": "A fully embedded storage location object.",
+      "description": "An embedded storage location object. It has the same meaning as the standalone storage location schema, but its property set is closed: it accepts no extra properties and has no schema_version or extensions. Its connection_details object is opaque and does not authorize a connection.",
       "required": ["storage_id", "system", "path"],
       "properties": {
         "storage_id": { "type": "string" },
@@ -84,7 +84,7 @@
     },
     "MetadataSet": {
       "type": "object",
-      "description": "A fully embedded metadata set object.",
+      "description": "An embedded metadata set object. Unlike the standalone metadata set schema, it requires set_id and declares a field value with no defined representation.",
       "required": ["set_id", "fields"],
       "properties": {
         "set_id": { "type": "string" },

@@ -1,0 +1,20 @@
+{
+  "asset_id": "asset-a",
+  "title": "Synthetic interview",
+  "type": "video",
+  "metadata_sets": [
+    {
+      "set_id": "set-a",
+      "fields": [
+        {
+          "name": "review_state",
+          "type": "enum",
+          "enum_values": [
+            "ready"
+          ],
+          "value": "unknown"
+        }
+      ]
+    }
+  ]
+}
