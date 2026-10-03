@@ -1,0 +1,10 @@
+{
+  "assets": [
+    {
+      "asset_id": "asset-a",
+      "title": "Synthetic interview",
+      "type": "video"
+    }
+  ],
+  "record_count": 1
+}

@@ -1,0 +1,9 @@
+{
+  "collection_id": "collection-a",
+  "label": "Synthetic collection",
+  "permissions": {
+    "synthetic_readers": [
+      "example-role"
+    ]
+  }
+}

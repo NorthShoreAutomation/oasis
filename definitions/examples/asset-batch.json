@@ -1,0 +1,52 @@
+{
+  "schema_version": "1.2.0-draft.1",
+  "assets": [
+    {
+      "schema_version": "1.2.0-draft.1",
+      "asset_id": "asset-0101",
+      "title": "Market Interview, Camera A",
+      "type": "video",
+      "files": [
+        {
+          "type": "video",
+          "role": "essence",
+          "uri": "https://media.example.invalid/library/asset-0101/interview-cam-a.mxf",
+          "size": 942110720,
+          "checksum": "0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9",
+          "storage_location": {
+            "storage_id": "storage-primary",
+            "system": "object-storage",
+            "path": "https://media.example.invalid/library/"
+          }
+        }
+      ],
+      "collections": [
+        {
+          "collection_id": "collection-interviews",
+          "label": "Interviews",
+          "assets": ["asset-0101", "asset-0102"]
+        }
+      ]
+    },
+    {
+      "schema_version": "1.2.0-draft.1",
+      "asset_id": "asset-0102",
+      "title": "Market Interview, Camera B",
+      "type": "video",
+      "files": [
+        {
+          "type": "video",
+          "role": "essence",
+          "uri": "https://media.example.invalid/library/asset-0102/interview-cam-b.mxf",
+          "size": 938475520,
+          "checksum": "f9e8d7c6b5a4938271605f4e3d2c1b0a9f8e7d6c5b4a3928170f6e5d4c3b2a19",
+          "storage_location": {
+            "storage_id": "storage-primary",
+            "system": "object-storage",
+            "path": "https://media.example.invalid/library/"
+          }
+        }
+      ]
+    }
+  ]
+}

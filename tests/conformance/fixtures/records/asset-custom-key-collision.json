@@ -1,0 +1,8 @@
+{
+  "asset_id": "asset-a",
+  "title": "Synthetic interview",
+  "type": "video",
+  "source_system": {
+    "custom_existing_value": true
+  }
+}

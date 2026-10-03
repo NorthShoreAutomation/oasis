@@ -1,0 +1,17 @@
+{
+  "assets": [
+    {
+      "asset_id": "asset-a",
+      "title": "Synthetic interview",
+      "type": "video",
+      "temporal_annotations": [
+        {
+          "source_id": "annotation-a",
+          "start_seconds": 2,
+          "is_point_marker": true,
+          "annotation_type": "Transcription"
+        }
+      ]
+    }
+  ]
+}

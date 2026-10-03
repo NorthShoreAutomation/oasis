@@ -1,0 +1,272 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://schemas.oasis.invalid/conformance/result-1.0.0.schema.json",
+  "description": "OASIS conformance result protocol 1.0.0. Patterns avoid end anchors so that ECMA-262 and Python regular expressions agree.",
+  "title": "OASIS conformance result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "protocol_version",
+    "implementation",
+    "fixture_id",
+    "schema_name",
+    "schema_revision",
+    "profile",
+    "context",
+    "direction",
+    "format_mode",
+    "routing",
+    "structural",
+    "diagnostics",
+    "execution_status",
+    "preservation",
+    "output",
+    "reproduction"
+  ],
+  "properties": {
+    "protocol_version": {
+      "const": "1.0.0"
+    },
+    "implementation": {
+      "title": "Implementation",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "version",
+        "source_revision",
+        "authors",
+        "dependencies",
+        "independence_claim"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_revision": {
+          "type": "string",
+          "minLength": 1
+        },
+        "authors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "dependencies": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "independence_claim": {
+          "type": "boolean"
+        }
+      }
+    },
+    "fixture_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "schema_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "schema_revision": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9]",
+      "not": {
+        "pattern": "[^A-Za-z0-9._-]"
+      }
+    },
+    "profile": {
+      "type": "string",
+      "minLength": 1
+    },
+    "context": {
+      "type": "string",
+      "minLength": 1
+    },
+    "direction": {
+      "enum": [
+        "validate",
+        "produce",
+        "consume",
+        "round-trip"
+      ]
+    },
+    "format_mode": {
+      "enum": [
+        "required",
+        "historical-unchecked"
+      ]
+    },
+    "routing": {
+      "enum": [
+        "selected",
+        "unsupported",
+        "not-applied"
+      ]
+    },
+    "structural": {
+      "enum": [
+        "valid",
+        "invalid",
+        "not-run"
+      ]
+    },
+    "diagnostics": {
+      "type": "array",
+      "items": {
+        "title": "Diagnostic",
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "path",
+          "severity",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "enum": [
+              "INPUT_INVALID",
+              "VERSION_UNSUPPORTED",
+              "PROFILE_UNSUPPORTED",
+              "IDENTITY_UNUSABLE",
+              "IDENTITY_DUPLICATE",
+              "COLLECTION_CYCLE",
+              "SIZE_UNUSABLE",
+              "RATE_UNUSABLE",
+              "RANGE_REVERSED",
+              "CONNECTION_DATA_UNREVIEWED",
+              "RIGHTS_UNSUPPORTED",
+              "REFERENCE_UNRESOLVED",
+              "MEMBERSHIP_UNINTERPRETED",
+              "VALUE_SEMANTICS_UNSPECIFIED",
+              "TIMING_UNINTERPRETED",
+              "INTEGRITY_UNVERIFIED",
+              "CHECKSUM_UNINTERPRETED",
+              "COMPLETENESS_UNVERIFIED"
+            ]
+          },
+          "path": {
+            "type": "string",
+            "anyOf": [
+              {
+                "const": ""
+              },
+              {
+                "pattern": "^/"
+              }
+            ],
+            "not": {
+              "pattern": "~([^01]|$)"
+            }
+          },
+          "severity": {
+            "enum": [
+              "error",
+              "warning"
+            ]
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "execution_status": {
+      "enum": [
+        "complete",
+        "blocked",
+        "unsupported",
+        "setup-failed",
+        "input-invalid"
+      ]
+    },
+    "preservation": {
+      "title": "Preservation",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "paths"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "not-tested",
+            "preserved",
+            "unsupported",
+            "changed"
+          ]
+        },
+        "paths": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "anyOf": [
+              {
+                "const": ""
+              },
+              {
+                "pattern": "^/"
+              }
+            ],
+            "not": {
+              "pattern": "~([^01]|$)"
+            }
+          }
+        }
+      }
+    },
+    "output": {},
+    "reproduction": {
+      "title": "Reproduction",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "command",
+        "input_sha256",
+        "artifact_sha256",
+        "limitations"
+      ],
+      "properties": {
+        "command": {
+          "type": "string",
+          "minLength": 1
+        },
+        "input_sha256": {
+          "type": "string",
+          "minLength": 64,
+          "maxLength": 64,
+          "pattern": "^[0-9a-f]",
+          "not": {
+            "pattern": "[^0-9a-f]"
+          }
+        },
+        "artifact_sha256": {
+          "type": "string",
+          "minLength": 64,
+          "maxLength": 64,
+          "pattern": "^[0-9a-f]",
+          "not": {
+            "pattern": "[^0-9a-f]"
+          }
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

@@ -64,7 +64,7 @@
         "required": ["type", "role", "uri", "storage_location"],
         "properties": {
           "type": { "type": "string", "description": "File type (e.g., video, audio, image, document)." },
-          "role": { "type": "string", "description": "Role this file plays in the asset. Conventional values: 'essence' (primary media content), 'proxy' (lower-resolution derivative), 'thumbnail', 'sidecar' (companion non-media file, e.g. camera metadata). Files in one asset sharing the same role form a single logical media group." },
+          "role": { "type": "string", "description": "Role this file plays in the asset (free-form). Conventional values: 'essence' (primary media content), 'proxy' (lower-resolution derivative), 'thumbnail', 'sidecar' (companion non-media file, e.g. camera metadata). Legacy 1.1 grouping: files in one asset sharing the same role form a single logical media group. This legacy rule cannot represent every independent rendition or track." },
           "uri": { "type": "string", "description": "URI or path to the file." },
           "size": { "type": "integer", "description": "File size in bytes." },
           "checksum": { "type": "string", "description": "Checksum or hash of the file." },
@@ -78,7 +78,7 @@
           },
           "storage_location": {
             "$ref": "#/definitions/StorageLocation",
-            "description": "Embedded storage location object."
+            "description": "Embedded storage location object for this file. It records one location; it need not list every copy."
           }
         },
         "additionalProperties": false
@@ -110,7 +110,7 @@
   "definitions": {
     "StorageLocation": {
       "type": "object",
-      "description": "A fully embedded storage location object.",
+      "description": "An embedded storage location object. It has the same meaning as the standalone storage location schema, but its property set is closed: it accepts no extra properties and has no schema_version or extensions. Its connection_details object is opaque and does not authorize a connection.",
       "required": ["storage_id", "system", "path"],
       "properties": {
         "storage_id": { "type": "string" },
@@ -126,7 +126,7 @@
     },
     "MetadataSet": {
       "type": "object",
-      "description": "A fully embedded metadata set object.",
+      "description": "An embedded metadata set object. Unlike the standalone metadata set schema, it requires set_id and declares a field value with no defined representation.",
       "required": ["set_id", "fields"],
       "properties": {
         "set_id": { "type": "string" },
@@ -159,7 +159,7 @@
     },
     "Collection": {
       "type": "object",
-      "description": "A fully embedded collection object.",
+      "description": "An embedded collection object. Unlike the standalone collection schema, its assets array accepts items of any JSON type. A collection is a logical grouping and need not match a storage folder.",
       "required": ["collection_id", "label"],
       "properties": {
         "collection_id": { "type": "string" },
@@ -185,7 +185,7 @@
       "properties": {
         "source_id": {
           "type": "string",
-          "description": "Unique identifier from source system (e.g., CatDV marker ID)",
+          "description": "Identifier of this annotation as assigned by the system that produced the record. This schema does not define its namespace or require any particular source system.",
           "minLength": 1
         },
         "name": {
@@ -198,11 +198,11 @@
         },
         "category": {
           "type": "string",
-          "description": "Source system category (e.g., 'Shot Sheet', 'Marker')"
+          "description": "Category label as recorded by the source, kept as free-form text (e.g., 'Shot Sheet', 'Marker'). It is raw source data, not a standardized classification."
         },
         "annotation_type": {
           "type": "string",
-          "description": "Target system annotation type",
+          "description": "Legacy 1.x classification token: 'Generic', 'Comments', 'QualityControlMarker', or 'Transcription'. The tokens define no destination behavior. The default 'Generic' is a schema annotation for legacy readers, not proof of equivalent meaning; validators do not insert it.",
           "enum": ["Generic", "Comments", "QualityControlMarker", "Transcription"],
           "default": "Generic"
         },

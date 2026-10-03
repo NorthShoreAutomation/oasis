@@ -1,0 +1,10 @@
+{
+  "asset_id": "asset-a",
+  "title": "Synthetic interview",
+  "type": "video",
+  "extensions": {
+    "x_sequence": [
+      1
+    ]
+  }
+}

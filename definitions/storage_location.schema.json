@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "StorageLocation",
   "type": "object",
-  "description": "A generic, extensible storage location entity for tracking where files are stored and how they are accessed.",
+  "description": "A generic, extensible storage location entity that records where files are stored. It does not grant access, and validation does not connect to storage.",
   "required": ["storage_id", "system", "path"],
   "properties": {
     "storage_id": {
@@ -11,15 +11,15 @@
     },
     "system": {
       "type": "string",
-      "description": "Type of storage system (e.g., filesystem, s3, azure, gcs, nfs, etc.)."
+      "description": "Type of storage system as a free-form token. Common values include filesystem, s3, azure, gcs, and nfs; these are examples, not a closed list."
     },
     "path": {
       "type": "string",
-      "description": "Path, URI, or bucket/container reference for the storage location."
+      "description": "Locator string for the storage location: a path, URI, or bucket/container reference. This schema does not define one locator syntax, so the string is not always a URI."
     },
     "connection_details": {
       "type": "object",
-      "description": "Implementation-defined connection details (e.g., credentials, endpoints).",
+      "description": "Opaque, implementation-defined connection data. It must not be used as authority to connect. It should not hold secrets; consumers must protect any legacy secrets it contains.",
       "additionalProperties": true
     },
     "security": {

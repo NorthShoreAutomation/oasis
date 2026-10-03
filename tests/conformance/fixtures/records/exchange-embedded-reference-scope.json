@@ -1,0 +1,15 @@
+{
+  "asset_id": "asset-a",
+  "title": "Synthetic interview",
+  "type": "video",
+  "collections": [
+    {
+      "collection_id": "collection-a",
+      "label": "Synthetic collection",
+      "parent": "collection-missing",
+      "assets": [
+        "asset-a"
+      ]
+    }
+  ]
+}

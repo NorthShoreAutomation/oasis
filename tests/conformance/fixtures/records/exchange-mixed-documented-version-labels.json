@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0.0",
+  "assets": [
+    {
+      "asset_id": "asset-a",
+      "title": "Synthetic interview",
+      "type": "video",
+      "schema_version": "1.0.0"
+    },
+    {
+      "asset_id": "asset-b",
+      "title": "Synthetic interview",
+      "type": "video",
+      "schema_version": "1.1.1"
+    },
+    {
+      "asset_id": "asset-c",
+      "title": "Synthetic interview",
+      "type": "video",
+      "schema_version": "1.2.0-draft.1"
+    }
+  ]
+}
