@@ -1,0 +1,13 @@
+{
+  "asset_id": "asset-a",
+  "title": "Synthetic interview",
+  "type": "video",
+  "extensions": {
+    "asset_id": "",
+    "schema_version": 2,
+    "rights_information": "Synthetic opaque value",
+    "connection_details": {
+      "endpoint": "https://example.invalid"
+    }
+  }
+}

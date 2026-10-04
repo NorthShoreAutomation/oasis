@@ -1,0 +1,14 @@
+{
+  "collections": [
+    {
+      "collection_id": "collection-a",
+      "label": "Synthetic collection",
+      "parent": "collection-b"
+    },
+    {
+      "collection_id": "collection-b",
+      "label": "Synthetic second collection",
+      "parent": "collection-a"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.2.0-draft.1",
+  "collections": [
+    {
+      "schema_version": "1.2.0-draft.1",
+      "collection_id": "collection-series",
+      "label": "Documentary Series",
+      "parent": null
+    },
+    {
+      "schema_version": "1.2.0-draft.1",
+      "collection_id": "collection-episode-01",
+      "label": "Episode 1",
+      "parent": "collection-series"
+    },
+    {
+      "schema_version": "1.2.0-draft.1",
+      "collection_id": "collection-episode-02",
+      "label": "Episode 2",
+      "parent": "collection-series"
+    }
+  ]
+}
