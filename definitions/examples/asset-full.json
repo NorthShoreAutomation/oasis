@@ -1,0 +1,128 @@
+{
+  "type": "asset",
+  "spec_version": "2.0.0-draft.2",
+  "id": "a-0100",
+  "source": {"system": "example-catalog", "instance": "site-north", "id": "clip-4471"},
+  "title": "Example Feature Promo",
+  "category": "video",
+  "description": "A thirty second promotional clip with a stereo mix.",
+  "status": "archived",
+  "created": "2026-08-20T09:00:00Z",
+  "modified": "2026-09-02T16:30:00Z",
+  "deleted": "2026-10-01T12:00:00Z",
+  "timing": {
+    "time_base": {"rate": {"numerator": 25, "denominator": 1}, "drop_frame": false},
+    "source_timecode": "10:00:00:00",
+    "duration_frames": 750
+  },
+  "versions": [
+    {"id": "v1", "ordinal": 0, "label": "First cut", "created": "2026-08-20T09:00:00Z"},
+    {"id": "v2", "ordinal": 1, "label": "Final", "created": "2026-09-02T16:00:00Z", "modified": "2026-09-02T16:30:00Z", "extensions": {"vendor_a": {"approved_by": "reviewer-01"}}}
+  ],
+  "files": [
+    {
+      "id": "f-video",
+      "storage_location": "sl-01",
+      "path": "promo/final/promo_video.mov",
+      "size_bytes": 1048576000,
+      "checksum": {"algorithm": "sha256", "value": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"},
+      "media_type": "application/mxf",
+      "version": "v2",
+      "created": "2026-09-02T16:00:00Z",
+      "modified": "2026-09-02T16:05:00Z",
+      "status": "online",
+      "role": "master",
+      "label": "Final picture",
+      "extensions": {"vendor_a": {"codec_hint": "intermediate"}}
+    },
+    {
+      "id": "f-audio",
+      "storage_location": "sl-01",
+      "path": "promo/final/promo_mix.wav",
+      "size_bytes": 17280000,
+      "checksum": {"algorithm": "md5", "value": "d41d8cd98f00b204e9800998ecf8427e"},
+      "media_type": "audio/wav",
+      "version": "v2",
+      "role": "master",
+      "label": "Stereo mix"
+    },
+    {
+      "id": "f-thumb",
+      "storage_location": "sl-02",
+      "path": "thumbs/a-0100.jpg",
+      "media_type": "image/jpeg",
+      "role": "thumbnail"
+    }
+  ],
+  "file_groups": [
+    {
+      "id": "g-primary",
+      "role": "primary",
+      "label": "Final picture and stereo mix",
+      "complete": true,
+      "version": "v2",
+      "members": [
+        {"file": "f-video", "track_type": "video", "track_index": 0},
+        {"file": "f-audio", "track_type": "audio", "track_index": 0, "channel_count": 2}
+      ],
+      "extensions": {"vendor_a": {"layout": "stereo"}}
+    },
+    {
+      "id": "g-thumb",
+      "role": "thumbnail",
+      "label": "Poster frame",
+      "complete": true,
+      "members": [
+        {"file": "f-thumb", "track_type": "image", "track_index": 0, "extensions": {"vendor_a": {"pixel_size": "320x180"}}}
+      ]
+    }
+  ],
+  "relationships": [
+    {"kind": "derived_from", "target": "a-0099", "description": "Cut from the full feature."},
+    {"kind": "subclip_of", "target": "a-0099", "range": {"start_frame": 1000, "end_frame": 1750}, "extensions": {"vendor_a": {"edl_event": 3}}}
+  ],
+  "metadata": [
+    {"definition": "md-approval", "value": "appr", "extensions": {"vendor_a": {"set_by": "review-desk"}}},
+    {"definition": "md-keywords", "value": ["promo", "feature"]},
+    {"definition": "md-shoot-date", "value": "2026-08-14"}
+  ],
+  "annotations": [
+    {
+      "id": "ann-1",
+      "source": {"system": "example-review-tool", "id": "comment-5521"},
+      "purpose": "review",
+      "title": "Opening title too long",
+      "text": "Change requested: shorten the opening title.",
+      "category": "change_request",
+      "author": "reviewer-01",
+      "language": "en",
+      "created": "2026-09-01T10:15:00Z",
+      "modified": "2026-09-01T10:20:00Z",
+      "start_frame": 250,
+      "end_frame": 300,
+      "start_seconds": 10,
+      "end_seconds": 12,
+      "start_timecode": "10:00:10:00",
+      "end_timecode": "10:00:12:00",
+      "version": "v2",
+      "metadata": [{"definition": "md-approval", "value": "rej"}],
+      "extensions": {"vendor_a": {"thread": "t-77"}}
+    }
+  ],
+  "collections": [
+    "col-01",
+    {
+      "type": "collection",
+      "spec_version": "2.0.0-draft.2",
+      "id": "col-03",
+      "title": "Example Promos",
+      "collection_kind": "query",
+      "description": "Saved search for promotional clips.",
+      "access": {"status": "none"}
+    }
+  ],
+  "access": {"status": "restricted"},
+  "extensions": {
+    "vendor_a": {"vendor_flags": ["a", "b"], "score": 0.5}
+  }
+}

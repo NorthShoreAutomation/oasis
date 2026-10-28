@@ -1,0 +1,15 @@
+{
+  "type": "metadata_definition",
+  "spec_version": "2.0.0-draft.2",
+  "id": "md-reel",
+  "source": {"system": "example-catalog", "instance": "site-north", "id": "field-204"},
+  "label": "Reel code",
+  "description": "Three uppercase letters and three digits that name a source reel.",
+  "value_type": "string",
+  "cardinality": "single",
+  "constraints": {"min_length": 6, "max_length": 6, "pattern": "^[A-Z]{3}[0-9]{3}$"},
+  "required": false,
+  "extensions": {
+    "vendor_a": {"field_group": "logging"}
+  }
+}

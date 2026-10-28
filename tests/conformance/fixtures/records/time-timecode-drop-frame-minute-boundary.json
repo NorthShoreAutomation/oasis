@@ -1,0 +1,28 @@
+{
+  "type": "asset",
+  "spec_version": "2.0.0-draft.2",
+  "id": "a-0001",
+  "title": "Example Clip",
+  "access": {
+    "status": "unknown"
+  },
+  "timing": {
+    "time_base": {
+      "rate": {
+        "numerator": 30000,
+        "denominator": 1001
+      },
+      "drop_frame": true
+    },
+    "duration_frames": 750,
+    "source_timecode": "01:00:59;00"
+  },
+  "annotations": [
+    {
+      "id": "ann-1",
+      "purpose": "note",
+      "start_frame": 30,
+      "start_timecode": "01:01:00;02"
+    }
+  ]
+}

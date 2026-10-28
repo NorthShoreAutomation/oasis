@@ -1,0 +1,75 @@
+{
+  "type": "package",
+  "spec_version": "2.0.0-draft.2",
+  "id": "pkg-0001",
+  "manifest": {
+    "producer": {
+      "name": "example-exporter",
+      "version": "0.1.0"
+    },
+    "produced_at": "2026-10-05T09:00:00Z",
+    "counts": {
+      "storage_locations": 0,
+      "metadata_definitions": 3,
+      "collections": 0,
+      "assets": 1
+    },
+    "completeness": {
+      "storage_locations": "complete",
+      "metadata_definitions": "complete",
+      "collections": "complete",
+      "assets": "complete"
+    },
+    "namespaces": []
+  },
+  "metadata_definitions": [
+    {
+      "type": "metadata_definition",
+      "spec_version": "2.0.0-draft.2",
+      "id": "md-keywords",
+      "value_type": "string",
+      "cardinality": "multiple"
+    },
+    {
+      "type": "metadata_definition",
+      "spec_version": "2.0.0-draft.2",
+      "id": "md-take",
+      "value_type": "integer",
+      "cardinality": "single"
+    },
+    {
+      "type": "metadata_definition",
+      "spec_version": "2.0.0-draft.2",
+      "id": "md-shoot-date",
+      "value_type": "date",
+      "cardinality": "single"
+    }
+  ],
+  "assets": [
+    {
+      "type": "asset",
+      "spec_version": "2.0.0-draft.2",
+      "id": "a-0001",
+      "title": "Example Clip",
+      "access": {
+        "status": "none"
+      },
+      "metadata": [
+        {
+          "definition": "md-keywords",
+          "value": [
+            "example"
+          ]
+        },
+        {
+          "definition": "md-take",
+          "value": 3
+        },
+        {
+          "definition": "md-shoot-date",
+          "value": "2023-02-29"
+        }
+      ]
+    }
+  ]
+}

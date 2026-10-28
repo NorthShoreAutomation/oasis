@@ -1,0 +1,720 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://www.northshoreautomation.com/schemas/oasis/2/asset.schema.json",
+  "title": "OASIS 2.0 asset",
+  "description": "An asset record: a described content item with its files, file groups, versions, relationships, metadata, annotations, and collection entries.",
+  "type": "object",
+  "allOf": [
+    {
+      "$ref": "common.schema.json#/$defs/record_base"
+    },
+    {
+      "$ref": "#/$defs/timeline_rules"
+    }
+  ],
+  "properties": {
+    "type": {
+      "const": "asset"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S"
+    },
+    "category": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "created": {
+      "$ref": "common.schema.json#/$defs/date_time"
+    },
+    "modified": {
+      "$ref": "common.schema.json#/$defs/date_time"
+    },
+    "deleted": {
+      "$ref": "common.schema.json#/$defs/date_time"
+    },
+    "timing": {
+      "$ref": "common.schema.json#/$defs/timing"
+    },
+    "versions": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/version"
+      }
+    },
+    "files": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/file"
+      }
+    },
+    "file_groups": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/file_group"
+      }
+    },
+    "relationships": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/relationship"
+      }
+    },
+    "metadata": {
+      "$ref": "common.schema.json#/$defs/metadata"
+    },
+    "annotations": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/embedded_annotation"
+      }
+    },
+    "collections": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/asset_collection_entry"
+      }
+    },
+    "access": {
+      "$ref": "common.schema.json#/$defs/access"
+    }
+  },
+  "required": [
+    "type",
+    "title",
+    "access"
+  ],
+  "unevaluatedProperties": false,
+  "$defs": {
+    "timeline_rules": {
+      "description": "Timeline rules that need the asset timing: frame fields need timing, labels need a source timecode anchor at a label rate, and label syntax follows the asset rate and drop-frame flag.",
+      "allOf": [
+        {
+          "if": {
+            "not": {
+              "required": [
+                "timing"
+              ]
+            }
+          },
+          "then": {
+            "properties": {
+              "annotations": {
+                "items": {
+                  "not": {
+                    "anyOf": [
+                      {
+                        "required": [
+                          "start_frame"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "end_frame"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "not": {
+              "required": [
+                "timing"
+              ],
+              "properties": {
+                "timing": {
+                  "required": [
+                    "source_timecode"
+                  ]
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "annotations": {
+                "items": {
+                  "not": {
+                    "anyOf": [
+                      {
+                        "required": [
+                          "start_timecode"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "end_timecode"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "timing"
+            ],
+            "properties": {
+              "timing": {
+                "properties": {
+                  "time_base": {
+                    "properties": {
+                      "rate": {
+                        "not": {
+                          "$ref": "common.schema.json#/$defs/label_rate"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "timing": {
+                "not": {
+                  "required": [
+                    "source_timecode"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "timing"
+            ],
+            "properties": {
+              "timing": {
+                "properties": {
+                  "time_base": {
+                    "const": {
+                      "rate": {
+                        "numerator": 24,
+                        "denominator": 1
+                      },
+                      "drop_frame": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "timing": {
+                "properties": {
+                  "source_timecode": {
+                    "$ref": "common.schema.json#/$defs/timecode_label_24"
+                  }
+                }
+              },
+              "annotations": {
+                "items": {
+                  "properties": {
+                    "start_timecode": {
+                      "$ref": "common.schema.json#/$defs/timecode_label_24"
+                    },
+                    "end_timecode": {
+                      "$ref": "common.schema.json#/$defs/timecode_label_24"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "timing"
+            ],
+            "properties": {
+              "timing": {
+                "properties": {
+                  "time_base": {
+                    "const": {
+                      "rate": {
+                        "numerator": 24000,
+                        "denominator": 1001
+                      },
+                      "drop_frame": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "timing": {
+                "properties": {
+                  "source_timecode": {
+                    "$ref": "common.schema.json#/$defs/timecode_label_24"
+                  }
+                }
+              },
+              "annotations": {
+                "items": {
+                  "properties": {
+                    "start_timecode": {
+                      "$ref": "common.schema.json#/$defs/timecode_label_24"
+                    },
+                    "end_timecode": {
+                      "$ref": "common.schema.json#/$defs/timecode_label_24"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "timing"
+            ],
+            "properties": {
+              "timing": {
+                "properties": {
+                  "time_base": {
+                    "const": {
+                      "rate": {
+                        "numerator": 25,
+                        "denominator": 1
+                      },
+                      "drop_frame": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "timing": {
+                "properties": {
+                  "source_timecode": {
+                    "$ref": "common.schema.json#/$defs/timecode_label_25"
+                  }
+                }
+              },
+              "annotations": {
+                "items": {
+                  "properties": {
+                    "start_timecode": {
+                      "$ref": "common.schema.json#/$defs/timecode_label_25"
+                    },
+                    "end_timecode": {
+                      "$ref": "common.schema.json#/$defs/timecode_label_25"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "timing"
+            ],
+            "properties": {
+              "timing": {
+                "properties": {
+                  "time_base": {
+                    "const": {
+                      "rate": {
+                        "numerator": 30,
+                        "denominator": 1
+                      },
+                      "drop_frame": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "timing": {
+                "properties": {
+                  "source_timecode": {
+                    "$ref": "common.schema.json#/$defs/timecode_label_30"
+                  }
+                }
+              },
+              "annotations": {
+                "items": {
+                  "properties": {
+                    "start_timecode": {
+                      "$ref": "common.schema.json#/$defs/timecode_label_30"
+                    },
+                    "end_timecode": {
+                      "$ref": "common.schema.json#/$defs/timecode_label_30"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "timing"
+            ],
+            "properties": {
+              "timing": {
+                "properties": {
+                  "time_base": {
+                    "const": {
+                      "rate": {
+                        "numerator": 30000,
+                        "denominator": 1001
+                      },
+                      "drop_frame": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "timing": {
+                "properties": {
+                  "source_timecode": {
+                    "$ref": "common.schema.json#/$defs/timecode_label_30"
+                  }
+                }
+              },
+              "annotations": {
+                "items": {
+                  "properties": {
+                    "start_timecode": {
+                      "$ref": "common.schema.json#/$defs/timecode_label_30"
+                    },
+                    "end_timecode": {
+                      "$ref": "common.schema.json#/$defs/timecode_label_30"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "timing"
+            ],
+            "properties": {
+              "timing": {
+                "properties": {
+                  "time_base": {
+                    "const": {
+                      "rate": {
+                        "numerator": 30000,
+                        "denominator": 1001
+                      },
+                      "drop_frame": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "timing": {
+                "properties": {
+                  "source_timecode": {
+                    "$ref": "common.schema.json#/$defs/timecode_label_30_drop"
+                  }
+                }
+              },
+              "annotations": {
+                "items": {
+                  "properties": {
+                    "start_timecode": {
+                      "$ref": "common.schema.json#/$defs/timecode_label_30_drop"
+                    },
+                    "end_timecode": {
+                      "$ref": "common.schema.json#/$defs/timecode_label_30_drop"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "timing"
+            ],
+            "properties": {
+              "timing": {
+                "properties": {
+                  "time_base": {
+                    "const": {
+                      "rate": {
+                        "numerator": 48,
+                        "denominator": 1
+                      },
+                      "drop_frame": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "timing": {
+                "properties": {
+                  "source_timecode": {
+                    "$ref": "common.schema.json#/$defs/timecode_label_48"
+                  }
+                }
+              },
+              "annotations": {
+                "items": {
+                  "properties": {
+                    "start_timecode": {
+                      "$ref": "common.schema.json#/$defs/timecode_label_48"
+                    },
+                    "end_timecode": {
+                      "$ref": "common.schema.json#/$defs/timecode_label_48"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "timing"
+            ],
+            "properties": {
+              "timing": {
+                "properties": {
+                  "time_base": {
+                    "const": {
+                      "rate": {
+                        "numerator": 50,
+                        "denominator": 1
+                      },
+                      "drop_frame": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "timing": {
+                "properties": {
+                  "source_timecode": {
+                    "$ref": "common.schema.json#/$defs/timecode_label_50"
+                  }
+                }
+              },
+              "annotations": {
+                "items": {
+                  "properties": {
+                    "start_timecode": {
+                      "$ref": "common.schema.json#/$defs/timecode_label_50"
+                    },
+                    "end_timecode": {
+                      "$ref": "common.schema.json#/$defs/timecode_label_50"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "timing"
+            ],
+            "properties": {
+              "timing": {
+                "properties": {
+                  "time_base": {
+                    "const": {
+                      "rate": {
+                        "numerator": 60,
+                        "denominator": 1
+                      },
+                      "drop_frame": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "timing": {
+                "properties": {
+                  "source_timecode": {
+                    "$ref": "common.schema.json#/$defs/timecode_label_60"
+                  }
+                }
+              },
+              "annotations": {
+                "items": {
+                  "properties": {
+                    "start_timecode": {
+                      "$ref": "common.schema.json#/$defs/timecode_label_60"
+                    },
+                    "end_timecode": {
+                      "$ref": "common.schema.json#/$defs/timecode_label_60"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "timing"
+            ],
+            "properties": {
+              "timing": {
+                "properties": {
+                  "time_base": {
+                    "const": {
+                      "rate": {
+                        "numerator": 60000,
+                        "denominator": 1001
+                      },
+                      "drop_frame": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "timing": {
+                "properties": {
+                  "source_timecode": {
+                    "$ref": "common.schema.json#/$defs/timecode_label_60"
+                  }
+                }
+              },
+              "annotations": {
+                "items": {
+                  "properties": {
+                    "start_timecode": {
+                      "$ref": "common.schema.json#/$defs/timecode_label_60"
+                    },
+                    "end_timecode": {
+                      "$ref": "common.schema.json#/$defs/timecode_label_60"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "timing"
+            ],
+            "properties": {
+              "timing": {
+                "properties": {
+                  "time_base": {
+                    "const": {
+                      "rate": {
+                        "numerator": 60000,
+                        "denominator": 1001
+                      },
+                      "drop_frame": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "timing": {
+                "properties": {
+                  "source_timecode": {
+                    "$ref": "common.schema.json#/$defs/timecode_label_60_drop"
+                  }
+                }
+              },
+              "annotations": {
+                "items": {
+                  "properties": {
+                    "start_timecode": {
+                      "$ref": "common.schema.json#/$defs/timecode_label_60_drop"
+                    },
+                    "end_timecode": {
+                      "$ref": "common.schema.json#/$defs/timecode_label_60_drop"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "asset_collection_entry": {
+      "description": "An asset-side collection entry: a collection id reference, or a snapshot that is a full collection record without members.",
+      "oneOf": [
+        {
+          "$ref": "common.schema.json#/$defs/reference"
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "collection.schema.json"
+            },
+            {
+              "not": {
+                "required": [
+                  "members"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

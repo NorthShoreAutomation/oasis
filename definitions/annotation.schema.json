@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://www.northshoreautomation.com/schemas/oasis/2/annotation.schema.json",
+  "title": "OASIS 2.0 annotation",
+  "description": "A standalone annotation record: a statement about an asset, optionally about a frame range of it, with a purpose. It names its asset by reference.",
+  "type": "object",
+  "allOf": [
+    {
+      "$ref": "common.schema.json#/$defs/record_base"
+    },
+    {
+      "$ref": "common.schema.json#/$defs/annotation_fields"
+    }
+  ],
+  "properties": {
+    "type": {
+      "const": "annotation"
+    },
+    "asset": {
+      "$ref": "common.schema.json#/$defs/reference"
+    }
+  },
+  "required": [
+    "type",
+    "asset",
+    "purpose"
+  ],
+  "unevaluatedProperties": false
+}

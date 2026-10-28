@@ -1,0 +1,17 @@
+{
+  "type": "storage_location",
+  "spec_version": "2.0.0-draft.2",
+  "id": "sl-02",
+  "source": {"system": "example-catalog", "instance": "site-north", "id": "volume-17"},
+  "name": "Example Object Store",
+  "system": "object_store",
+  "root": "example-bucket/archive",
+  "connection": {"method": "object_api", "credential_reference": "credential-store:example-key-01"},
+  "status": "online",
+  "description": "Object storage for archived masters and proxies.",
+  "created": "2025-06-01T00:00:00Z",
+  "modified": "2026-09-15T08:30:00Z",
+  "extensions": {
+    "vendor_a": {"tier": "standard", "region_hint": "north"}
+  }
+}

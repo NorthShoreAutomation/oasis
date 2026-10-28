@@ -1,0 +1,21 @@
+{
+  "type": "collection",
+  "spec_version": "2.0.0-draft.2",
+  "id": "col-02",
+  "source": {"system": "example-catalog", "instance": "site-north", "id": "folder-88"},
+  "title": "Example Volume Folder",
+  "collection_kind": "storage",
+  "description": "Mirrors one folder on the shared volume.",
+  "parent": "col-01",
+  "storage": {"storage_location": "sl-01", "path": "projects/example"},
+  "members": {"complete": false, "assets": ["a-0004"]},
+  "created": "2026-01-10T08:00:00Z",
+  "modified": "2026-09-30T17:45:12.250+01:00",
+  "metadata": [
+    {"definition": "md-keywords", "value": ["renders", "example"]}
+  ],
+  "access": {"status": "none"},
+  "extensions": {
+    "vendor_a": {"color": "blue"}
+  }
+}

@@ -1,0 +1,332 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://www.northshoreautomation.com/schemas/oasis/2/conformance/result.schema.json",
+  "title": "OASIS conformance harness result record",
+  "description": "The result record of the reference validate command for one input file. Not part of the OASIS schema bundle.",
+  "type": "object",
+  "properties": {
+    "harness": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "const": "oasis-python-reference-harness"
+        },
+        "version": {
+          "const": "2.0.0-draft.2"
+        },
+        "dependencies": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+==[0-9]+(\\.[0-9]+)*$"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "dependencies"
+      ],
+      "additionalProperties": false
+    },
+    "file": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "input_sha256": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "bundle_manifest_sha256": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "type": {
+      "enum": [
+        "package",
+        "asset",
+        "collection",
+        "storage_location",
+        "metadata_definition",
+        "annotation",
+        null
+      ]
+    },
+    "spec_version": {
+      "enum": [
+        "2.0.0-draft.2",
+        null
+      ]
+    },
+    "execution_status": {
+      "enum": [
+        "complete",
+        "input-invalid",
+        "unsupported",
+        "setup-failed"
+      ]
+    },
+    "structural": {
+      "enum": [
+        "valid",
+        "invalid",
+        "not-run"
+      ]
+    },
+    "semantic": {
+      "enum": [
+        "run",
+        "not-run"
+      ]
+    },
+    "diagnostics": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/diagnostic"
+      }
+    },
+    "structural_errors": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/structural_error"
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  },
+  "required": [
+    "harness",
+    "file",
+    "input_sha256",
+    "bundle_manifest_sha256",
+    "type",
+    "spec_version",
+    "execution_status",
+    "structural",
+    "semantic",
+    "diagnostics",
+    "structural_errors",
+    "limitations"
+  ],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "execution_status": {
+            "not": {
+              "const": "complete"
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "structural": {
+            "const": "not-run"
+          },
+          "semantic": {
+            "const": "not-run"
+          },
+          "structural_errors": {
+            "maxItems": 0
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "execution_status": {
+            "const": "complete"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "structural": {
+            "enum": [
+              "valid",
+              "invalid"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "structural": {
+            "const": "valid"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "semantic": {
+            "const": "run"
+          },
+          "structural_errors": {
+            "maxItems": 0
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "structural": {
+            "const": "invalid"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "semantic": {
+            "const": "not-run"
+          },
+          "structural_errors": {
+            "minItems": 1
+          },
+          "diagnostics": {
+            "maxItems": 0
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "execution_status": {
+            "const": "setup-failed"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "diagnostics": {
+            "maxItems": 0
+          },
+          "limitations": {
+            "minItems": 1
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "pointer": {
+      "type": "string",
+      "pattern": "^(/([^~/]|~[01])*)*$"
+    },
+    "diagnostic": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "enum": [
+            "COLLECTION_CYCLE",
+            "COUNT_MISMATCH",
+            "DEFINITION_REPEATED",
+            "DEFINITION_UNAVAILABLE",
+            "FILE_REFERENCE_UNRESOLVED",
+            "FRAME_OUT_OF_BOUNDS",
+            "ID_DUPLICATE",
+            "INPUT_INVALID",
+            "MEMBERSHIP_DISAGREES",
+            "NAMESPACE_DECLARED_TWICE",
+            "NAMESPACE_UNDECLARED",
+            "NESTED_ID_DUPLICATE",
+            "ORDINAL_DUPLICATE",
+            "RANGE_NOT_INCREASING",
+            "RATE_NOT_LOWEST_TERMS",
+            "REFERENCE_UNRESOLVED",
+            "REFERENCE_UNRESOLVED_PARTIAL",
+            "RELATIONSHIP_SELF",
+            "SECONDS_DISAGREE",
+            "SEGMENT_GAP",
+            "SEGMENT_INDEX_DUPLICATE",
+            "SEGMENT_INDEX_MISSING",
+            "SEGMENT_OUT_OF_ORDER",
+            "SEQUENCE_RANGE_EMPTY",
+            "SNAPSHOT_MISMATCH",
+            "TIMECODE_DISAGREE",
+            "TIMELINE_UNAVAILABLE",
+            "TIMELINE_UNDECLARED",
+            "TRACK_DUPLICATE",
+            "TYPE_UNSUPPORTED",
+            "VALUE_DATE_INVALID",
+            "VALUE_OPTION_REPEATED",
+            "VALUE_OPTION_UNKNOWN",
+            "VALUE_SHAPE_MISMATCH",
+            "VERSION_REFERENCE_UNRESOLVED",
+            "VERSION_UNSUPPORTED",
+            "VERSION_WITHOUT_VERSIONS"
+          ]
+        },
+        "rule": {
+          "type": "string",
+          "pattern": "^[A-Z]+-[0-9]+(, [A-Z]+-[0-9]+)*$"
+        },
+        "severity": {
+          "enum": [
+            "error",
+            "warning"
+          ]
+        },
+        "path": {
+          "$ref": "#/$defs/pointer"
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "code",
+        "rule",
+        "severity",
+        "path",
+        "message"
+      ],
+      "additionalProperties": false
+    },
+    "structural_error": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "$ref": "#/$defs/pointer"
+        },
+        "keyword": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "path",
+        "keyword"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

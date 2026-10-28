@@ -1,0 +1,60 @@
+{
+  "type": "package",
+  "spec_version": "2.0.0-draft.2",
+  "id": "pkg-0001",
+  "manifest": {
+    "producer": {
+      "name": "example-exporter",
+      "version": "0.1.0"
+    },
+    "produced_at": "2026-10-05T09:00:00Z",
+    "counts": {
+      "storage_locations": 0,
+      "metadata_definitions": 0,
+      "collections": 1,
+      "assets": 1
+    },
+    "completeness": {
+      "storage_locations": "complete",
+      "metadata_definitions": "complete",
+      "collections": "complete",
+      "assets": "complete"
+    },
+    "namespaces": []
+  },
+  "collections": [
+    {
+      "type": "collection",
+      "spec_version": "2.0.0-draft.2",
+      "id": "col-01",
+      "title": "Example Project",
+      "collection_kind": "logical",
+      "access": {
+        "status": "none"
+      }
+    }
+  ],
+  "assets": [
+    {
+      "type": "asset",
+      "spec_version": "2.0.0-draft.2",
+      "id": "a-0001",
+      "title": "Example Clip",
+      "access": {
+        "status": "none"
+      },
+      "collections": [
+        {
+          "type": "collection",
+          "spec_version": "2.0.0-draft.2",
+          "id": "col-01",
+          "title": "Renamed Project",
+          "collection_kind": "logical",
+          "access": {
+            "status": "none"
+          }
+        }
+      ]
+    }
+  ]
+}

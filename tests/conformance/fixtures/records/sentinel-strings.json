@@ -1,0 +1,66 @@
+{
+  "type": "asset",
+  "spec_version": "2.0.0-draft.2",
+  "id": "a-ZZSENTINELZZ",
+  "source": {
+    "system": "sys-ZZSENTINELZZ",
+    "instance": "inst-ZZSENTINELZZ",
+    "id": "src-ZZSENTINELZZ"
+  },
+  "title": "Title ZZSENTINELZZ",
+  "category": "category-ZZSENTINELZZ",
+  "description": "Description ZZSENTINELZZ",
+  "status": "status-ZZSENTINELZZ",
+  "created": "2026-01-02T03:04:05Z",
+  "versions": [
+    {
+      "id": "v-ZZSENTINELZZ",
+      "ordinal": 0,
+      "label": "Label ZZSENTINELZZ"
+    }
+  ],
+  "files": [
+    {
+      "id": "f-ZZSENTINELZZ",
+      "storage_location": "sl-ZZSENTINELZZ",
+      "path": "media/ZZSENTINELZZ.bin",
+      "size_bytes": 1,
+      "checksum": {
+        "algorithm": "md5",
+        "value": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      "media_type": "application/octet-stream"
+    }
+  ],
+  "relationships": [
+    {
+      "kind": "derived_from",
+      "target": "other-ZZSENTINELZZ",
+      "description": "Description ZZSENTINELZZ"
+    }
+  ],
+  "metadata": [
+    {
+      "definition": "md-ZZSENTINELZZ",
+      "value": "value ZZSENTINELZZ"
+    }
+  ],
+  "annotations": [
+    {
+      "id": "ann-ZZSENTINELZZ",
+      "purpose": "note",
+      "title": "Title ZZSENTINELZZ",
+      "text": "Text ZZSENTINELZZ",
+      "category": "category-ZZSENTINELZZ",
+      "author": "author-ZZSENTINELZZ"
+    }
+  ],
+  "access": {
+    "status": "restricted"
+  },
+  "extensions": {
+    "zzsentinelzz": {
+      "payload": "payload ZZSENTINELZZ"
+    }
+  }
+}

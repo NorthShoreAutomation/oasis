@@ -1,0 +1,42 @@
+{
+  "type": "package",
+  "spec_version": "2.0.0-draft.2",
+  "id": "pkg-0002",
+  "source": {"system": "example-exporter", "instance": "site-north", "id": "export-2026-10-05"},
+  "manifest": {
+    "producer": {"name": "example-exporter", "version": "0.1.0"},
+    "produced_at": "2026-10-05T09:00:00Z",
+    "counts": {"storage_locations": 1, "metadata_definitions": 1, "collections": 1, "assets": 1},
+    "completeness": {"storage_locations": "complete", "metadata_definitions": "complete", "collections": "complete", "assets": "partial"},
+    "namespaces": [
+      {"token": "vendor_a", "owner": "Vendor A", "schema": "https://vendor-a.example/oasis-extensions/1", "description": "Extension data from vendor A."}
+    ],
+    "description": "One record of each registry kind and one asset."
+  },
+  "storage_locations": [
+    {"type": "storage_location", "spec_version": "2.0.0-draft.2", "id": "sl-01", "name": "Example Shared Volume", "system": "filesystem", "root": "/mnt/example_volume"}
+  ],
+  "metadata_definitions": [
+    {"type": "metadata_definition", "spec_version": "2.0.0-draft.2", "id": "md-keywords", "label": "Keywords", "value_type": "string", "cardinality": "multiple"}
+  ],
+  "collections": [
+    {"type": "collection", "spec_version": "2.0.0-draft.2", "id": "col-01", "title": "Example Project", "collection_kind": "logical", "members": {"complete": true, "assets": ["a-0001"]}, "access": {"status": "none"}}
+  ],
+  "assets": [
+    {
+      "type": "asset",
+      "spec_version": "2.0.0-draft.2",
+      "id": "a-0001",
+      "title": "Example Clip",
+      "files": [{"id": "f-1", "storage_location": "sl-01", "path": "clips/example_clip.mov", "role": "master", "label": "Camera original"}],
+      "file_groups": [{"id": "g-primary", "role": "primary", "label": "Camera original", "complete": true, "members": [{"file": "f-1", "track_type": "video", "track_index": 0}]}],
+      "metadata": [{"definition": "md-keywords", "value": ["example"]}],
+      "collections": ["col-01"],
+      "access": {"status": "none"},
+      "extensions": {"vendor_a": {"note": "minimal asset in a full package"}}
+    }
+  ],
+  "extensions": {
+    "vendor_a": {"export_job": "job-12"}
+  }
+}

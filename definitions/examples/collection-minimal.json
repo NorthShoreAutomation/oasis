@@ -1,0 +1,8 @@
+{
+  "type": "collection",
+  "spec_version": "2.0.0-draft.2",
+  "id": "col-01",
+  "title": "Example Project",
+  "collection_kind": "logical",
+  "access": {"status": "none"}
+}

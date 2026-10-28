@@ -1,0 +1,302 @@
+{
+  "type": "package",
+  "spec_version": "2.0.0-draft.2",
+  "id": "pkg-complete-0001",
+  "source": {"system": "example-exporter", "instance": "site-north", "id": "export-0042"},
+  "manifest": {
+    "producer": {"name": "example-exporter", "version": "0.1.0"},
+    "produced_at": "2026-10-05T09:00:00Z",
+    "counts": {"storage_locations": 2, "metadata_definitions": 3, "collections": 2, "assets": 5},
+    "completeness": {"storage_locations": "complete", "metadata_definitions": "partial", "collections": "complete", "assets": "complete"},
+    "namespaces": [
+      {"token": "vendor_a", "owner": "Vendor A", "schema": "https://vendor-a.example/oasis-extensions/1", "description": "Extension data from vendor A."},
+      {"token": "archive_b", "owner": "Example Archive", "description": "Internal fields of the example archive."}
+    ],
+    "description": "Synthetic package that shows every registry and the main record features."
+  },
+  "storage_locations": [
+    {
+      "type": "storage_location",
+      "spec_version": "2.0.0-draft.2",
+      "id": "sl-01",
+      "name": "Example Shared Volume",
+      "system": "filesystem",
+      "root": "/mnt/example_volume",
+      "status": "online"
+    },
+    {
+      "type": "storage_location",
+      "spec_version": "2.0.0-draft.2",
+      "id": "sl-02",
+      "name": "Example Object Store",
+      "system": "object_store",
+      "root": "example-bucket/archive",
+      "connection": {"method": "object_api", "credential_reference": "credential-store:example-key-01"}
+    }
+  ],
+  "metadata_definitions": [
+    {
+      "type": "metadata_definition",
+      "spec_version": "2.0.0-draft.2",
+      "id": "md-approval",
+      "label": "Approval state",
+      "value_type": "enum",
+      "cardinality": "single",
+      "options": [
+        {"id": "appr", "label": "Approved", "extensions": {"vendor_a": {"colour": "green"}}},
+        {"id": "rej", "label": "Rejected"}
+      ]
+    },
+    {
+      "type": "metadata_definition",
+      "spec_version": "2.0.0-draft.2",
+      "id": "md-keywords",
+      "label": "Keywords",
+      "value_type": "string",
+      "cardinality": "multiple",
+      "constraints": {"max_length": 64}
+    },
+    {
+      "type": "metadata_definition",
+      "spec_version": "2.0.0-draft.2",
+      "id": "md-shoot-date",
+      "label": "Shoot date",
+      "value_type": "date",
+      "cardinality": "single"
+    }
+  ],
+  "collections": [
+    {
+      "type": "collection",
+      "spec_version": "2.0.0-draft.2",
+      "id": "col-01",
+      "title": "Example Project",
+      "collection_kind": "logical",
+      "members": {"complete": true, "assets": ["a-0001", "a-0002", "a-0003"]},
+      "metadata": [{"definition": "md-keywords", "value": ["project"]}],
+      "access": {"status": "none"}
+    },
+    {
+      "type": "collection",
+      "spec_version": "2.0.0-draft.2",
+      "id": "col-02",
+      "title": "Example Volume Folder",
+      "collection_kind": "storage",
+      "parent": "col-01",
+      "storage": {"storage_location": "sl-01", "path": "projects/example/renders"},
+      "members": {"complete": false, "assets": ["a-0004"]},
+      "created": "2026-01-10T08:00:00Z",
+      "access": {"status": "none"}
+    }
+  ],
+  "assets": [
+    {
+      "type": "asset",
+      "spec_version": "2.0.0-draft.2",
+      "id": "a-0001",
+      "title": "Example Interview Master",
+      "category": "video",
+      "timing": {
+        "time_base": {"rate": {"numerator": 24000, "denominator": 1001}, "drop_frame": false},
+        "source_timecode": "01:00:00:00",
+        "duration_frames": 1440
+      },
+      "versions": [
+        {"id": "v1", "ordinal": 0, "label": "Original upload", "created": "2026-03-05T10:00:00Z"},
+        {"id": "v2", "ordinal": 1, "label": "Color corrected", "created": "2026-03-09T15:30:00Z"}
+      ],
+      "files": [
+        {"id": "f-video-v1", "storage_location": "sl-01", "path": "interviews/master_v1.mov", "version": "v1", "size_bytes": 2147483648, "role": "master", "label": "Original upload"},
+        {
+          "id": "f-video",
+          "storage_location": "sl-01",
+          "path": "interviews/master_v2.mov",
+          "version": "v2",
+          "size_bytes": 2147483648,
+          "checksum": {"algorithm": "sha256", "value": "2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae"},
+          "media_type": "application/mxf",
+          "role": "mezzanine",
+          "label": "Color corrected picture",
+          "extensions": {"vendor_a": {"codec_hint": "intermediate"}}
+        },
+        {"id": "f-audio-1", "storage_location": "sl-01", "path": "interviews/master_v2_a1.wav", "version": "v2", "media_type": "audio/wav"},
+        {"id": "f-audio-2", "storage_location": "sl-01", "path": "interviews/master_v2_a2.wav", "version": "v2", "media_type": "audio/wav"},
+        {"id": "f-proxy", "storage_location": "sl-02", "path": "proxies/a-0001.mp4", "media_type": "video/mp4", "role": "preview", "label": "Web proxy", "checksum": {"algorithm": "md5", "value": "900150983cd24fb0d6963f7d28e17f72"}}
+      ],
+      "file_groups": [
+        {
+          "id": "g-primary",
+          "role": "primary",
+          "complete": true,
+          "version": "v2",
+          "members": [
+            {"file": "f-video", "track_type": "video", "track_index": 0},
+            {"file": "f-audio-1", "track_type": "audio", "track_index": 0, "channel_count": 2},
+            {"file": "f-audio-2", "track_type": "audio", "track_index": 1, "channel_count": 2}
+          ]
+        },
+        {
+          "id": "g-primary-v1",
+          "role": "primary",
+          "complete": true,
+          "version": "v1",
+          "members": [{"file": "f-video-v1", "track_type": "video", "track_index": 0}]
+        },
+        {
+          "id": "g-preview",
+          "role": "preview",
+          "label": "Web proxy",
+          "complete": true,
+          "members": [{"file": "f-proxy", "track_type": "video", "track_index": 0}]
+        }
+      ],
+      "metadata": [
+        {"definition": "md-approval", "value": "appr"},
+        {"definition": "md-keywords", "value": ["interview", "example"]},
+        {"definition": "md-shoot-date", "value": "2026-03-04"}
+      ],
+      "annotations": [
+        {
+          "id": "ann-1",
+          "purpose": "review",
+          "text": "Change requested: soften the color in this range.",
+          "author": "reviewer-01",
+          "language": "en",
+          "start_frame": 100,
+          "end_frame": 150,
+          "start_seconds": 4.170833,
+          "end_seconds": 6.25625,
+          "start_timecode": "01:00:04:04",
+          "end_timecode": "01:00:06:06",
+          "version": "v2"
+        },
+        {
+          "id": "ann-2",
+          "purpose": "chapter",
+          "text": "Opening",
+          "start_frame": 0,
+          "start_seconds": 0,
+          "start_timecode": "01:00:00:00"
+        }
+      ],
+      "collections": ["col-01"],
+      "access": {"status": "none"},
+      "extensions": {
+        "vendor_a": {"rating": 4},
+        "archive_b": {"shelf": "B-12"}
+      }
+    },
+    {
+      "type": "asset",
+      "spec_version": "2.0.0-draft.2",
+      "id": "a-0002",
+      "title": "Example Drop-Frame Program",
+      "category": "video",
+      "timing": {
+        "time_base": {"rate": {"numerator": 30000, "denominator": 1001}, "drop_frame": true},
+        "source_timecode": "01:00:59;00",
+        "duration_frames": 1800
+      },
+      "files": [
+        {"id": "f-main-1", "storage_location": "sl-02", "path": "programs/a-0002_001.mxf", "checksum": {"algorithm": "sha1", "value": "a9993e364706816aba3e25717850c26c9cd0d89d"}, "role": "master"},
+        {"id": "f-main-2", "storage_location": "sl-02", "path": "programs/a-0002_002.mxf", "role": "master"}
+      ],
+      "file_groups": [
+        {
+          "id": "g-primary",
+          "role": "primary",
+          "label": "Program recorded in two segments",
+          "complete": false,
+          "members": [
+            {"file": "f-main-1", "track_type": "video", "track_index": 0, "segment_index": 0},
+            {"file": "f-main-2", "track_type": "video", "track_index": 0, "segment_index": 1}
+          ]
+        }
+      ],
+      "annotations": [
+        {
+          "id": "ann-1",
+          "purpose": "quality",
+          "text": "Audio dropout across the minute boundary.",
+          "start_frame": 30,
+          "end_frame": 60,
+          "start_seconds": 1.001,
+          "end_seconds": 2.002,
+          "start_timecode": "01:01:00;02",
+          "end_timecode": "01:01:01;02"
+        }
+      ],
+      "collections": ["col-01"],
+      "access": {"status": "unknown"}
+    },
+    {
+      "type": "asset",
+      "spec_version": "2.0.0-draft.2",
+      "id": "a-0003",
+      "title": "Example Interview Subclip",
+      "timing": {
+        "time_base": {"rate": {"numerator": 24000, "denominator": 1001}, "drop_frame": false},
+        "duration_frames": 240
+      },
+      "relationships": [
+        {"kind": "subclip_of", "target": "a-0001", "range": {"start_frame": 240, "end_frame": 480}, "description": "Second ten seconds of the interview."}
+      ],
+      "collections": ["col-01"],
+      "access": {"status": "none"}
+    },
+    {
+      "type": "asset",
+      "spec_version": "2.0.0-draft.2",
+      "id": "a-0004",
+      "title": "Example Render Sequence",
+      "category": "image_sequence",
+      "timing": {
+        "time_base": {"rate": {"numerator": 24, "denominator": 1}, "drop_frame": false},
+        "duration_frames": 250
+      },
+      "files": [
+        {"id": "f-seq", "storage_location": "sl-01", "path": "projects/example/renders/shot_010/frame.%04d.exr", "media_type": "image/x-exr"}
+      ],
+      "file_groups": [
+        {
+          "id": "g-primary",
+          "role": "primary",
+          "complete": true,
+          "members": [
+            {"file": "f-seq", "track_type": "image", "track_index": 0, "sequence_range": {"start": 1000, "end": 1250}}
+          ]
+        }
+      ],
+      "collections": [
+        {
+          "type": "collection",
+          "spec_version": "2.0.0-draft.2",
+          "id": "col-02",
+          "title": "Example Volume Folder",
+          "collection_kind": "storage",
+          "parent": "col-01",
+          "storage": {"storage_location": "sl-01", "path": "projects/example/renders"},
+          "created": "2026-01-10T08:00:00Z",
+          "access": {"status": "none"}
+        }
+      ],
+      "access": {"status": "restricted"},
+      "extensions": {
+        "archive_b": {"restriction_note": "embargoed until review"}
+      }
+    },
+    {
+      "type": "asset",
+      "spec_version": "2.0.0-draft.2",
+      "id": "a-0005",
+      "title": "Example Removed Clip",
+      "status": "deleted",
+      "created": "2025-11-02T14:00:00Z",
+      "deleted": "2026-09-28T07:12:44Z",
+      "relationships": [
+        {"kind": "derived_from", "target": "a-0001"}
+      ],
+      "access": {"status": "unknown"}
+    }
+  ]
+}

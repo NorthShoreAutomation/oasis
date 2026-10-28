@@ -1,0 +1,1069 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://www.northshoreautomation.com/schemas/oasis/2/common.schema.json",
+  "title": "OASIS 2.0 shared definitions",
+  "description": "Shared definitions for every OASIS 2.0.0-draft.2 record schema. This file is not a document root. Each entity has one definition here or in its record schema.",
+  "$defs": {
+    "record_type": {
+      "description": "The record type token. Read before any schema is chosen.",
+      "enum": [
+        "package",
+        "asset",
+        "collection",
+        "storage_location",
+        "metadata_definition",
+        "annotation"
+      ]
+    },
+    "spec_version": {
+      "description": "The specification version of this draft.",
+      "const": "2.0.0-draft.2"
+    },
+    "id": {
+      "description": "An identifier. Nonempty, at most 256 characters, no leading or trailing whitespace.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^\\S([\\s\\S]*\\S)?$"
+    },
+    "reference": {
+      "description": "A string naming the id of a target of a known kind. Resolved only in package context.",
+      "$ref": "#/$defs/id"
+    },
+    "nonempty_string": {
+      "type": "string",
+      "minLength": 1
+    },
+    "token": {
+      "description": "A lowercase token.",
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{0,62}$"
+    },
+    "namespace_token": {
+      "description": "An extension namespace token. The token oasis is reserved and not allowed.",
+      "$ref": "#/$defs/token",
+      "not": {
+        "const": "oasis"
+      }
+    },
+    "date_time": {
+      "description": "An RFC 3339 date-time with the limits of the contract. Format checking is required.",
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^(?!0000)[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])[Tt]([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9](\\.[0-9]+)?([Zz]|[+-]([01][0-9]|2[0-3]):[0-5][0-9])$"
+    },
+    "date": {
+      "description": "A date YYYY-MM-DD with a valid Gregorian date. Format checking is required.",
+      "type": "string",
+      "format": "date",
+      "pattern": "^(?!0000)[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$"
+    },
+    "extensions": {
+      "description": "Namespaced extension data. Keys are namespace tokens. Values are objects with open contents.",
+      "type": "object",
+      "propertyNames": {
+        "$ref": "#/$defs/namespace_token"
+      },
+      "additionalProperties": {
+        "type": "object"
+      }
+    },
+    "source": {
+      "description": "Provenance of a record. Never used to resolve references.",
+      "type": "object",
+      "properties": {
+        "system": {
+          "$ref": "#/$defs/nonempty_string"
+        },
+        "instance": {
+          "type": "string"
+        },
+        "id": {
+          "$ref": "#/$defs/nonempty_string"
+        }
+      },
+      "required": [
+        "system",
+        "id"
+      ],
+      "additionalProperties": false
+    },
+    "record_base": {
+      "description": "Fields shared by every record. Each record schema adds its own type constant and closes the object.",
+      "type": "object",
+      "properties": {
+        "type": {
+          "$ref": "#/$defs/record_type"
+        },
+        "spec_version": {
+          "$ref": "#/$defs/spec_version"
+        },
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "source": {
+          "$ref": "#/$defs/source"
+        },
+        "extensions": {
+          "$ref": "#/$defs/extensions"
+        }
+      },
+      "required": [
+        "type",
+        "spec_version",
+        "id"
+      ]
+    },
+    "access": {
+      "description": "Access summary. The whole of access in this draft.",
+      "type": "object",
+      "properties": {
+        "status": {
+          "enum": [
+            "none",
+            "restricted",
+            "unknown"
+          ]
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "additionalProperties": false
+    },
+    "rate": {
+      "description": "A rational frame rate. Lowest terms are checked outside the schema.",
+      "type": "object",
+      "properties": {
+        "numerator": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "denominator": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "numerator",
+        "denominator"
+      ],
+      "additionalProperties": false
+    },
+    "time_base": {
+      "description": "A rate and a drop-frame flag. Drop-frame is allowed only at 30000/1001 and 60000/1001.",
+      "type": "object",
+      "properties": {
+        "rate": {
+          "$ref": "#/$defs/rate"
+        },
+        "drop_frame": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "rate",
+        "drop_frame"
+      ],
+      "additionalProperties": false,
+      "if": {
+        "properties": {
+          "drop_frame": {
+            "const": true
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "rate": {
+            "enum": [
+              {
+                "numerator": 30000,
+                "denominator": 1001
+              },
+              {
+                "numerator": 60000,
+                "denominator": 1001
+              }
+            ]
+          }
+        }
+      }
+    },
+    "frame": {
+      "description": "A frame position or duration. An integer, 0 or more.",
+      "type": "integer",
+      "minimum": 0
+    },
+    "seconds": {
+      "description": "Derived elapsed seconds from frame 0. A number, 0 or more.",
+      "type": "number",
+      "minimum": 0
+    },
+    "timecode_label": {
+      "description": "A timecode label HH:MM:SS:FF or HH:MM:SS;FF. Rate specific limits are applied by the asset schema.",
+      "type": "string",
+      "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9][:;][0-5][0-9]$"
+    },
+    "timecode_label_24": {
+      "description": "Non-drop label at 24/1 or 24000/1001.",
+      "type": "string",
+      "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]:([01][0-9]|2[0-3])$"
+    },
+    "timecode_label_25": {
+      "description": "Non-drop label at 25/1.",
+      "type": "string",
+      "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]:([01][0-9]|2[0-4])$"
+    },
+    "timecode_label_30": {
+      "description": "Non-drop label at 30/1 or 30000/1001.",
+      "type": "string",
+      "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]:[0-2][0-9]$"
+    },
+    "timecode_label_30_drop": {
+      "description": "Drop-frame label at 30000/1001. Labels 00 and 01 are skipped at the start of each minute except every tenth minute.",
+      "type": "string",
+      "pattern": "^(?![0-9]{2}:[0-5][1-9]:00;0[01]$)([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9];[0-2][0-9]$"
+    },
+    "timecode_label_48": {
+      "description": "Non-drop label at 48/1.",
+      "type": "string",
+      "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]:([0-3][0-9]|4[0-7])$"
+    },
+    "timecode_label_50": {
+      "description": "Non-drop label at 50/1.",
+      "type": "string",
+      "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]:[0-4][0-9]$"
+    },
+    "timecode_label_60": {
+      "description": "Non-drop label at 60/1 or 60000/1001.",
+      "type": "string",
+      "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]:[0-5][0-9]$"
+    },
+    "timecode_label_60_drop": {
+      "description": "Drop-frame label at 60000/1001. Labels 00 to 03 are skipped at the start of each minute except every tenth minute.",
+      "type": "string",
+      "pattern": "^(?![0-9]{2}:[0-5][1-9]:00;0[0-3]$)([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9];[0-5][0-9]$"
+    },
+    "label_rate": {
+      "description": "The rates at which timecode labels are allowed.",
+      "enum": [
+        {
+          "numerator": 24,
+          "denominator": 1
+        },
+        {
+          "numerator": 24000,
+          "denominator": 1001
+        },
+        {
+          "numerator": 25,
+          "denominator": 1
+        },
+        {
+          "numerator": 30,
+          "denominator": 1
+        },
+        {
+          "numerator": 30000,
+          "denominator": 1001
+        },
+        {
+          "numerator": 48,
+          "denominator": 1
+        },
+        {
+          "numerator": 50,
+          "denominator": 1
+        },
+        {
+          "numerator": 60,
+          "denominator": 1
+        },
+        {
+          "numerator": 60000,
+          "denominator": 1001
+        }
+      ]
+    },
+    "timing": {
+      "description": "The asset timeline: time base, optional source timecode anchor of frame 0, optional duration.",
+      "type": "object",
+      "properties": {
+        "time_base": {
+          "$ref": "#/$defs/time_base"
+        },
+        "source_timecode": {
+          "$ref": "#/$defs/timecode_label"
+        },
+        "duration_frames": {
+          "$ref": "#/$defs/frame"
+        }
+      },
+      "required": [
+        "time_base"
+      ],
+      "additionalProperties": false
+    },
+    "checksum": {
+      "description": "A declared digest of a file. Lowercase hexadecimal of the length the algorithm produces.",
+      "type": "object",
+      "properties": {
+        "algorithm": {
+          "enum": [
+            "md5",
+            "sha1",
+            "sha256",
+            "sha512",
+            "blake3"
+          ]
+        },
+        "value": {
+          "type": "string",
+          "pattern": "^[0-9a-f]+$"
+        }
+      },
+      "required": [
+        "algorithm",
+        "value"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "algorithm": {
+                "const": "md5"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "value": {
+                "minLength": 32,
+                "maxLength": 32
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "algorithm": {
+                "const": "sha1"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "value": {
+                "minLength": 40,
+                "maxLength": 40
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "algorithm": {
+                "const": "sha256"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "value": {
+                "minLength": 64,
+                "maxLength": 64
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "algorithm": {
+                "const": "sha512"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "value": {
+                "minLength": 128,
+                "maxLength": 128
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "algorithm": {
+                "const": "blake3"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "value": {
+                "minLength": 64,
+                "maxLength": 64
+              }
+            }
+          }
+        }
+      ]
+    },
+    "file": {
+      "description": "One file of an asset in one storage location.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "storage_location": {
+          "$ref": "#/$defs/reference"
+        },
+        "path": {
+          "$ref": "#/$defs/nonempty_string"
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "checksum": {
+          "$ref": "#/$defs/checksum"
+        },
+        "media_type": {
+          "$ref": "#/$defs/media_type"
+        },
+        "version": {
+          "$ref": "#/$defs/reference"
+        },
+        "created": {
+          "$ref": "#/$defs/date_time"
+        },
+        "modified": {
+          "$ref": "#/$defs/date_time"
+        },
+        "status": {
+          "type": "string"
+        },
+        "role": {
+          "enum": [
+            "master",
+            "mezzanine",
+            "preview",
+            "thumbnail",
+            "sidecar",
+            "other"
+          ]
+        },
+        "label": {
+          "type": "string"
+        },
+        "extensions": {
+          "$ref": "#/$defs/extensions"
+        }
+      },
+      "required": [
+        "id",
+        "storage_location",
+        "path"
+      ],
+      "additionalProperties": false
+    },
+    "sequence_range": {
+      "description": "Image-sequence numbering in file names. Inclusive start, exclusive end. Not a timeline.",
+      "type": "object",
+      "properties": {
+        "start": {
+          "type": "integer"
+        },
+        "end": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "start",
+        "end"
+      ],
+      "additionalProperties": false
+    },
+    "member": {
+      "description": "One file's place in a file group.",
+      "type": "object",
+      "properties": {
+        "file": {
+          "$ref": "#/$defs/reference"
+        },
+        "track_type": {
+          "enum": [
+            "video",
+            "audio",
+            "image",
+            "data",
+            "other"
+          ]
+        },
+        "track_index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "channel_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "sequence_range": {
+          "$ref": "#/$defs/sequence_range"
+        },
+        "segment_index": {
+          "description": "Order of this file within one recording that is split across several files. Sequence order only.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "extensions": {
+          "$ref": "#/$defs/extensions"
+        }
+      },
+      "required": [
+        "file",
+        "track_type",
+        "track_index"
+      ],
+      "additionalProperties": false
+    },
+    "file_group": {
+      "description": "An explicit set of files that belong together for one purpose.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "role": {
+          "enum": [
+            "primary",
+            "preview",
+            "thumbnail",
+            "companion",
+            "other"
+          ]
+        },
+        "label": {
+          "type": "string"
+        },
+        "complete": {
+          "type": "boolean"
+        },
+        "version": {
+          "$ref": "#/$defs/reference"
+        },
+        "members": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/member"
+          }
+        },
+        "extensions": {
+          "$ref": "#/$defs/extensions"
+        }
+      },
+      "required": [
+        "id",
+        "role",
+        "complete",
+        "members"
+      ],
+      "additionalProperties": false
+    },
+    "version": {
+      "description": "One state of an asset. The greatest ordinal is current.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "ordinal": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "label": {
+          "type": "string"
+        },
+        "created": {
+          "$ref": "#/$defs/date_time"
+        },
+        "modified": {
+          "$ref": "#/$defs/date_time"
+        },
+        "extensions": {
+          "$ref": "#/$defs/extensions"
+        }
+      },
+      "required": [
+        "id",
+        "ordinal"
+      ],
+      "additionalProperties": false
+    },
+    "frame_range": {
+      "description": "A frame range on the target asset's timeline. Inclusive start, exclusive end.",
+      "type": "object",
+      "properties": {
+        "start_frame": {
+          "$ref": "#/$defs/frame"
+        },
+        "end_frame": {
+          "$ref": "#/$defs/frame"
+        }
+      },
+      "required": [
+        "start_frame",
+        "end_frame"
+      ],
+      "additionalProperties": false
+    },
+    "relationship": {
+      "description": "A typed link from this asset to a target asset. A subclip requires a range.",
+      "type": "object",
+      "properties": {
+        "kind": {
+          "enum": [
+            "derived_from",
+            "subclip_of",
+            "variant_of"
+          ]
+        },
+        "target": {
+          "$ref": "#/$defs/reference"
+        },
+        "range": {
+          "$ref": "#/$defs/frame_range"
+        },
+        "description": {
+          "type": "string"
+        },
+        "extensions": {
+          "$ref": "#/$defs/extensions"
+        }
+      },
+      "required": [
+        "kind",
+        "target"
+      ],
+      "additionalProperties": false,
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "subclip_of"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "range"
+        ]
+      }
+    },
+    "media_type": {
+      "description": "Media type syntax: type and subtype of registry name characters (RFC 6838 section 4.2). Syntax only; registration is not checked.",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9!#$&^_.+-]{0,126}/[A-Za-z0-9][A-Za-z0-9!#$&^_.+-]{0,126}$"
+    },
+    "language_tag": {
+      "description": "Language tag well-formedness per RFC 5646 section 2.1: language, optional script, region, variants, extensions, private use, and the grandfathered forms, all case insensitive. Syntax only; subtag registry membership is not checked.",
+      "type": "string",
+      "pattern": "^(?:[Ee][Nn]-[Gg][Bb]-[Oo][Ee][Dd]|[Ii]-[Aa][Mm][Ii]|[Ii]-[Bb][Nn][Nn]|[Ii]-[Dd][Ee][Ff][Aa][Uu][Ll][Tt]|[Ii]-[Ee][Nn][Oo][Cc][Hh][Ii][Aa][Nn]|[Ii]-[Hh][Aa][Kk]|[Ii]-[Kk][Ll][Ii][Nn][Gg][Oo][Nn]|[Ii]-[Ll][Uu][Xx]|[Ii]-[Mm][Ii][Nn][Gg][Oo]|[Ii]-[Nn][Aa][Vv][Aa][Jj][Oo]|[Ii]-[Pp][Ww][Nn]|[Ii]-[Tt][Aa][Oo]|[Ii]-[Tt][Aa][Yy]|[Ii]-[Tt][Ss][Uu]|[Ss][Gg][Nn]-[Bb][Ee]-[Ff][Rr]|[Ss][Gg][Nn]-[Bb][Ee]-[Nn][Ll]|[Ss][Gg][Nn]-[Cc][Hh]-[Dd][Ee]|[Aa][Rr][Tt]-[Ll][Oo][Jj][Bb][Aa][Nn]|[Cc][Ee][Ll]-[Gg][Aa][Uu][Ll][Ii][Ss][Hh]|[Nn][Oo]-[Bb][Oo][Kk]|[Nn][Oo]-[Nn][Yy][Nn]|[Zz][Hh]-[Gg][Uu][Oo][Yy][Uu]|[Zz][Hh]-[Hh][Aa][Kk][Kk][Aa]|[Zz][Hh]-[Mm][Ii][Nn]|[Zz][Hh]-[Mm][Ii][Nn]-[Nn][Aa][Nn]|[Zz][Hh]-[Xx][Ii][Aa][Nn][Gg]|(?:(?:[A-Za-z]{2,3}(?:-[A-Za-z]{3}(?:-[A-Za-z]{3}){0,2})?|[A-Za-z]{4}|[A-Za-z]{5,8})(?:-[A-Za-z]{4})?(?:-(?:[A-Za-z]{2}|[0-9]{3}))?(?:-(?:[A-Za-z0-9]{5,8}|[0-9][A-Za-z0-9]{3}))*(?:-[0-9A-WY-Za-wy-z](?:-[A-Za-z0-9]{2,8})+)*(?:-[Xx](?:-[A-Za-z0-9]{1,8})+)?)|[Xx](?:-[A-Za-z0-9]{1,8})+)$"
+    },
+    "scalar_value": {
+      "description": "One metadata value of any type: a JSON string, integer, number, or boolean. Objects and null are never values.",
+      "type": [
+        "string",
+        "integer",
+        "number",
+        "boolean"
+      ]
+    },
+    "metadata_value": {
+      "description": "A definition reference and a value. The value is a scalar or an array of scalars; its shape against the definition's value_type and cardinality is checked outside the schema. Null is not a value.",
+      "type": "object",
+      "properties": {
+        "definition": {
+          "$ref": "#/$defs/reference"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/scalar_value"
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/scalar_value"
+              }
+            }
+          ]
+        },
+        "extensions": {
+          "$ref": "#/$defs/extensions"
+        }
+      },
+      "required": [
+        "definition",
+        "value"
+      ],
+      "additionalProperties": false
+    },
+    "metadata": {
+      "description": "Metadata values on an asset, collection, or annotation.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/metadata_value"
+      }
+    },
+    "option": {
+      "description": "One allowed value of an enum definition.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "label": {
+          "type": "string"
+        },
+        "extensions": {
+          "$ref": "#/$defs/extensions"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "additionalProperties": false
+    },
+    "constraints": {
+      "description": "Informative data about a source field. Never executed over values.",
+      "type": "object",
+      "properties": {
+        "minimum": {
+          "type": "number"
+        },
+        "maximum": {
+          "type": "number"
+        },
+        "min_length": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "max_length": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "pattern": {
+          "type": "string",
+          "format": "regex"
+        }
+      },
+      "additionalProperties": false
+    },
+    "collection_storage": {
+      "description": "The storage location and path a storage collection mirrors.",
+      "type": "object",
+      "properties": {
+        "storage_location": {
+          "$ref": "#/$defs/reference"
+        },
+        "path": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "storage_location",
+        "path"
+      ],
+      "additionalProperties": false
+    },
+    "collection_members": {
+      "description": "Membership owned by the collection record.",
+      "type": "object",
+      "properties": {
+        "complete": {
+          "type": "boolean"
+        },
+        "assets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/reference"
+          }
+        }
+      },
+      "required": [
+        "complete",
+        "assets"
+      ],
+      "additionalProperties": false
+    },
+    "connection": {
+      "description": "Non-secret connection facts: a required method token and an optional opaque credential reference.",
+      "type": "object",
+      "properties": {
+        "method": {
+          "$ref": "#/$defs/token"
+        },
+        "credential_reference": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "method"
+      ],
+      "additionalProperties": false
+    },
+    "annotation_fields": {
+      "description": "Fields shared by embedded and standalone annotations. Not closed on its own.",
+      "type": "object",
+      "properties": {
+        "purpose": {
+          "enum": [
+            "note",
+            "review",
+            "quality",
+            "transcript",
+            "chapter",
+            "keyword",
+            "other"
+          ]
+        },
+        "title": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "author": {
+          "type": "string"
+        },
+        "language": {
+          "$ref": "#/$defs/language_tag"
+        },
+        "created": {
+          "$ref": "#/$defs/date_time"
+        },
+        "modified": {
+          "$ref": "#/$defs/date_time"
+        },
+        "start_frame": {
+          "$ref": "#/$defs/frame"
+        },
+        "end_frame": {
+          "$ref": "#/$defs/frame"
+        },
+        "start_seconds": {
+          "$ref": "#/$defs/seconds"
+        },
+        "end_seconds": {
+          "$ref": "#/$defs/seconds"
+        },
+        "start_timecode": {
+          "$ref": "#/$defs/timecode_label"
+        },
+        "end_timecode": {
+          "$ref": "#/$defs/timecode_label"
+        },
+        "version": {
+          "$ref": "#/$defs/reference"
+        },
+        "metadata": {
+          "$ref": "#/$defs/metadata"
+        },
+        "extensions": {
+          "$ref": "#/$defs/extensions"
+        }
+      },
+      "required": [
+        "purpose"
+      ],
+      "dependentRequired": {
+        "end_frame": [
+          "start_frame"
+        ],
+        "start_seconds": [
+          "start_frame"
+        ],
+        "end_seconds": [
+          "end_frame"
+        ],
+        "start_timecode": [
+          "start_frame"
+        ],
+        "end_timecode": [
+          "end_frame"
+        ]
+      }
+    },
+    "embedded_annotation": {
+      "description": "An annotation inside an asset. It has no asset, type, or spec_version field. It may carry source provenance.",
+      "$ref": "#/$defs/annotation_fields",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "source": {
+          "$ref": "#/$defs/source"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "unevaluatedProperties": false
+    },
+    "producer": {
+      "description": "Software that wrote the package.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/nonempty_string"
+        },
+        "version": {
+          "$ref": "#/$defs/nonempty_string"
+        }
+      },
+      "required": [
+        "name",
+        "version"
+      ],
+      "additionalProperties": false
+    },
+    "registry_counts": {
+      "description": "Declared record count per package array.",
+      "type": "object",
+      "properties": {
+        "storage_locations": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "metadata_definitions": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "collections": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "assets": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "storage_locations",
+        "metadata_definitions",
+        "collections",
+        "assets"
+      ],
+      "additionalProperties": false
+    },
+    "registry_completeness": {
+      "description": "Whether each package array is the producer's whole set for that kind.",
+      "type": "object",
+      "properties": {
+        "storage_locations": {
+          "enum": [
+            "complete",
+            "partial"
+          ]
+        },
+        "metadata_definitions": {
+          "enum": [
+            "complete",
+            "partial"
+          ]
+        },
+        "collections": {
+          "enum": [
+            "complete",
+            "partial"
+          ]
+        },
+        "assets": {
+          "enum": [
+            "complete",
+            "partial"
+          ]
+        }
+      },
+      "required": [
+        "storage_locations",
+        "metadata_definitions",
+        "collections",
+        "assets"
+      ],
+      "additionalProperties": false
+    },
+    "namespace_declaration": {
+      "description": "Declaration of one extension namespace token in a package manifest.",
+      "type": "object",
+      "properties": {
+        "token": {
+          "$ref": "#/$defs/namespace_token"
+        },
+        "owner": {
+          "$ref": "#/$defs/nonempty_string"
+        },
+        "schema": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:"
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "token",
+        "owner"
+      ],
+      "additionalProperties": false
+    },
+    "manifest": {
+      "description": "Who produced the package, when, declared counts and completeness, and the extension namespaces used.",
+      "type": "object",
+      "properties": {
+        "producer": {
+          "$ref": "#/$defs/producer"
+        },
+        "produced_at": {
+          "$ref": "#/$defs/date_time"
+        },
+        "counts": {
+          "$ref": "#/$defs/registry_counts"
+        },
+        "completeness": {
+          "$ref": "#/$defs/registry_completeness"
+        },
+        "namespaces": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/namespace_declaration"
+          }
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "producer",
+        "produced_at",
+        "counts",
+        "completeness",
+        "namespaces"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

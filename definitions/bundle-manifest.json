@@ -1,0 +1,73 @@
+{
+  "manifest_version": "2.0.0",
+  "bundle_revision": "2.0.0-draft.2",
+  "spec_version": "2.0.0-draft.2",
+  "json_schema_dialect": "https://json-schema.org/draft/2020-12/schema",
+  "id_base": "https://www.northshoreautomation.com/schemas/oasis/2/",
+  "id_base_note": "Final host, decided 2026-10-14. Identifiers are never fetched. Load every schema from this bundle.",
+  "document_roots": [
+    "package",
+    "asset",
+    "collection",
+    "storage_location",
+    "metadata_definition",
+    "annotation"
+  ],
+  "schemas": [
+    {
+      "name": "common",
+      "path": "common.schema.json",
+      "$id": "https://www.northshoreautomation.com/schemas/oasis/2/common.schema.json",
+      "sha256": "13ee03a268a0f68858107909e4b325201ded103c77910e6b72226cfc6f3581bd"
+    },
+    {
+      "name": "package",
+      "path": "package.schema.json",
+      "$id": "https://www.northshoreautomation.com/schemas/oasis/2/package.schema.json",
+      "sha256": "a2a7e533ccb35a526ffe4957fff00c01526e159364644165892313d0c1ea7954"
+    },
+    {
+      "name": "asset",
+      "path": "asset.schema.json",
+      "$id": "https://www.northshoreautomation.com/schemas/oasis/2/asset.schema.json",
+      "sha256": "77fa057c9de00aaf487d709e715e239c2ceedc6eaebadf317b5af68eb1a195e1"
+    },
+    {
+      "name": "collection",
+      "path": "collection.schema.json",
+      "$id": "https://www.northshoreautomation.com/schemas/oasis/2/collection.schema.json",
+      "sha256": "8e29860c33e9f8fc0dc932c4634536e21c61aaf5120ba11bf85c93f3f6d8008a"
+    },
+    {
+      "name": "storage_location",
+      "path": "storage_location.schema.json",
+      "$id": "https://www.northshoreautomation.com/schemas/oasis/2/storage_location.schema.json",
+      "sha256": "b14937ed2e603a4369e40af6e4d1a631110c5096b2aa6151d8a160463fd6c349"
+    },
+    {
+      "name": "metadata_definition",
+      "path": "metadata_definition.schema.json",
+      "$id": "https://www.northshoreautomation.com/schemas/oasis/2/metadata_definition.schema.json",
+      "sha256": "e4c8e4961bd1069753cb7500e87b9119f38b31d6915bd9aea01cdec4e1f56094"
+    },
+    {
+      "name": "annotation",
+      "path": "annotation.schema.json",
+      "$id": "https://www.northshoreautomation.com/schemas/oasis/2/annotation.schema.json",
+      "sha256": "fd838a855dcfa2c8101d3964f351addcf7f0a4b8a5ddf01a1f3af19949193e7a"
+    }
+  ],
+  "namespace_declaration": {
+    "location": "manifest.namespaces",
+    "$ref": "https://www.northshoreautomation.com/schemas/oasis/2/common.schema.json#/$defs/namespace_declaration",
+    "fields": {
+      "token": "required",
+      "owner": "required",
+      "schema": "optional",
+      "description": "optional"
+    },
+    "reserved_tokens": [
+      "oasis"
+    ]
+  }
+}

@@ -1,0 +1,152 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://www.northshoreautomation.com/schemas/oasis/2/metadata_definition.schema.json",
+  "title": "OASIS 2.0 metadata definition",
+  "description": "A metadata definition record: a field's label, value type, cardinality, enum options, and informative constraints. Its id names the field.",
+  "type": "object",
+  "allOf": [
+    {
+      "$ref": "common.schema.json#/$defs/record_base"
+    },
+    {
+      "if": {
+        "properties": {
+          "value_type": {
+            "const": "enum"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "options"
+        ]
+      },
+      "else": {
+        "not": {
+          "required": [
+            "options"
+          ]
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "value_type": {
+            "not": {
+              "enum": [
+                "integer",
+                "number"
+              ]
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "constraints": {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "minimum"
+                  ]
+                },
+                {
+                  "required": [
+                    "maximum"
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "value_type": {
+            "not": {
+              "const": "string"
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "constraints": {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "min_length"
+                  ]
+                },
+                {
+                  "required": [
+                    "max_length"
+                  ]
+                },
+                {
+                  "required": [
+                    "pattern"
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  ],
+  "properties": {
+    "type": {
+      "const": "metadata_definition"
+    },
+    "label": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "value_type": {
+      "enum": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "date",
+        "datetime",
+        "enum",
+        "asset_reference",
+        "collection_reference"
+      ]
+    },
+    "cardinality": {
+      "enum": [
+        "single",
+        "multiple"
+      ]
+    },
+    "options": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "common.schema.json#/$defs/option"
+      }
+    },
+    "constraints": {
+      "$ref": "common.schema.json#/$defs/constraints"
+    },
+    "required": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "type",
+    "value_type",
+    "cardinality"
+  ],
+  "unevaluatedProperties": false
+}

@@ -1,0 +1,100 @@
+{
+  "type": "package",
+  "spec_version": "2.0.0-draft.2",
+  "id": "pkg-0001",
+  "manifest": {
+    "producer": {
+      "name": "example-exporter",
+      "version": "0.1.0"
+    },
+    "produced_at": "2026-10-05T09:00:00Z",
+    "counts": {
+      "storage_locations": 0,
+      "metadata_definitions": 4,
+      "collections": 1,
+      "assets": 1
+    },
+    "completeness": {
+      "storage_locations": "complete",
+      "metadata_definitions": "complete",
+      "collections": "complete",
+      "assets": "partial"
+    },
+    "namespaces": []
+  },
+  "metadata_definitions": [
+    {
+      "type": "metadata_definition",
+      "spec_version": "2.0.0-draft.2",
+      "id": "md-keywords",
+      "value_type": "string",
+      "cardinality": "multiple"
+    },
+    {
+      "type": "metadata_definition",
+      "spec_version": "2.0.0-draft.2",
+      "id": "md-related",
+      "value_type": "asset_reference",
+      "cardinality": "multiple"
+    },
+    {
+      "type": "metadata_definition",
+      "spec_version": "2.0.0-draft.2",
+      "id": "md-project",
+      "value_type": "collection_reference",
+      "cardinality": "single"
+    },
+    {
+      "type": "metadata_definition",
+      "spec_version": "2.0.0-draft.2",
+      "id": "md-source",
+      "value_type": "asset_reference",
+      "cardinality": "single"
+    }
+  ],
+  "collections": [
+    {
+      "type": "collection",
+      "spec_version": "2.0.0-draft.2",
+      "id": "col-01",
+      "title": "Example Project",
+      "collection_kind": "logical",
+      "access": {
+        "status": "none"
+      }
+    }
+  ],
+  "assets": [
+    {
+      "type": "asset",
+      "spec_version": "2.0.0-draft.2",
+      "id": "a-0001",
+      "title": "Example Clip",
+      "access": {
+        "status": "none"
+      },
+      "metadata": [
+        {
+          "definition": "md-keywords",
+          "value": [
+            "example"
+          ]
+        },
+        {
+          "definition": "md-related",
+          "value": [
+            "a-0001"
+          ]
+        },
+        {
+          "definition": "md-project",
+          "value": "col-01"
+        },
+        {
+          "definition": "md-source",
+          "value": "a-0099"
+        }
+      ]
+    }
+  ]
+}

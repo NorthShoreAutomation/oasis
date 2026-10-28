@@ -1,0 +1,33 @@
+{
+  "type": "asset",
+  "spec_version": "2.0.0-draft.2",
+  "id": "a-0001",
+  "title": "Example Clip",
+  "access": {
+    "status": "unknown"
+  },
+  "timing": {
+    "time_base": {
+      "rate": {
+        "numerator": 25,
+        "denominator": 1
+      },
+      "drop_frame": false
+    },
+    "duration_frames": 750
+  },
+  "versions": [
+    {
+      "id": "v1",
+      "ordinal": 0
+    }
+  ],
+  "files": [
+    {
+      "id": "f-1",
+      "storage_location": "sl-01",
+      "path": "media/f-1.bin",
+      "version": "v9"
+    }
+  ]
+}

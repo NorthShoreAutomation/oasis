@@ -1,0 +1,28 @@
+{
+  "type": "annotation",
+  "spec_version": "2.0.0-draft.2",
+  "id": "ann-0002",
+  "source": {"system": "example-review-tool", "id": "comment-5521"},
+  "asset": "a-0100",
+  "purpose": "review",
+  "title": "Opening title too long",
+  "text": "Change requested: shorten the opening title.",
+  "category": "change_request",
+  "author": "reviewer-01",
+  "language": "en",
+  "created": "2026-09-01T10:15:00Z",
+  "modified": "2026-09-01T10:20:00Z",
+  "start_frame": 250,
+  "end_frame": 300,
+  "start_seconds": 10,
+  "end_seconds": 12,
+  "start_timecode": "10:00:10:00",
+  "end_timecode": "10:00:12:00",
+  "version": "v2",
+  "metadata": [
+    {"definition": "md-approval", "value": "rej"}
+  ],
+  "extensions": {
+    "vendor_a": {"thread": "t-77", "resolved": false}
+  }
+}

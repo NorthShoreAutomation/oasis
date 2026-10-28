@@ -1,0 +1,44 @@
+{
+  "type": "asset",
+  "spec_version": "2.0.0-draft.2",
+  "id": "a-0001",
+  "title": "Example Clip",
+  "access": {
+    "status": "unknown"
+  },
+  "timing": {
+    "time_base": {
+      "rate": {
+        "numerator": 25,
+        "denominator": 1
+      },
+      "drop_frame": false
+    },
+    "duration_frames": 750
+  },
+  "files": [
+    {
+      "id": "f-1",
+      "storage_location": "sl-01",
+      "path": "media/f-1.bin"
+    }
+  ],
+  "file_groups": [
+    {
+      "id": "g-1",
+      "role": "primary",
+      "complete": true,
+      "members": [
+        {
+          "file": "f-1",
+          "track_type": "image",
+          "track_index": 0,
+          "sequence_range": {
+            "start": 10,
+            "end": 10
+          }
+        }
+      ]
+    }
+  ]
+}

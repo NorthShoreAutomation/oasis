@@ -1,0 +1,17 @@
+{
+  "type": "asset",
+  "spec_version": "2.0.0-draft.2",
+  "id": "a-0001",
+  "title": "Example Clip",
+  "access": {
+    "status": "unknown"
+  },
+  "metadata": [
+    {
+      "definition": "md-keywords",
+      "value": {
+        "text": "x"
+      }
+    }
+  ]
+}

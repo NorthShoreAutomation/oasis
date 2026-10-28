@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://www.northshoreautomation.com/schemas/oasis/2/storage_location.schema.json",
+  "title": "OASIS 2.0 storage location",
+  "description": "A storage location record: a named place where files live, with a storage kind token and an opaque root. It carries no secret values. Validation never connects to it.",
+  "type": "object",
+  "allOf": [
+    {
+      "$ref": "common.schema.json#/$defs/record_base"
+    }
+  ],
+  "properties": {
+    "type": {
+      "const": "storage_location"
+    },
+    "name": {
+      "$ref": "common.schema.json#/$defs/nonempty_string"
+    },
+    "system": {
+      "$ref": "common.schema.json#/$defs/token"
+    },
+    "root": {
+      "type": "string"
+    },
+    "connection": {
+      "$ref": "common.schema.json#/$defs/connection"
+    },
+    "status": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "created": {
+      "$ref": "common.schema.json#/$defs/date_time"
+    },
+    "modified": {
+      "$ref": "common.schema.json#/$defs/date_time"
+    }
+  },
+  "required": [
+    "type",
+    "name",
+    "system"
+  ],
+  "unevaluatedProperties": false
+}
