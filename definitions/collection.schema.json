@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://www.northshoreautomation.com/schemas/oasis/2/collection.schema.json",
   "title": "OASIS 2.0 collection",
-  "description": "A collection record: a named grouping of assets with a collection kind, an optional parent, and membership owned by this record. A storage collection declares the storage it mirrors.",
+  "description": "A collection record: a named grouping with a collection type. Membership is recorded on each member. A storage collection declares the storage it mirrors.",
   "type": "object",
   "allOf": [
     {
@@ -10,8 +10,11 @@
     },
     {
       "if": {
+        "required": [
+          "collection_type"
+        ],
         "properties": {
-          "collection_kind": {
+          "collection_type": {
             "const": "storage"
           }
         }
@@ -31,31 +34,25 @@
     }
   ],
   "properties": {
-    "type": {
-      "const": "collection"
-    },
     "title": {
       "$ref": "common.schema.json#/$defs/nonempty_string"
     },
-    "collection_kind": {
+    "collection_type": {
+      "description": "The type of grouping: logical, storage (mirrors a location in a storage system), or other.",
       "enum": [
         "logical",
         "storage",
-        "query",
         "other"
       ]
     },
     "description": {
       "type": "string"
     },
-    "parent": {
-      "$ref": "common.schema.json#/$defs/reference"
-    },
     "storage": {
       "$ref": "common.schema.json#/$defs/collection_storage"
     },
-    "members": {
-      "$ref": "common.schema.json#/$defs/collection_members"
+    "member_of": {
+      "$ref": "common.schema.json#/$defs/member_of"
     },
     "created": {
       "$ref": "common.schema.json#/$defs/date_time"
@@ -71,10 +68,8 @@
     }
   },
   "required": [
-    "type",
     "title",
-    "collection_kind",
-    "access"
+    "collection_type"
   ],
   "unevaluatedProperties": false
 }

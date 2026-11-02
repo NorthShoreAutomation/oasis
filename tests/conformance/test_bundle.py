@@ -32,10 +32,10 @@ class RealManifestTests(unittest.TestCase):
     def test_real_manifest_parses(self):
         manifest = load_bundle_manifest(ROOT)
         self.assertIsInstance(manifest, BundleManifest)
-        self.assertEqual(len(manifest.schemas), 7)
-        self.assertEqual(len(manifest.document_roots), 6)
-        self.assertEqual(manifest.bundle_revision, "2.0.0-draft.2")
-        self.assertEqual(manifest.spec_version, "2.0.0-draft.2")
+        self.assertEqual(len(manifest.schemas), 6)
+        self.assertEqual(manifest.document_roots, ("package",))
+        self.assertEqual(manifest.bundle_revision, "2.0.0-draft.3")
+        self.assertEqual(manifest.spec_version, "2.0.0-draft.3")
         self.assertTrue(manifest.id_base.endswith("/"))
         self.assertEqual(manifest.reserved_tokens, ("oasis",))
         for entry in manifest.schemas:

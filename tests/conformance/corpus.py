@@ -5,7 +5,10 @@ once. ``load_manifest`` strict-parses the manifest and refuses any shape
 problem with ``SetupFailed``: an unknown or missing key, a wrong type, an
 unknown status value, unsorted diagnostics, a duplicate id, a path that is
 not ``records/<id>.json``, a case whose file is missing, or a record file with
-no case.
+no case. ``expected_schema_error`` is present exactly on a structurally
+invalid case: the keyword and the RFC 6901 pointer of one error that the
+schema stage reports. A ``false`` subschema has no keyword and is named
+``false``.
 """
 
 from dataclasses import dataclass
@@ -19,7 +22,7 @@ __all__ = ["DEFAULT_MANIFEST", "FixtureCase", "load_manifest"]
 DEFAULT_MANIFEST = Path(__file__).resolve().parent / "fixtures" / "manifest.json"
 
 MANIFEST_VERSION = "2.0.0"
-CONTRACT = "2.0.0-draft.2"
+CONTRACT = "2.0.0-draft.3"
 
 _TOP_KEYS = frozenset({"manifest_version", "contract", "provenance", "cases"})
 _PROVENANCE_KEYS = frozenset({"kind", "source", "reuse_terms"})
@@ -34,6 +37,7 @@ _CASE_KEYS = frozenset(
         "note",
     }
 )
+_SCHEMA_ERROR_KEYS = frozenset({"keyword", "path"})
 _STATUSES = frozenset({"complete", "input-invalid", "unsupported"})
 _STRUCTURALS = frozenset({"valid", "invalid", "not-run"})
 
@@ -49,6 +53,7 @@ class FixtureCase:
     expected_diagnostics: tuple[tuple[str, str], ...]
     rules: tuple[str, ...]
     note: str
+    expected_schema_error: tuple[str, str] | None = None
 
 
 def _fail(message):
@@ -89,8 +94,31 @@ def _diagnostics(value, where):
     return tuple(pairs)
 
 
+def _pointer(value, where):
+    if not isinstance(value, str) or not all(
+        part.replace("~0", "").replace("~1", "").count("~") == 0 for part in value.split("/")
+    ) or (value and not value.startswith("/")):
+        _fail("%s is not a JSON Pointer" % where)
+    return value
+
+
+def _schema_error(value, where):
+    entry = _object(value, _SCHEMA_ERROR_KEYS, where)
+    return _string(entry["keyword"], where + " keyword"), _pointer(entry["path"], where + " path")
+
+
 def _case(value, index):
     where = "case %d" % index
+    if not isinstance(value, dict):
+        _fail("%s is not an object" % where)
+    schema_error = None
+    if "expected_schema_error" in value:
+        if value.get("expected_structural") != "invalid":
+            _fail("%s has expected_schema_error but is not structurally invalid" % where)
+        schema_error = _schema_error(value["expected_schema_error"], where + " expected_schema_error")
+        value = {k: v for k, v in value.items() if k != "expected_schema_error"}
+    elif value.get("expected_structural") == "invalid":
+        _fail("%s is structurally invalid but has no expected_schema_error" % where)
     entry = _object(value, _CASE_KEYS, where)
     case_id = _string(entry["id"], where + " id")
     path = _string(entry["path"], where + " path")
@@ -112,6 +140,7 @@ def _case(value, index):
         expected_diagnostics=_diagnostics(entry["expected_diagnostics"], where + " expected_diagnostics"),
         rules=_strings(entry["rules"], where + " rules"),
         note=_string(entry["note"], where + " note"),
+        expected_schema_error=schema_error,
     )
 
 

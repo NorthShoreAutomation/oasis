@@ -1,0 +1,125 @@
+{
+  "type": "package",
+  "spec_version": "2.0.0-draft.3",
+  "id": "pkg-0001",
+  "manifest": {
+    "producer": {
+      "name": "example-exporter",
+      "version": "0.1.0"
+    },
+    "produced_at": "2026-10-05T09:00:00Z",
+    "counts": {
+      "storage_locations": 1,
+      "metadata_definitions": 0,
+      "collections": 0,
+      "assets": 1
+    },
+    "namespaces": []
+  },
+  "storage_locations": [
+    {
+      "id": "sl-01",
+      "name": "Example Volume A",
+      "system": "source_local",
+      "root": "/mnt/volume_a/"
+    }
+  ],
+  "assets": [
+    {
+      "id": "a-0001",
+      "title": "Example Clip",
+      "timing": {
+        "time_base": {
+          "rate": {
+            "numerator": 25,
+            "denominator": 1
+          },
+          "drop_frame": false
+        },
+        "duration_frames": 750
+      },
+      "files": [
+        {
+          "id": "f-1",
+          "locations": [
+            {
+              "storage_location": "sl-01",
+              "path": "media/f-1.bin"
+            }
+          ]
+        },
+        {
+          "id": "f-2",
+          "locations": [
+            {
+              "storage_location": "sl-01",
+              "path": "media/f-2.bin"
+            }
+          ]
+        }
+      ],
+      "file_groups": [
+        {
+          "id": "g-1",
+          "role": "primary",
+          "members": [
+            {
+              "file": "f-1",
+              "track_type": "video",
+              "track_index": 0,
+              "stream_index": 0,
+              "codec": "AVC",
+              "width": 3840,
+              "height": 2160,
+              "display_aspect_ratio": {
+                "numerator": 16,
+                "denominator": 9
+              },
+              "bit_depth": 10,
+              "frame_rate": {
+                "numerator": 25,
+                "denominator": 1
+              },
+              "frame_count": 750,
+              "scan_type": "progressive"
+            },
+            {
+              "file": "f-1",
+              "track_type": "audio",
+              "track_index": 0,
+              "stream_index": 1,
+              "language": "en",
+              "codec": "PCM",
+              "bit_depth": 24,
+              "sample_rate": 48000,
+              "channel_count": 2,
+              "channel_layout": [
+                "left",
+                "right"
+              ]
+            },
+            {
+              "file": "f-1",
+              "track_type": "audio",
+              "track_index": 1,
+              "stream_index": 2,
+              "language": "zxx",
+              "codec": "PCM",
+              "sample_rate": 48000,
+              "channel_count": 1,
+              "channel_layout": [
+                "mono"
+              ]
+            },
+            {
+              "file": "f-2",
+              "track_type": "data",
+              "track_index": 0,
+              "label": "Captions"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

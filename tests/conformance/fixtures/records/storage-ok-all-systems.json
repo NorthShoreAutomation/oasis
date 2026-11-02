@@ -1,0 +1,62 @@
+{
+  "type": "package",
+  "spec_version": "2.0.0-draft.3",
+  "id": "pkg-0001",
+  "manifest": {
+    "producer": {
+      "name": "example-exporter",
+      "version": "0.1.0"
+    },
+    "produced_at": "2026-10-05T09:00:00Z",
+    "counts": {
+      "storage_locations": 7,
+      "metadata_definitions": 0,
+      "collections": 0,
+      "assets": 0
+    },
+    "namespaces": []
+  },
+  "storage_locations": [
+    {
+      "id": "sl-01",
+      "name": "Example Volume A",
+      "system": "source_local",
+      "root": "/mnt/volume_a/"
+    },
+    {
+      "id": "sl-02",
+      "name": "Example Share A",
+      "system": "network_share",
+      "root": "server_a.invalid:/export/share_a/"
+    },
+    {
+      "id": "sl-03",
+      "name": "Example Tape 1",
+      "system": "tape",
+      "root": "TAPE01"
+    },
+    {
+      "id": "sl-05",
+      "name": "Example Bucket A",
+      "system": "s3",
+      "root": "example-bucket-a"
+    },
+    {
+      "id": "sl-06",
+      "name": "Example Bucket B",
+      "system": "gcs",
+      "root": "example-bucket-b"
+    },
+    {
+      "id": "sl-07",
+      "name": "Example Container A",
+      "system": "azure_blob",
+      "root": "account_a/container_a"
+    },
+    {
+      "id": "sl-08",
+      "name": "Example Other Store",
+      "system": "other"
+    }
+  ]
+}

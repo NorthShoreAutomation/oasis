@@ -78,16 +78,23 @@ class BundleLoadTests(unittest.TestCase):
     def test_bundle_is_cached(self):
         self.assertIs(load_bundle(DEFINITIONS), load_bundle(DEFINITIONS))
 
-    def test_asset_minimal_is_valid(self):
-        entry = load_bundle(DEFINITIONS).entry_point("asset")
-        self.assertEqual(entry.kind, "asset")
-        document = parse_input((EXAMPLES / "asset-minimal.json").read_bytes())
+    def test_package_minimal_is_valid(self):
+        entry = load_bundle(DEFINITIONS).entry_point("package")
+        self.assertEqual(entry.kind, "package")
+        document = parse_input((EXAMPLES / "package-minimal.json").read_bytes())
         self.assertEqual(entry.validate(document), [])
+
+    def test_package_is_the_only_document_root(self):
+        self.assertEqual(load_bundle(DEFINITIONS).manifest.document_roots, ("package",))
+        for kind in ("asset", "collection", "storage_location", "metadata_definition"):
+            with self.subTest(kind=kind):
+                with self.assertRaises(SetupFailed):
+                    load_bundle(DEFINITIONS).entry_point(kind)
 
     def test_every_example_is_valid_for_its_kind(self):
         bundle = load_bundle(DEFINITIONS)
         paths = sorted(EXAMPLES.glob("*.json"))
-        self.assertEqual(len(paths), 13)
+        self.assertEqual([p.stem for p in paths], ["package-complete", "package-full", "package-minimal"])
         for path in paths:
             document = parse_input(path.read_bytes())
             kind = document.value["type"]
@@ -106,15 +113,15 @@ class BundleLoadTests(unittest.TestCase):
             load_bundle(DEFINITIONS).entry_point("nothing")
 
     def test_validate_requires_parsed_input(self):
-        entry = load_bundle(DEFINITIONS).entry_point("asset")
+        entry = load_bundle(DEFINITIONS).entry_point("package")
         with self.assertRaises(TypeError):
-            entry.validate(_example("asset-minimal.json"))
+            entry.validate(_example("package-minimal.json"))
 
 
 class SetupAuditTests(_CopiedBundleMixin, unittest.TestCase):
     def test_copied_bundle_control_loads(self):
         root = self.copied_bundle("common", lambda tree: None)
-        load_bundle(root).entry_point("asset")
+        load_bundle(root).entry_point("package")
 
     def test_external_ref_does_not_resolve(self):
         def mutate(tree):
@@ -298,85 +305,75 @@ class TypeCheckerTests(unittest.TestCase):
         self.assertFalse(loader.TYPE_CHECKER.is_type(True, "integer"))
 
 
+def _decimals(node):
+    """Every Decimal in a parsed tree."""
+    if isinstance(node, Decimal):
+        yield node
+    elif isinstance(node, dict):
+        for value in node.values():
+            yield from _decimals(value)
+    elif isinstance(node, list):
+        for item in node:
+            yield from _decimals(item)
+
+
 class CrossReferenceTests(unittest.TestCase):
     """The custom pattern and type checks hold across every cross-file $ref."""
 
+    RATE = '"time_base": {"rate": {"numerator": 24, "denominator": 1}'
+
     def setUp(self):
-        self.bundle = load_bundle(DEFINITIONS)
+        self.entry = load_bundle(DEFINITIONS).entry_point("package")
 
-    def _package_with(self, key, record):
+    def test_token_dollar_does_not_match_before_trailing_newline(self):
+        # The token pattern lives in common.schema.json; package.schema.json refers to it.
         package = _example("package-minimal.json")
-        package[key] = [record]
-        return package
-
-    def test_token_dollar_does_not_match_before_trailing_newline_standalone(self):
-        location = _example("storage_location-minimal.json")
-        location["system"] = "filesystem\n"
-        errors = self.bundle.entry_point("storage_location").validate(_doc(location))
+        package["manifest"]["namespaces"] = [{"token": "vendor_a", "owner": "Example Archive"}]
+        self.assertEqual(self.entry.validate(_doc(package)), [])
+        package["manifest"]["namespaces"][0]["token"] = "vendor_a\n"
+        errors = self.entry.validate(_doc(package))
         self.assertIn("pattern", _keywords(errors))
 
-    def test_token_dollar_does_not_match_before_trailing_newline_in_package(self):
-        location = _example("storage_location-minimal.json")
-        package = self._package_with("storage_locations", location)
-        entry = self.bundle.entry_point("package")
-        self.assertEqual(entry.validate(_doc(package)), [])
-        location["system"] = "filesystem\n"
-        errors = entry.validate(_doc(package))
-        self.assertIn("pattern", _keywords(errors))
-
-    @staticmethod
-    def _decimal_rate_asset_bytes():
-        text = (EXAMPLES / "asset-full.json").read_text(encoding="utf-8")
-        needle = '"rate": {"numerator": 25, "denominator": 1}'
-        assert needle in text
-        return text.replace(needle, '"rate": {"numerator": 25.0, "denominator": 1}')
-
-    def test_integral_decimal_rate_accepted_standalone(self):
-        document = parse_input(self._decimal_rate_asset_bytes().encode("utf-8"))
-        self.assertIn(Decimal("25.0"), [document.value["timing"]["time_base"]["rate"]["numerator"]])
-        self.assertEqual(self.bundle.entry_point("asset").validate(document), [])
-
-    def test_integral_decimal_rate_accepted_in_package(self):
-        asset_text = self._decimal_rate_asset_bytes()
-        package_text = json.dumps(_example("package-minimal.json"))
-        assert package_text.endswith("}")
-        text = package_text[:-1] + ', "assets": [' + asset_text + "]}"
+    def test_integral_decimal_rate_accepted(self):
+        text = (EXAMPLES / "package-full.json").read_text(encoding="utf-8")
+        self.assertEqual(text.count(self.RATE), 1)
+        text = text.replace(self.RATE, self.RATE.replace("24,", "24.0,"))
         document = parse_input(text.encode("utf-8"))
-        rate = document.value["assets"][0]["timing"]["time_base"]["rate"]["numerator"]
-        self.assertIsInstance(rate, Decimal)
-        self.assertEqual(self.bundle.entry_point("package").validate(document), [])
+        self.assertIn(Decimal("24.0"), list(_decimals(document.value)))
+        self.assertEqual(self.entry.validate(document), [])
 
     def test_bool_rate_numerator_rejected(self):
-        asset = _example("asset-full.json")
-        asset["timing"]["time_base"]["rate"]["numerator"] = True
-        errors = self.bundle.entry_point("asset").validate(_doc(asset))
+        text = (EXAMPLES / "package-full.json").read_text(encoding="utf-8")
+        text = text.replace(self.RATE, self.RATE.replace("24,", "true,"))
+        errors = self.entry.validate(parse_input(text.encode("utf-8")))
         self.assertNotEqual(errors, [])
 
 
 class NestingTests(unittest.TestCase):
     def test_document_nested_1500_levels_fails_setup_at_parse(self):
         nested = '{"a":' * 1500 + "{}" + "}" * 1500
-        asset = json.dumps(_example("asset-minimal.json"))
-        text = asset[:-1] + ', "extensions": {"vendor_a": ' + nested + "}}"
+        package = json.dumps(_example("package-minimal.json"))
+        text = package[:-1] + ', "extensions": {"vendor_a": ' + nested + "}}"
         with self.assertRaisesRegex(SetupFailed, "input nesting exceeds"):
             parse_input(text.encode("utf-8"))
 
-
     def test_constraint_pattern_nested_1500_levels_fails_setup(self):
         # Valid ECMA-262 syntax nested beyond the checker limit is not "invalid".
-        definition = _example("metadata_definition-full.json")
-        definition["constraints"]["pattern"] = "(" * 1500 + "a" + ")" * 1500
-        entry = load_bundle(DEFINITIONS).entry_point("metadata_definition")
+        package = _example("package-full.json")
+        definitions = [d for d in package["metadata_definitions"] if "pattern" in d.get("constraints", {})]
+        self.assertTrue(definitions)
+        definitions[0]["constraints"]["pattern"] = "(" * 1500 + "a" + ")" * 1500
+        entry = load_bundle(DEFINITIONS).entry_point("package")
         with self.assertRaisesRegex(SetupFailed, "^pattern nesting exceeds the checker's resource limit$"):
-            entry.validate(_doc(definition))
+            entry.validate(_doc(package))
 
 
 class ValidateGuardTests(unittest.TestCase):
     """EntryPoint.validate turns evaluation failures into SetupFailed."""
 
     def setUp(self):
-        self.entry = load_bundle(DEFINITIONS).entry_point("asset")
-        self.document = parse_input((EXAMPLES / "asset-minimal.json").read_bytes())
+        self.entry = load_bundle(DEFINITIONS).entry_point("package")
+        self.document = parse_input((EXAMPLES / "package-minimal.json").read_bytes())
 
     def _raising(self, error):
         validator_class = type(self.entry._validator)

@@ -1,0 +1,222 @@
+{
+  "type": "package",
+  "spec_version": "2.0.0-draft.3",
+  "id": "pkg-0001",
+  "manifest": {
+    "producer": {
+      "name": "example-exporter",
+      "version": "0.1.0"
+    },
+    "produced_at": "2026-10-05T09:00:00Z",
+    "counts": {
+      "storage_locations": 1,
+      "metadata_definitions": 2,
+      "collections": 1,
+      "assets": 2
+    },
+    "namespaces": []
+  },
+  "storage_locations": [
+    {
+      "id": "sl-01",
+      "name": "Example Volume A",
+      "system": "source_local",
+      "root": "/mnt/volume_a/"
+    }
+  ],
+  "metadata_definitions": [
+    {
+      "id": "md-project",
+      "value_type": "collection_reference",
+      "cardinality": "single"
+    },
+    {
+      "id": "md-description",
+      "value_type": "string",
+      "cardinality": "single"
+    }
+  ],
+  "collections": [
+    {
+      "id": "col-01",
+      "title": "Example Collection",
+      "collection_type": "logical"
+    }
+  ],
+  "assets": [
+    {
+      "id": "a-0001",
+      "title": "Example Clip",
+      "versions": [
+        {
+          "id": "v-1",
+          "ordinal": 0,
+          "label": "Original",
+          "created": "2026-01-10T08:00:00Z",
+          "timing": {
+            "time_base": {
+              "rate": {
+                "numerator": 25,
+                "denominator": 1
+              },
+              "drop_frame": false
+            },
+            "duration_frames": 750
+          },
+          "files": [
+            {
+              "id": "f-1",
+              "locations": [
+                {
+                  "storage_location": "sl-01",
+                  "path": "media/f-1.bin"
+                }
+              ],
+              "media_type": "application/mxf",
+              "role": "master"
+            }
+          ],
+          "file_groups": [
+            {
+              "id": "g-1",
+              "role": "primary",
+              "members": [
+                {
+                  "file": "f-1",
+                  "track_type": "video",
+                  "track_index": 0
+                }
+              ]
+            }
+          ],
+          "metadata": [
+            {
+              "definition": "md-description",
+              "value": "First cut"
+            }
+          ],
+          "annotations": [
+            {
+              "id": "an-1",
+              "purpose": "review",
+              "text": "Example review note",
+              "start_frame": 100,
+              "end_frame": 200
+            }
+          ]
+        },
+        {
+          "id": "v-2",
+          "ordinal": 1,
+          "label": "Revision",
+          "timing": {
+            "time_base": {
+              "rate": {
+                "numerator": 25,
+                "denominator": 1
+              },
+              "drop_frame": false
+            },
+            "duration_frames": 800
+          },
+          "files": [
+            {
+              "id": "f-2",
+              "locations": [
+                {
+                  "storage_location": "sl-01",
+                  "path": "media/f-2.bin"
+                }
+              ],
+              "media_type": "application/mxf",
+              "role": "master"
+            }
+          ],
+          "file_groups": [
+            {
+              "id": "g-2",
+              "role": "primary",
+              "members": [
+                {
+                  "file": "f-2",
+                  "track_type": "video",
+                  "track_index": 0
+                }
+              ]
+            }
+          ],
+          "metadata": [
+            {
+              "definition": "md-description",
+              "value": "Second cut"
+            }
+          ],
+          "annotations": [
+            {
+              "id": "an-2",
+              "purpose": "note",
+              "start_seconds": 4
+            }
+          ]
+        }
+      ],
+      "current_version": "v-2",
+      "unassigned": {
+        "files": [
+          {
+            "id": "f-3",
+            "locations": [
+              {
+                "storage_location": "sl-01",
+                "path": "media/f-3.bin"
+              }
+            ],
+            "media_type": "video/mp4",
+            "role": "preview"
+          }
+        ],
+        "metadata": [
+          {
+            "definition": "md-description",
+            "value": "A cut of unknown version"
+          }
+        ],
+        "annotations": [
+          {
+            "id": "an-3",
+            "purpose": "note",
+            "text": "Example note with no version"
+          }
+        ]
+      },
+      "relationships": [
+        {
+          "type": "derived_from",
+          "target": "a-0002"
+        }
+      ],
+      "metadata": [
+        {
+          "definition": "md-project",
+          "value": "col-01"
+        }
+      ],
+      "annotations": [
+        {
+          "id": "an-4",
+          "purpose": "keyword",
+          "text": "example"
+        }
+      ],
+      "member_of": [
+        {
+          "collection": "col-01"
+        }
+      ]
+    },
+    {
+      "id": "a-0002",
+      "title": "Example Source Clip"
+    }
+  ]
+}

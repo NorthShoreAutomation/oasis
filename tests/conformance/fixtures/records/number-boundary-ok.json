@@ -1,0 +1,56 @@
+{
+  "type": "package",
+  "spec_version": "2.0.0-draft.3",
+  "id": "pkg-0001",
+  "manifest": {
+    "producer": {
+      "name": "example-exporter",
+      "version": "0.1.0"
+    },
+    "produced_at": "2026-10-05T09:00:00Z",
+    "counts": {
+      "storage_locations": 1,
+      "metadata_definitions": 0,
+      "collections": 0,
+      "assets": 1
+    },
+    "namespaces": [
+      {
+        "token": "vendor_a",
+        "owner": "Example Vendor A"
+      }
+    ]
+  },
+  "storage_locations": [
+    {
+      "id": "sl-01",
+      "name": "Example Volume A",
+      "system": "source_local",
+      "root": "/mnt/volume_a/"
+    }
+  ],
+  "assets": [
+    {
+      "id": "a-0001",
+      "title": "Example Clip",
+      "files": [
+        {
+          "id": "f-1",
+          "locations": [
+            {
+              "storage_location": "sl-01",
+              "path": "media/f-1.bin"
+            }
+          ],
+          "size_bytes": 9007199254740991
+        }
+      ],
+      "extensions": {
+        "vendor_a": {
+          "low": -9007199254740991,
+          "high": 9007199254740991
+        }
+      }
+    }
+  ]
+}

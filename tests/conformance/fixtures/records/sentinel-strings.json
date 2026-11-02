@@ -1,66 +1,110 @@
 {
-  "type": "asset",
-  "spec_version": "2.0.0-draft.2",
-  "id": "a-ZZSENTINELZZ",
-  "source": {
-    "system": "sys-ZZSENTINELZZ",
-    "instance": "inst-ZZSENTINELZZ",
-    "id": "src-ZZSENTINELZZ"
+  "type": "package",
+  "spec_version": "2.0.0-draft.3",
+  "id": "pkg-0001",
+  "manifest": {
+    "producer": {
+      "name": "example-exporter",
+      "version": "0.1.0"
+    },
+    "produced_at": "2026-10-05T09:00:00Z",
+    "counts": {
+      "storage_locations": 1,
+      "metadata_definitions": 1,
+      "collections": 0,
+      "assets": 1
+    },
+    "namespaces": [
+      {
+        "token": "zzsentinelzz",
+        "owner": "Owner ZZSENTINELZZ"
+      }
+    ]
   },
-  "title": "Title ZZSENTINELZZ",
-  "category": "category-ZZSENTINELZZ",
-  "description": "Description ZZSENTINELZZ",
-  "status": "status-ZZSENTINELZZ",
-  "created": "2026-01-02T03:04:05Z",
-  "versions": [
+  "storage_locations": [
     {
-      "id": "v-ZZSENTINELZZ",
-      "ordinal": 0,
-      "label": "Label ZZSENTINELZZ"
+      "id": "sl-ZZSENTINELZZ",
+      "name": "Name ZZSENTINELZZ",
+      "system": "network_share",
+      "root": "server-zzsentinelzz.invalid:/export/"
     }
   ],
-  "files": [
+  "metadata_definitions": [
     {
-      "id": "f-ZZSENTINELZZ",
-      "storage_location": "sl-ZZSENTINELZZ",
-      "path": "media/ZZSENTINELZZ.bin",
-      "size_bytes": 1,
-      "checksum": {
-        "algorithm": "md5",
-        "value": "d41d8cd98f00b204e9800998ecf8427e"
+      "id": "md-ZZSENTINELZZ",
+      "label": "Label ZZSENTINELZZ",
+      "value_type": "string",
+      "cardinality": "single"
+    }
+  ],
+  "assets": [
+    {
+      "id": "a-ZZSENTINELZZ",
+      "source": {
+        "system": "sys-ZZSENTINELZZ",
+        "instance": "inst-ZZSENTINELZZ",
+        "id": "src-ZZSENTINELZZ"
       },
-      "media_type": "application/octet-stream"
-    }
-  ],
-  "relationships": [
-    {
-      "kind": "derived_from",
-      "target": "other-ZZSENTINELZZ",
-      "description": "Description ZZSENTINELZZ"
-    }
-  ],
-  "metadata": [
-    {
-      "definition": "md-ZZSENTINELZZ",
-      "value": "value ZZSENTINELZZ"
-    }
-  ],
-  "annotations": [
-    {
-      "id": "ann-ZZSENTINELZZ",
-      "purpose": "note",
       "title": "Title ZZSENTINELZZ",
-      "text": "Text ZZSENTINELZZ",
       "category": "category-ZZSENTINELZZ",
-      "author": "author-ZZSENTINELZZ"
+      "description": "Description ZZSENTINELZZ",
+      "status": "status-ZZSENTINELZZ",
+      "created": "2026-01-02T03:04:05Z",
+      "versions": [
+        {
+          "id": "v-ZZSENTINELZZ",
+          "ordinal": 0,
+          "label": "Label ZZSENTINELZZ"
+        }
+      ],
+      "files": [
+        {
+          "id": "f-ZZSENTINELZZ",
+          "locations": [
+            {
+              "storage_location": "sl-ZZSENTINELZZ",
+              "path": "media/ZZSENTINELZZ.bin"
+            }
+          ],
+          "size_bytes": 1,
+          "checksum": {
+            "algorithm": "md5",
+            "value": "00112233445566778899aabbccddeeff"
+          },
+          "media_type": "application/octet-stream"
+        }
+      ],
+      "relationships": [
+        {
+          "type": "derived_from",
+          "target": "other-ZZSENTINELZZ",
+          "description": "Description ZZSENTINELZZ"
+        }
+      ],
+      "metadata": [
+        {
+          "definition": "md-ZZSENTINELZZ",
+          "value": "value ZZSENTINELZZ"
+        }
+      ],
+      "annotations": [
+        {
+          "id": "ann-ZZSENTINELZZ",
+          "purpose": "note",
+          "title": "Title ZZSENTINELZZ",
+          "text": "Text ZZSENTINELZZ",
+          "category": "category-ZZSENTINELZZ",
+          "author": "author-ZZSENTINELZZ"
+        }
+      ],
+      "access": {
+        "status": "restricted"
+      },
+      "extensions": {
+        "zzsentinelzz": {
+          "payload": "payload ZZSENTINELZZ"
+        }
+      }
     }
-  ],
-  "access": {
-    "status": "restricted"
-  },
-  "extensions": {
-    "zzsentinelzz": {
-      "payload": "payload ZZSENTINELZZ"
-    }
-  }
+  ]
 }

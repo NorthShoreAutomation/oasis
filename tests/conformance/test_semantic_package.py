@@ -1,8 +1,15 @@
-"""Package-context semantic checks: every fixture, the examples, isolation, no mutation."""
+"""Package-level semantic checks: isolation, no mutation, helpers, and cross-record rules.
+
+Every fixture runs through the full pipeline in ``test_corpus.py``. The
+tests here check that the semantic stage touches no file or socket, never
+changes the tree, never executes constraints, and test the package helpers
+on small packages built in memory.
+"""
 
 import builtins
 import copy
 import io
+import json
 import os
 import socket
 import unittest
@@ -11,129 +18,80 @@ from pathlib import Path
 from unittest import mock
 
 from tests.conformance.document import route
-from tests.conformance.loader import load_bundle
 from tests.conformance.semantic import PackageContext, check, check_package, diagnostic, json_equal, resolve
 from tests.conformance.strict_json import parse_input
 from tests.conformance.types import Routing
 
 REPO = Path(__file__).resolve().parents[2]
-RECORDS = Path(__file__).resolve().parent / "fixtures" / "records"
+FIXTURES = Path(__file__).resolve().parent / "fixtures"
 EXAMPLES = REPO / "definitions" / "examples"
-
-# name: complete sorted [(code, path), ...]
-CASES = {
-    "package-count-mismatch": [("COUNT_MISMATCH", "/manifest/counts/assets")],
-    "package-count-absent-array-ok": [],
-    "package-reference-unresolved-complete": [("REFERENCE_UNRESOLVED", "/assets/0/files/0/storage_location")],
-    "package-reference-unresolved-partial": [
-        ("REFERENCE_UNRESOLVED_PARTIAL", "/assets/0/files/0/storage_location"),
-    ],
-    "package-id-duplicate-assets": [("ID_DUPLICATE", "/assets/1/id")],
-    "package-id-shared-across-kinds-ok": [],
-    "package-snapshot-mismatch-field": [("SNAPSHOT_MISMATCH", "/assets/0/collections/0")],
-    "package-snapshot-extra-field": [("SNAPSHOT_MISMATCH", "/assets/0/collections/0")],
-    "package-collection-cycle": [
-        ("COLLECTION_CYCLE", "/collections/0/parent"),
-        ("COLLECTION_CYCLE", "/collections/1/parent"),
-    ],
-    "package-collection-self-parent": [("COLLECTION_CYCLE", "/collections/0/parent")],
-    "package-membership-disagrees": [("MEMBERSHIP_DISAGREES", "/assets/0/collections/0")],
-    "package-membership-partial-ok": [],
-    "package-namespace-undeclared": [("NAMESPACE_UNDECLARED", "/assets/0/extensions")],
-    "package-namespace-payload-nested-ok": [],
-    "package-namespace-declared-twice": [("NAMESPACE_DECLARED_TWICE", "/manifest/namespaces/1/token")],
-    "package-namespace-unused-ok": [],
-    "package-snapshot-namespace-undeclared-partial": [
-        ("REFERENCE_UNRESOLVED_PARTIAL", "/assets/0/collections/0"),
-        ("NAMESPACE_UNDECLARED", "/assets/0/collections/0/extensions"),
-    ],
-    "package-relationship-target-no-timing": [("TIMELINE_UNDECLARED", "/assets/1/relationships/0/range")],
-    "package-relationship-range-out-of-bounds": [
-        ("FRAME_OUT_OF_BOUNDS", "/assets/1/relationships/0/range/end_frame"),
-    ],
-    "package-value-shape-mismatch": [("VALUE_SHAPE_MISMATCH", "/assets/0/metadata/0/value")],
-    "package-value-date-invalid": [("VALUE_DATE_INVALID", "/assets/0/metadata/2/value")],
-    "package-value-option-unknown": [("VALUE_OPTION_UNKNOWN", "/assets/0/metadata/0/value")],
-    "package-value-option-repeated": [("VALUE_OPTION_REPEATED", "/assets/0/metadata/0/value/1")],
-    "package-value-reference-partial": [("REFERENCE_UNRESOLVED_PARTIAL", "/assets/0/metadata/3/value")],
-    "package-value-empty-multiple-ok": [],
-    "standalone-namespace-undeclared-ok": [],
-    "package-snapshot-missing-field": [("SNAPSHOT_MISMATCH", "/assets/0/collections/0")],
-    "package-value-definition-unresolved-complete": [
-        ("REFERENCE_UNRESOLVED", "/assets/0/metadata/0/definition"),
-    ],
-    "package-collection-cycle-tail": [
-        ("COLLECTION_CYCLE", "/collections/0/parent"),
-        ("COLLECTION_CYCLE", "/collections/1/parent"),
-    ],
-}
-
-# Structurally invalid: a snapshot that carries members (ID-6, COL-5).
-STRUCTURAL_INVALID = ("package-snapshot-with-members",)
-
-PACKAGE_EXAMPLES = {
-    "package-complete": [],
-    "package-full": [],
-    "package-minimal": [],
-}
+EXAMPLE_NAMES = ("package-complete", "package-full", "package-minimal")
 
 
 def _parsed(path):
     return parse_input(path.read_bytes())
 
 
+def _valid_fixture_paths():
+    manifest = json.loads((FIXTURES / "manifest.json").read_text(encoding="utf-8"))
+    return [FIXTURES / c["path"] for c in manifest["cases"] if c["expected_structural"] == "valid"]
+
+
 def _pairs(diagnostics):
     return [(d.code, d.path) for d in diagnostics]
 
 
-class PackageFixtureTests(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.bundle = load_bundle(REPO / "definitions")
+def _package(**lists):
+    """A minimal package; the counts match the given record lists."""
+    package = {
+        "type": "package",
+        "spec_version": "2.0.0-draft.3",
+        "id": "pkg-0001",
+        "manifest": {
+            "producer": {"name": "example-exporter", "version": "0.1.0"},
+            "produced_at": "2026-10-05T09:00:00Z",
+            "counts": {},
+            "namespaces": [],
+        },
+    }
+    for key in ("storage_locations", "metadata_definitions", "collections", "assets"):
+        package[key] = lists.get(key, [])
+        package["manifest"]["counts"][key] = len(package[key])
+    return package
 
-    def _check(self, path):
-        parsed = _parsed(path)
-        routing = route(parsed.value)
-        self.assertEqual(routing.status, "selected")
-        errors = self.bundle.entry_point(routing.kind).validate(parsed)
-        self.assertEqual([(list(e.absolute_path), e.validator) for e in errors], [])
-        diagnostics = check(parsed.value, routing)
-        self.assertEqual(diagnostics, sorted(diagnostics, key=lambda d: (d.path, d.code)))
-        for d in diagnostics:
-            self.assertEqual(d, diagnostic(d.code, d.path))
-        return _pairs(diagnostics)
 
-    def test_every_case_has_a_fixture(self):
-        for name in list(CASES) + list(STRUCTURAL_INVALID):
+def _asset(asset_id, **fields):
+    return dict({"id": asset_id, "title": "Example Clip"}, **fields)
+
+
+def _collection(collection_id, *parents):
+    collection = {"id": collection_id, "title": "Example Collection"}
+    if parents:
+        collection["member_of"] = [{"collection": parent} for parent in parents]
+    return collection
+
+
+class PackageStageTests(unittest.TestCase):
+    def test_examples_give_no_diagnostic(self):
+        for name in EXAMPLE_NAMES:
             with self.subTest(name):
-                self.assertTrue((RECORDS / (name + ".json")).is_file())
+                value = _parsed(EXAMPLES / (name + ".json")).value
+                self.assertEqual(check(value, route(value)), [])
 
-    def test_fixtures(self):
-        for name, expected in CASES.items():
-            with self.subTest(name):
-                self.assertEqual(self._check(RECORDS / (name + ".json")), expected)
-
-    def test_snapshot_with_members_is_structurally_invalid(self):
-        for name in STRUCTURAL_INVALID:
-            with self.subTest(name):
-                parsed = _parsed(RECORDS / (name + ".json"))
-                routing = route(parsed.value)
-                self.assertEqual(routing.status, "selected")
-                self.assertGreaterEqual(len(self.bundle.entry_point(routing.kind).validate(parsed)), 1)
-
-    def test_examples_complete_with_declared_warnings(self):
-        for name, expected in PACKAGE_EXAMPLES.items():
-            with self.subTest(name):
-                self.assertEqual(self._check(EXAMPLES / (name + ".json")), expected)
+    def test_output_is_sorted_catalog_diagnostics(self):
+        for path in _valid_fixture_paths():
+            with self.subTest(path.name):
+                value = _parsed(path).value
+                diagnostics = check(value, route(value))
+                self.assertEqual(diagnostics, sorted(diagnostics, key=lambda d: (d.path, d.code)))
+                for d in diagnostics:
+                    self.assertEqual(d, diagnostic(d.code, d.path))
 
     def test_no_network_or_file_access(self):
         trees = []
-        for name in CASES:
-            value = _parsed(RECORDS / (name + ".json")).value
-            trees.append((name, value, route(value)))
-        for name in PACKAGE_EXAMPLES:
-            value = _parsed(EXAMPLES / (name + ".json")).value
-            trees.append((name, value, route(value)))
+        for path in _valid_fixture_paths() + [EXAMPLES / (n + ".json") for n in EXAMPLE_NAMES]:
+            value = _parsed(path).value
+            trees.append((path.name, value, route(value)))
 
         def refuse(*_args, **_kwargs):
             raise AssertionError("the semantic stage opened a file or a socket")
@@ -149,32 +107,22 @@ class PackageFixtureTests(unittest.TestCase):
                     check(value, routing)
 
     def test_constraints_never_executed(self):
-        package = copy.deepcopy(_parsed(EXAMPLES / "package-minimal.json").value)
-        package["manifest"]["counts"].update({"metadata_definitions": 1, "assets": 1})
-        package["metadata_definitions"] = [
-            {
-                "type": "metadata_definition",
-                "spec_version": "2.0.0-draft.2",
-                "id": "md-code",
-                "value_type": "string",
-                "cardinality": "single",
-                "constraints": {"pattern": "^x$", "min_length": 10},
-            }
-        ]
-        package["assets"] = [
-            {
-                "type": "asset",
-                "spec_version": "2.0.0-draft.2",
-                "id": "a-0001",
-                "title": "Example Clip",
-                "access": {"status": "none"},
-                "metadata": [{"definition": "md-code", "value": "a"}],
-            }
-        ]
+        package = _package(
+            metadata_definitions=[
+                {
+                    "id": "md-code",
+                    "label": "Code",
+                    "value_type": "string",
+                    "cardinality": "single",
+                    "constraints": {"pattern": "^x$", "min_length": 10},
+                }
+            ],
+            assets=[_asset("a-0001", metadata=[{"definition": "md-code", "value": "a"}])],
+        )
         self.assertEqual(check_package(package), [])
 
     def test_tree_unchanged(self):
-        paths = [RECORDS / (n + ".json") for n in CASES] + [EXAMPLES / (n + ".json") for n in PACKAGE_EXAMPLES]
+        paths = _valid_fixture_paths() + [EXAMPLES / (n + ".json") for n in EXAMPLE_NAMES]
         for path in paths:
             with self.subTest(path.name):
                 value = _parsed(path).value
@@ -184,8 +132,85 @@ class PackageFixtureTests(unittest.TestCase):
                 self.assertEqual(repr(value), repr(before))
 
     def test_unsupported_routing_runs_nothing(self):
-        routing = Routing("unsupported", "package", None, ())
+        routing = Routing("unsupported", None, None, ())
         self.assertEqual(check({"type": "package"}, routing), [])
+
+
+class CrossRecordTests(unittest.TestCase):
+    def test_cycle_reports_only_entries_on_the_cycle(self):
+        # c-3 hangs off the c-1, c-2 cycle; its entry is not on the cycle.
+        package = _package(collections=[_collection("c-1", "c-2"), _collection("c-2", "c-1"), _collection("c-3", "c-1")])
+        self.assertEqual(
+            _pairs(check_package(package)),
+            [("COLLECTION_CYCLE", "/collections/0/member_of/0"), ("COLLECTION_CYCLE", "/collections/1/member_of/0")],
+        )
+
+    def test_two_parents_without_a_cycle(self):
+        package = _package(collections=[_collection("c-1"), _collection("c-2"), _collection("c-3", "c-1", "c-2")])
+        self.assertEqual(check_package(package), [])
+
+    def test_positions_share_one_scope_across_assets_and_collections(self):
+        package = _package(
+            collections=[_collection("c-1"), dict(_collection("c-2"), member_of=[{"collection": "c-1", "position": 2}])],
+            assets=[_asset("a-0001", member_of=[{"collection": "c-1", "position": Decimal("2.0")}])],
+        )
+        self.assertEqual(
+            _pairs(check_package(package)),
+            [("POSITION_DUPLICATE", "/assets/0/member_of/0"), ("POSITION_DUPLICATE", "/collections/1/member_of/0")],
+        )
+
+    def test_one_collection_twice_needs_a_position_on_each_entry(self):
+        package = _package(
+            collections=[_collection("c-1")],
+            assets=[
+                _asset("a-0001", member_of=[{"collection": "c-1", "position": 1}, {"collection": "c-1"}]),
+                _asset("a-0002", member_of=[{"collection": "c-1", "position": 3}, {"collection": "c-1", "position": 4}]),
+            ],
+        )
+        self.assertEqual(_pairs(check_package(package)), [("MEMBERSHIP_DUPLICATE", "/assets/0/member_of/1")])
+
+    def test_relationship_duplicate_ignores_description_and_extensions(self):
+        package = _package(
+            assets=[
+                _asset("a-0001"),
+                _asset(
+                    "a-0002",
+                    relationships=[
+                        {"type": "derived_from", "target": "a-0001", "description": "First."},
+                        {"type": "derived_from", "target": "a-0001", "description": "Second."},
+                        {"type": "derived_from", "target": "a-0001", "label": "Other"},
+                    ],
+                ),
+            ]
+        )
+        self.assertEqual(_pairs(check_package(package)), [("RELATIONSHIP_DUPLICATE", "/assets/1/relationships/1")])
+
+    def test_extension_payload_is_never_walked(self):
+        package = _package(assets=[_asset("a-0001", extensions={"vendor_a": {"extensions": {"vendor_b": {}}}})])
+        package["manifest"]["namespaces"] = [{"token": "vendor_a", "owner": "Example Archive"}]
+        self.assertEqual(check_package(package), [])
+
+    def test_undeclared_namespace_reported_once_per_slot(self):
+        package = _package(assets=[_asset("a-0001", extensions={"vendor_a": {}, "vendor_b": {}})])
+        self.assertEqual(_pairs(check_package(package)), [("NAMESPACE_UNDECLARED", "/assets/0/extensions")])
+
+    def test_definition_used_at_two_levels(self):
+        definition = {"id": "md-note", "label": "Note", "value_type": "string", "cardinality": "single"}
+        version = {"id": "v-1", "ordinal": 1, "metadata": [{"definition": "md-note", "value": "x"}]}
+        package = _package(
+            metadata_definitions=[definition],
+            assets=[_asset("a-0001", metadata=[{"definition": "md-note", "value": "x"}], versions=[version])],
+        )
+        self.assertEqual(
+            _pairs(check_package(package)),
+            [("DEFINITION_SHARED_AND_VERSIONED", "/assets/0/versions/0/metadata/0/definition")],
+        )
+
+    def test_count_of_an_absent_array_is_zero(self):
+        package = _package()
+        del package["assets"]
+        package["manifest"]["counts"]["assets"] = 1
+        self.assertEqual(_pairs(check_package(package)), [("COUNT_MISMATCH", "/manifest/counts/assets")])
 
 
 class JsonEqualTests(unittest.TestCase):
@@ -218,13 +243,17 @@ class JsonEqualTests(unittest.TestCase):
         self.assertFalse(json_equal([], {}))
         self.assertTrue(json_equal({"a": [1, {"b": "c"}]}, {"a": [Decimal("1.0"), {"b": "c"}]}))
 
+    def test_strings_compare_by_code_points(self):
+        self.assertFalse(json_equal("\u00e9", "e\u0301"))
+        self.assertTrue(json_equal("\u00e9", "\u00e9"))
+
+    def test_empty_object_is_not_an_absent_member(self):
+        self.assertFalse(json_equal({"a": {}}, {}))
+
 
 class ResolveTests(unittest.TestCase):
-    def context(self, completeness):
+    def context(self):
         return PackageContext(
-            spec_version="2.0.0-draft.2",
-            completeness={"storage_locations": completeness, "metadata_definitions": completeness,
-                          "collections": completeness, "assets": completeness},
             storage_locations={"sl-01": {"id": "sl-01"}},
             metadata_definitions={},
             collections={},
@@ -233,19 +262,18 @@ class ResolveTests(unittest.TestCase):
         )
 
     def test_found(self):
-        self.assertEqual(resolve(self.context("complete"), "storage_locations", "sl-01", "/p"), ({"id": "sl-01"}, None))
+        self.assertEqual(resolve(self.context(), "storage_locations", "sl-01", "/p"), ({"id": "sl-01"}, None))
 
-    def test_unresolved_complete(self):
+    def test_unresolved(self):
         self.assertEqual(
-            resolve(self.context("complete"), "storage_locations", "sl-02", "/p"),
+            resolve(self.context(), "storage_locations", "sl-02", "/p"),
             (None, diagnostic("REFERENCE_UNRESOLVED", "/p")),
         )
 
-    def test_unresolved_partial(self):
-        self.assertEqual(
-            resolve(self.context("partial"), "storage_locations", "sl-02", "/p"),
-            (None, diagnostic("REFERENCE_UNRESOLVED_PARTIAL", "/p")),
-        )
+    def test_ids_compare_exactly(self):
+        for target in ("SL-01", "sl-01 ", 1, None):
+            with self.subTest(target=target):
+                self.assertEqual(resolve(self.context(), "storage_locations", target, "/p")[0], None)
 
 
 if __name__ == "__main__":

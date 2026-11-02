@@ -2,7 +2,7 @@
 
 **Open Asset Standard Interchange Schema**
 
-> **DRAFT 2.0.0-draft.2, not a final release.**
+> **DRAFT 2.0.0-draft.3, not a final release.**
 > These rules are a draft and can change before the final release.
 
 ## What OASIS is
@@ -10,31 +10,29 @@
 OASIS is a neutral JSON format for exchanging media asset records between systems.
 Version 2.0 is the current major version.
 
-- **One package.** A package is one JSON document. It is the unit of exchange.
-- **Registries.** A package holds shared storage locations, metadata definitions, and collections once. Records point at them by id.
-- **Records.** Every record carries `type`, `spec_version`, and `id`. A record can also stand alone as its own document.
-- **Exact time.** Rates are rational numbers. Positions are whole frames from the first frame. Seconds and timecode labels are optional, and they must agree with the frames.
+- **One package.** A package is one JSON document. It is the only exchange document. Standalone records do not exist.
+- **Record lists.** A package holds storage locations, metadata definitions, and collections once. Records point at each other by id, and every reference resolves inside the package.
+- **Records.** The package root carries `type` and `spec_version`. Records inside a package carry neither field.
+- **Exact time.** Rates are rational numbers. Timing is in whole frames or in seconds. Timecode labels are optional, and they must agree with the frames.
+- **Versions and file copies.** Each version owns its files, file groups, and annotations. A file lists its copies in `locations`.
 - **Explicit file groups.** Files that belong together are listed in a file group with tracks. Grouping is never guessed.
 - **Namespaced extensions.** Custom data goes in a declared namespace. Unknown keys anywhere else are rejected.
-- **Access summary.** Every asset and collection states `none`, `restricted`, or `unknown`. A receiver that cannot keep a restriction blocks or quarantines the entity.
+- **Optional access summary.** An asset or collection may state `none` or `restricted`. An absent summary means unknown. An annotation may state `public` or `private` visibility. An absent visibility means unknown.
 
 The schemas use JSON Schema 2020-12. They are in [definitions/](definitions/README.md).
 
 Interoperability between independent implementations is not demonstrated.
 OASIS makes no claim of certification, production readiness, or endorsement by any organization.
 
-## Record types
+## Document root
 
-A document root is one of six record types.
+The only document root is a package.
 
 | Type | Schema file | Describes |
 | --- | --- | --- |
-| `package` | `package.schema.json` | One exchange: a manifest, the registries, and the assets. |
-| `asset` | `asset.schema.json` | One content item, with its files, file groups, versions, relationships, metadata values, and annotations. |
-| `collection` | `collection.schema.json` | A named grouping of assets, with its membership. |
-| `storage_location` | `storage_location.schema.json` | A place where files live. Validation never connects to it. |
-| `metadata_definition` | `metadata_definition.schema.json` | One metadata field: its value type, cardinality, and options. |
-| `annotation` | `annotation.schema.json` | A statement about an asset, optionally about a frame range of it. |
+| `package` | `package.schema.json` | One exchange: a manifest, the record lists, and the assets. |
+
+The asset, collection, storage location, and metadata definition schemas describe records inside a package. They are not document roots.
 
 ## Quick start
 
@@ -59,16 +57,16 @@ To run the full test suite, see the [conformance harness README](tests/conforman
 
 - [Adopter guide](docs/ADOPTION.md): how to produce, validate, and receive OASIS 2.0 documents.
 - [Schema definitions](definitions/README.md): the schema files and the bundle manifest.
-- [Examples](definitions/examples/README.md): synthetic example documents for every record type.
-- [Contract](docs/specification/2.0.0-draft.2/CONTRACT.md): the normative rules for this draft.
-- [Glossary](docs/specification/2.0.0-draft.2/GLOSSARY.md): the terms used in the documents.
-- [Data model](docs/specification/2.0.0-draft.2/DATA-MODEL.md): diagrams of the model. Informative.
+- [Examples](definitions/examples/README.md): synthetic example packages.
+- [Contract](docs/specification/2.0.0-draft.3/CONTRACT.md): the normative rules for this draft.
+- [Glossary](docs/specification/2.0.0-draft.3/GLOSSARY.md): the terms used in the documents.
+- [Data model](docs/specification/2.0.0-draft.3/DATA-MODEL.md): diagrams of the model. Informative.
 - [Conformance harness](tests/conformance/README.md): setup, test commands, and the diagnostic catalog.
 
 ## Version history
 
-- 2.0.0-draft.2 is a draft. It is not a final release.
-- 2.0.0-draft.2 replaces the 2.0.0-draft.1 review candidate, which was not released. The contract lists the field changes between the two drafts.
+- 2.0.0-draft.3 is a draft. It is not a final release.
+- 2.0.0-draft.3 follows 2.0.0-draft.2. The contract lists the changes between the two drafts.
 
 See [CHANGELOG.md](CHANGELOG.md) for the details.
 

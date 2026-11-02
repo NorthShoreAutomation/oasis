@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://www.northshoreautomation.com/schemas/oasis/2/package.schema.json",
   "title": "OASIS 2.0 package",
-  "description": "A package: the unit of exchange. One document with a manifest, registries of storage locations, metadata definitions, and collections, and the asset records.",
+  "description": "A package: the unit of exchange and the only document root. One document with a manifest, record lists of storage locations, metadata definitions, and collections, and the asset records.",
   "type": "object",
   "allOf": [
     {
@@ -12,6 +12,9 @@
   "properties": {
     "type": {
       "const": "package"
+    },
+    "spec_version": {
+      "$ref": "common.schema.json#/$defs/spec_version"
     },
     "manifest": {
       "$ref": "common.schema.json#/$defs/manifest"
@@ -43,6 +46,8 @@
   },
   "required": [
     "type",
+    "spec_version",
+    "id",
     "manifest"
   ],
   "unevaluatedProperties": false

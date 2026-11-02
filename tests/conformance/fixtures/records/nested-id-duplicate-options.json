@@ -1,15 +1,37 @@
 {
-  "type": "metadata_definition",
-  "spec_version": "2.0.0-draft.2",
-  "id": "md-keywords",
-  "value_type": "enum",
-  "cardinality": "multiple",
-  "options": [
-    {
-      "id": "a"
+  "type": "package",
+  "spec_version": "2.0.0-draft.3",
+  "id": "pkg-0001",
+  "manifest": {
+    "producer": {
+      "name": "example-exporter",
+      "version": "0.1.0"
     },
+    "produced_at": "2026-10-05T09:00:00Z",
+    "counts": {
+      "storage_locations": 0,
+      "metadata_definitions": 1,
+      "collections": 0,
+      "assets": 0
+    },
+    "namespaces": []
+  },
+  "metadata_definitions": [
     {
-      "id": "a"
+      "id": "md-keywords",
+      "value_type": "enum",
+      "cardinality": "multiple",
+      "list_type": "fixed",
+      "options": [
+        {
+          "id": "opt-a",
+          "label": "Option A"
+        },
+        {
+          "id": "opt-a",
+          "label": "Option A"
+        }
+      ]
     }
   ]
 }

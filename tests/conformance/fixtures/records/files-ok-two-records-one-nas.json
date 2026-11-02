@@ -1,0 +1,54 @@
+{
+  "type": "package",
+  "spec_version": "2.0.0-draft.3",
+  "id": "pkg-0001",
+  "manifest": {
+    "producer": {
+      "name": "example-exporter",
+      "version": "0.1.0"
+    },
+    "produced_at": "2026-10-05T09:00:00Z",
+    "counts": {
+      "storage_locations": 2,
+      "metadata_definitions": 0,
+      "collections": 0,
+      "assets": 1
+    },
+    "namespaces": []
+  },
+  "storage_locations": [
+    {
+      "id": "sl-a",
+      "name": "Example Share A",
+      "system": "network_share",
+      "root": "server_a.invalid:/export/share_a/"
+    },
+    {
+      "id": "sl-b",
+      "name": "Example Share B",
+      "system": "network_share",
+      "root": "server_a.invalid:/export/share_b/"
+    }
+  ],
+  "assets": [
+    {
+      "id": "a-0001",
+      "title": "Example Clip",
+      "files": [
+        {
+          "id": "f-1",
+          "locations": [
+            {
+              "storage_location": "sl-a",
+              "path": "clip_a.mov"
+            },
+            {
+              "storage_location": "sl-b",
+              "path": "clip_a.mov"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

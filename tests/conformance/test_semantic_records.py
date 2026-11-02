@@ -1,214 +1,113 @@
-"""Record-level semantic checks: every fixture, the catalog, no mutation."""
+"""Semantic checks inside one asset: the catalog, value shapes, and timeline edge cases.
+
+Every fixture runs through the full pipeline in ``test_corpus.py``. The
+tests here pin the catalog to the adopter guide and test the helpers on
+small packages built in memory.
+"""
 
 import copy
+import re
 import unittest
 from decimal import Decimal
 from pathlib import Path
 
 from tests.conformance import formats, semantic
-from tests.conformance.document import route
-from tests.conformance.loader import load_bundle
+from tests.conformance.document import ROUTING_CATALOG, route
 from tests.conformance.semantic import CATALOG, check, check_value_shape, diagnostic
-from tests.conformance.strict_json import parse_input
 from tests.conformance.types import Diagnostic
 
 REPO = Path(__file__).resolve().parents[2]
-RECORDS = Path(__file__).resolve().parent / "fixtures" / "records"
+ADOPTION = REPO / "docs" / "ADOPTION.md"
 
-# name: complete sorted [(code, path), ...]
-CASES = {
-    "time-rate-not-lowest-terms": [("RATE_NOT_LOWEST_TERMS", "/timing/time_base/rate")],
-    "time-range-not-increasing": [("RANGE_NOT_INCREASING", "/annotations/0/end_frame")],
-    "time-seconds-disagree": [("SECONDS_DISAGREE", "/annotations/0/start_seconds")],
-    "time-seconds-tie-toward-zero": [],
-    "time-rate-decimal-spelling-ok": [],
-    "time-timecode-disagree": [("TIMECODE_DISAGREE", "/annotations/0/start_timecode")],
-    "time-timecode-drop-frame-minute-boundary": [],
-    "time-timecode-rollover": [],
-    "time-frame-out-of-bounds": [("FRAME_OUT_OF_BOUNDS", "/annotations/0/end_frame")],
-    "time-point-at-duration": [("FRAME_OUT_OF_BOUNDS", "/annotations/0/start_frame")],
-    "time-range-end-equals-duration-ok": [],
-    "time-standalone-annotation-timeline-unavailable": [("TIMELINE_UNAVAILABLE", "")],
-    "time-standalone-relationship-range": [("TIMELINE_UNAVAILABLE", "/relationships/0/range")],
-    "group-sequence-range-empty": [("SEQUENCE_RANGE_EMPTY", "/file_groups/0/members/0/sequence_range")],
-    "group-track-duplicate": [("TRACK_DUPLICATE", "/file_groups/0/members/1")],
-    "group-file-unresolved": [("FILE_REFERENCE_UNRESOLVED", "/file_groups/0/members/0/file")],
-    "group-segments-ok": [],
-    "group-segment-index-duplicate": [("SEGMENT_INDEX_DUPLICATE", "/file_groups/0/members/1/segment_index")],
-    "group-segment-index-missing": [("SEGMENT_INDEX_MISSING", "/file_groups/0/members/1")],
-    "group-segment-out-of-order": [("SEGMENT_OUT_OF_ORDER", "/file_groups/0/members/1/segment_index")],
-    "group-segment-gap-complete": [("SEGMENT_GAP", "/file_groups/0/members/1/segment_index")],
-    "group-segment-gap-incomplete-ok": [],
-    "group-segment-single-incomplete-ok": [],
-    "version-ordinal-duplicate": [("ORDINAL_DUPLICATE", "/versions/1/ordinal")],
-    "version-reference-unresolved": [("VERSION_REFERENCE_UNRESOLVED", "/files/0/version")],
-    "version-without-versions": [("VERSION_WITHOUT_VERSIONS", "/file_groups/0/version")],
-    "relationship-self": [("RELATIONSHIP_SELF", "/relationships/0/target")],
-    "nested-id-duplicate-files": [("NESTED_ID_DUPLICATE", "/files/1/id")],
-    "nested-id-duplicate-options": [("NESTED_ID_DUPLICATE", "/options/1/id")],
-    "collection-self-parent": [("COLLECTION_CYCLE", "/parent")],
-    "metadata-definition-repeated": [
-        ("DEFINITION_UNAVAILABLE", "/metadata/0"),
-        ("DEFINITION_UNAVAILABLE", "/metadata/1"),
-        ("DEFINITION_REPEATED", "/metadata/1/definition"),
-    ],
-    "metadata-value-definition-unavailable": [("DEFINITION_UNAVAILABLE", "/metadata/0")],
-    "sentinel-strings": [("DEFINITION_UNAVAILABLE", "/metadata/0")],
-}
-
-# The expected diagnostic catalog: code -> (rule, severity, message).
-EXPECTED_CATALOG = {
-    "INPUT_INVALID": ("DOC-1", "error", "Input bytes cannot be parsed under the strict JSON policy."),
-    "TYPE_UNSUPPORTED": ("UNS-1", "error", "The document root has no supported record type."),
-    "VERSION_UNSUPPORTED": ("REC-4, UNS-1", "error", "The declared spec_version is not supported by this checker."),
-    "COUNT_MISMATCH": ("PKG-3", "error", "A declared count does not equal the length of its array."),
-    "REFERENCE_UNRESOLVED": ("PKG-6", "error", "A reference does not resolve in a complete registry."),
-    "REFERENCE_UNRESOLVED_PARTIAL": ("PKG-6", "warning", "A reference does not resolve in a partial registry."),
-    "ID_DUPLICATE": ("ID-1", "error", "A record id is repeated within its record type."),
-    "NESTED_ID_DUPLICATE": ("ID-4", "error", "A nested id is repeated within its record."),
-    "SNAPSHOT_MISMATCH": ("ID-6", "error", "A collection snapshot differs from the registry record."),
-    "RATE_NOT_LOWEST_TERMS": ("TIME-2", "error", "A rate is not written in lowest terms."),
-    "RANGE_NOT_INCREASING": ("TIME-4", "error", "A range does not end after it starts."),
-    "TIMELINE_UNDECLARED": ("TIME-5, TIME-12", "error", "A frame field belongs to a timeline with no time base."),
-    "TIMELINE_UNAVAILABLE": (
-        "TIME-12, ANN-3",
-        "warning",
-        "The owning asset is not in the document, so timing agreement was not checked.",
-    ),
-    "SECONDS_DISAGREE": ("TIME-7", "error", "A derived seconds value names a different frame."),
-    "TIMECODE_DISAGREE": (
-        "TIME-7, TIME-8",
-        "error",
-        "A timecode label differs from the label derived from the frame value.",
-    ),
-    "FRAME_OUT_OF_BOUNDS": ("TIME-9", "error", "A frame position lies outside the asset duration."),
-    "SEQUENCE_RANGE_EMPTY": ("GRP-3", "error", "An image sequence range does not end after it starts."),
-    "TRACK_DUPLICATE": ("GRP-4", "error", "A file group repeats a track type and index pair."),
-    "FILE_REFERENCE_UNRESOLVED": ("GRP-4", "error", "A file group member names a file that is not in the asset."),
-    "SEGMENT_INDEX_MISSING": (
-        "GRP-6",
-        "error",
-        "A file group member shares a track type and index pair with a segment but has no segment_index.",
-    ),
-    "SEGMENT_INDEX_DUPLICATE": (
-        "GRP-6",
-        "error",
-        "A file group repeats a segment_index within one track type and index pair.",
-    ),
-    "SEGMENT_OUT_OF_ORDER": ("GRP-6", "error", "File group segments are not in ascending segment_index order."),
-    "SEGMENT_GAP": (
-        "GRP-6",
-        "error",
-        "A complete file group has a gap in the segment_index values of one track type and index pair.",
-    ),
-    "ORDINAL_DUPLICATE": ("VER-2", "error", "Two versions share an ordinal."),
-    "VERSION_REFERENCE_UNRESOLVED": ("VER-3", "error", "A version reference names no version in the asset."),
-    "VERSION_WITHOUT_VERSIONS": ("VER-3", "error", "A version reference appears on an asset with no versions."),
-    "RELATIONSHIP_SELF": ("REL-3", "error", "A relationship targets its own asset."),
-    "COLLECTION_CYCLE": ("COL-4", "error", "A collection is its own ancestor."),
-    "MEMBERSHIP_DISAGREES": ("COL-5", "error", "An asset claims membership that a complete collection list denies."),
-    "VALUE_SHAPE_MISMATCH": (
-        "MD-4",
-        "error",
-        "A metadata value does not match the value_type and cardinality of its definition.",
-    ),
-    "VALUE_DATE_INVALID": ("MD-4, DT-1, DT-3", "error", "A date or date-time metadata value is not valid."),
-    "VALUE_OPTION_UNKNOWN": ("MD-4", "error", "An enum value is not an option id of its definition."),
-    "VALUE_OPTION_REPEATED": ("MD-4", "error", "A multiple enum value repeats an option id."),
-    "DEFINITION_UNAVAILABLE": (
-        "MD-4",
-        "warning",
-        "The metadata definition is not in the document, so the value shape was not checked.",
-    ),
-    "DEFINITION_REPEATED": ("MD-5", "error", "A metadata array names the same definition twice."),
-    "NAMESPACE_UNDECLARED": ("EXT-2", "error", "An extension namespace is used but not declared in the manifest."),
-    "NAMESPACE_DECLARED_TWICE": ("EXT-2", "error", "A namespace token is declared more than once."),
-}
+_ROW = re.compile(r"^\| `([A-Z_]+)` \| ([^|]+) \| (error|warning) \|")
 
 
-def _parsed(name):
-    return parse_input((RECORDS / (name + ".json")).read_bytes())
+def _adoption_rows():
+    """(code, rule, severity) for each row of the diagnostic catalog in docs/ADOPTION.md."""
+    rows = []
+    for line in ADOPTION.read_text(encoding="utf-8").splitlines():
+        match = _ROW.match(line)
+        if match:
+            rule = match.group(2).strip().replace("`", "")
+            rows.append((match.group(1), rule, match.group(3)))
+    return rows
 
 
 def _pairs(diagnostics):
     return [(d.code, d.path) for d in diagnostics]
 
 
-class RecordFixtureTests(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.bundle = load_bundle(REPO / "definitions")
+def _package(*assets):
+    """A minimal package around the given assets; counts match."""
+    return {
+        "type": "package",
+        "spec_version": "2.0.0-draft.3",
+        "id": "pkg-0001",
+        "manifest": {
+            "producer": {"name": "example-exporter", "version": "0.1.0"},
+            "produced_at": "2026-10-05T09:00:00Z",
+            "counts": {"storage_locations": 0, "metadata_definitions": 0, "collections": 0, "assets": len(assets)},
+            "namespaces": [],
+        },
+        "storage_locations": [],
+        "metadata_definitions": [],
+        "collections": [],
+        "assets": list(assets),
+    }
 
-    def _check_fixture(self, name):
-        parsed = _parsed(name)
-        routing = route(parsed.value)
-        self.assertEqual(routing.status, "selected")
-        errors = self.bundle.entry_point(routing.kind).validate(parsed)
-        self.assertEqual([(list(e.absolute_path), e.validator) for e in errors], [])
-        diagnostics = check(parsed.value, routing)
-        self.assertEqual(diagnostics, sorted(diagnostics, key=lambda d: (d.path, d.code)))
-        for d in diagnostics:
-            self.assertEqual(d, diagnostic(d.code, d.path))
-        return _pairs(diagnostics)
 
-    def test_every_case_has_a_fixture(self):
-        for name in CASES:
-            with self.subTest(name):
-                self.assertTrue((RECORDS / (name + ".json")).is_file())
+def _frame_timing(frames=750):
+    return {"time_base": {"rate": {"numerator": 25, "denominator": 1}}, "duration_frames": frames}
 
-    def test_fixtures(self):
-        for name, expected in CASES.items():
-            with self.subTest(name):
-                self.assertEqual(self._check_fixture(name), expected)
 
-    def test_tree_unchanged(self):
-        for name in CASES:
-            with self.subTest(name):
-                value = _parsed(name).value
-                before = copy.deepcopy(value)
-                check(value, route(value))
-                self.assertEqual(value, before)
-                self.assertEqual(repr(value), repr(before))
-
-    def test_reversed_range_starting_past_duration(self):
-        value = copy.deepcopy(_parsed("time-frame-out-of-bounds").value)
-        value["annotations"][0]["start_frame"] = 800
-        value["annotations"][0]["end_frame"] = 10
-        self.assertEqual(
-            _pairs(check(value, route(value))),
-            [
-                ("RANGE_NOT_INCREASING", "/annotations/0/end_frame"),
-                ("FRAME_OUT_OF_BOUNDS", "/annotations/0/start_frame"),
-            ],
-        )
-
-    def test_no_float_in_source(self):
-        for module in (semantic, formats):
-            with self.subTest(module.__name__):
-                text = Path(module.__file__).read_text(encoding="utf-8")
-                self.assertNotIn("float", text)
+def _check(package):
+    before = copy.deepcopy(package)
+    diagnostics = check(package, route(package))
+    assert package == before
+    return _pairs(diagnostics)
 
 
 class CatalogTests(unittest.TestCase):
-    def test_catalog_matches_expected(self):
-        self.assertEqual(len(EXPECTED_CATALOG), 37)
-        self.assertEqual(CATALOG, EXPECTED_CATALOG)
-        self.assertEqual(list(CATALOG), list(EXPECTED_CATALOG))
+    def test_catalog_matches_the_adopter_guide(self):
+        rows = _adoption_rows()
+        self.assertEqual(len(rows), 54)
+        self.assertEqual(len(CATALOG), 54)
+        self.assertEqual([code for code, _r, _s in rows], list(CATALOG))
+        for code, rule, severity in rows:
+            with self.subTest(code):
+                self.assertEqual(CATALOG[code][:2], (rule, severity))
+
+    def test_every_code_is_an_error(self):
+        self.assertEqual({severity for _rule, severity, _message in CATALOG.values()}, {"error"})
+
+    def test_messages_are_fixed_sentences(self):
+        for code, (_rule, _severity, message) in CATALOG.items():
+            with self.subTest(code):
+                self.assertTrue(message.endswith("."))
+                self.assertNotIn("\u2014", message)
+
+    def test_removed_codes_are_gone(self):
+        removed = (
+            "TYPE_UNSUPPORTED", "REFERENCE_UNRESOLVED_PARTIAL", "SNAPSHOT_MISMATCH", "TIMELINE_UNAVAILABLE",
+            "FRAME_OUT_OF_BOUNDS", "SEGMENT_GAP", "VERSION_WITHOUT_VERSIONS", "MEMBERSHIP_DISAGREES",
+            "VALUE_OPTION_REPEATED", "DEFINITION_UNAVAILABLE",
+        )
+        for code in removed:
+            with self.subTest(code):
+                self.assertNotIn(code, CATALOG)
 
     def test_routing_uses_the_same_catalog(self):
-        from tests.conformance import document
-
-        for code in ("TYPE_UNSUPPORTED", "VERSION_UNSUPPORTED"):
-            self.assertEqual(document.ROUTING_CATALOG[code], CATALOG[code])
+        for code in ("NOT_EXCHANGE_DOCUMENT", "VERSION_UNSUPPORTED"):
+            self.assertEqual(ROUTING_CATALOG[code], CATALOG[code])
 
     def test_diagnostic(self):
         self.assertEqual(
-            diagnostic("RELATIONSHIP_SELF", "/relationships/0/target"),
+            diagnostic("RELATIONSHIP_SELF", "/assets/0/relationships/0/target"),
             Diagnostic(
                 "RELATIONSHIP_SELF",
                 "REL-3",
                 "error",
-                "/relationships/0/target",
+                "/assets/0/relationships/0/target",
                 "A relationship targets its own asset.",
             ),
         )
@@ -222,18 +121,190 @@ class CatalogTests(unittest.TestCase):
         self.assertEqual(semantic.as_int(Decimal("25.0")), 25)
         self.assertEqual(semantic.as_int(Decimal("1E0")), 1)
         self.assertIs(type(semantic.as_int(Decimal("1E0"))), int)
+        for bad in (True, Decimal("1.5"), "1"):
+            with self.subTest(bad=bad):
+                with self.assertRaises(TypeError):
+                    semantic.as_int(bad)
+
+    def test_no_float_in_source(self):
+        for module in (semantic, formats):
+            with self.subTest(module.__name__):
+                text = Path(module.__file__).read_text(encoding="utf-8")
+                self.assertNotIn("float", text)
 
 
-def _definition(type_, cardinality, options=None):
+class TimelineTests(unittest.TestCase):
+    def test_reversed_range_starting_past_the_length(self):
+        asset = {
+            "id": "a-0001",
+            "title": "Example Clip",
+            "timing": _frame_timing(),
+            "annotations": [{"id": "n-0001", "start_frame": 800, "end_frame": 10}],
+        }
+        self.assertEqual(
+            _check(_package(asset)),
+            [
+                ("RANGE_NOT_INCREASING", "/assets/0/annotations/0/end_frame"),
+                ("POSITION_OUT_OF_BOUNDS", "/assets/0/annotations/0/start_frame"),
+            ],
+        )
+
+    def test_point_at_the_end_boundary_is_in_bounds(self):
+        asset = {
+            "id": "a-0001",
+            "title": "Example Clip",
+            "timing": _frame_timing(),
+            "annotations": [{"id": "n-0001", "start_frame": 750}],
+        }
+        self.assertEqual(_check(_package(asset)), [])
+
+    def test_range_start_frame_at_the_length_is_out_of_bounds(self):
+        # TIME-9: a range satisfies start_frame < end_frame <= D, so its start
+        # at D is out of bounds, reported at the start as well as the end.
+        asset = {
+            "id": "a-0001",
+            "title": "Example Clip",
+            "timing": _frame_timing(),
+            "annotations": [{"id": "n-0001", "start_frame": 750, "end_frame": 751}],
+        }
+        self.assertEqual(
+            _check(_package(asset)),
+            [
+                ("POSITION_OUT_OF_BOUNDS", "/assets/0/annotations/0/end_frame"),
+                ("POSITION_OUT_OF_BOUNDS", "/assets/0/annotations/0/start_frame"),
+            ],
+        )
+
+    def test_range_start_seconds_at_the_length_is_out_of_bounds(self):
+        asset = {
+            "id": "a-0001",
+            "title": "Example Clip",
+            "timing": {"duration_seconds": 30},
+            "annotations": [{"id": "n-0001", "start_seconds": 30, "end_seconds": 31}],
+        }
+        self.assertEqual(
+            _check(_package(asset)),
+            [
+                ("POSITION_OUT_OF_BOUNDS", "/assets/0/annotations/0/end_seconds"),
+                ("POSITION_OUT_OF_BOUNDS", "/assets/0/annotations/0/start_seconds"),
+            ],
+        )
+
+    def test_point_seconds_at_the_length_is_in_bounds(self):
+        asset = {
+            "id": "a-0001",
+            "title": "Example Clip",
+            "timing": {"duration_seconds": 30},
+            "annotations": [{"id": "n-0001", "start_seconds": 30}],
+        }
+        self.assertEqual(_check(_package(asset)), [])
+
+    def test_range_start_sample_at_the_sample_length_is_out_of_bounds(self):
+        # TIME-13: a range's start_sample MUST be less than duration_samples,
+        # also when the range has no end_sample.
+        asset = {
+            "id": "a-0001",
+            "title": "Example Clip",
+            "timing": {"duration_seconds": 1, "sample_rate": 10, "duration_samples": 10},
+            "annotations": [
+                {"id": "n-0001", "start_seconds": Decimal("0.96"), "end_seconds": 1, "start_sample": 10}
+            ],
+        }
+        self.assertEqual(
+            _check(_package(asset)), [("POSITION_OUT_OF_BOUNDS", "/assets/0/annotations/0/start_sample")]
+        )
+
+    def test_frame_range_start_sample_at_the_sample_length_is_out_of_bounds(self):
+        timing = {
+            "time_base": {"rate": {"numerator": 24, "denominator": 1}, "drop_frame": False},
+            "duration_frames": 24,
+            "duration_seconds": 1,
+            "sample_rate": 10,
+            "duration_samples": 10,
+        }
+        marker = {
+            "id": "n-0001",
+            "start_frame": 23,
+            "end_frame": 24,
+            "start_seconds": Decimal("0.958333"),
+            "start_sample": 10,
+        }
+        asset = {"id": "a-0001", "title": "Example Clip", "timing": timing, "annotations": [marker]}
+        self.assertEqual(
+            _check(_package(asset)), [("POSITION_OUT_OF_BOUNDS", "/assets/0/annotations/0/start_sample")]
+        )
+
+    def test_point_sample_at_the_sample_length_is_in_bounds(self):
+        asset = {
+            "id": "a-0001",
+            "title": "Example Clip",
+            "timing": {"duration_seconds": 1, "sample_rate": 10, "duration_samples": 10},
+            "annotations": [{"id": "n-0001", "start_seconds": 1, "start_sample": 10}],
+        }
+        self.assertEqual(_check(_package(asset)), [])
+
+    def test_seconds_form_source_timecode_reads_no_time_base(self):
+        # TIME-14: a seconds-form timing may carry source_timecode with its own
+        # timecode_base. The checks never read time_base when it is absent.
+        asset = {
+            "id": "a-0001",
+            "title": "Example Clip",
+            "timing": {
+                "duration_seconds": Decimal("30.0"),
+                "source_timecode": "01:00:00:00",
+                "timecode_base": {"rate": {"numerator": 25, "denominator": 1}},
+            },
+            "annotations": [{"id": "n-0001", "start_seconds": Decimal("1.5"), "end_seconds": 31}],
+        }
+        self.assertEqual(_check(_package(asset)), [("POSITION_OUT_OF_BOUNDS", "/assets/0/annotations/0/end_seconds")])
+
+    def test_seconds_form_timecode_base_rate_in_lowest_terms(self):
+        asset = {
+            "id": "a-0001",
+            "title": "Example Clip",
+            "timing": {
+                "duration_seconds": 30,
+                "source_timecode": "01:00:00:00",
+                "timecode_base": {"rate": {"numerator": 50, "denominator": 2}},
+            },
+        }
+        self.assertEqual(_check(_package(asset)), [("RATE_NOT_LOWEST_TERMS", "/assets/0/timing/timecode_base/rate")])
+
+    def test_sample_rate_undeclared_once_per_marker(self):
+        asset = {
+            "id": "a-0001",
+            "title": "Example Clip",
+            "timing": {"duration_seconds": 30},
+            "annotations": [{"id": "n-0001", "start_sample": 0, "end_sample": 48000}],
+        }
+        self.assertEqual(
+            _check(_package(asset)), [("SAMPLE_RATE_UNDECLARED", "/assets/0/annotations/0/start_sample")]
+        )
+
+    def test_integral_decimal_spellings(self):
+        asset = {
+            "id": "a-0001",
+            "title": "Example Clip",
+            "timing": {
+                "time_base": {"rate": {"numerator": Decimal("25.0"), "denominator": Decimal("1E0")}},
+                "duration_frames": Decimal("750.0"),
+            },
+            "annotations": [{"id": "n-0001", "start_frame": Decimal("750.0")}],
+        }
+        self.assertEqual(_check(_package(asset)), [])
+
+
+def _definition(type_, cardinality, options=None, list_type="fixed"):
     definition = {"value_type": type_, "cardinality": cardinality}
     if options is not None:
         definition["options"] = [{"id": o} for o in options]
+        definition["list_type"] = list_type
     return definition
 
 
 class ValueShapeTests(unittest.TestCase):
     def shape(self, definition, value):
-        return _pairs(check_value_shape(definition, value, "/metadata/0/value"))
+        return sorted(_pairs(check_value_shape(definition, value, "/metadata/0/value")), key=lambda p: (p[1], p[0]))
 
     def test_matching_values(self):
         cases = [
@@ -250,6 +321,7 @@ class ValueShapeTests(unittest.TestCase):
             (_definition("collection_reference", "multiple"), ["c-1", "c-2"]),
             (_definition("integer", "multiple"), [1, 2]),
             (_definition("enum", "multiple", ["a", "b"]), ["a", "b"]),
+            (_definition("boolean", "multiple"), [True, False]),
         ]
         for definition, value in cases:
             with self.subTest(definition=definition, value=value):
@@ -258,7 +330,8 @@ class ValueShapeTests(unittest.TestCase):
     def test_empty_multiple_allowed(self):
         for type_ in ("string", "integer", "enum", "date"):
             with self.subTest(type_):
-                self.assertEqual(self.shape(_definition(type_, "multiple", ["a"] if type_ == "enum" else None), []), [])
+                options = ["a"] if type_ == "enum" else None
+                self.assertEqual(self.shape(_definition(type_, "multiple", options), []), [])
 
     def test_type_mismatch(self):
         cases = [
@@ -312,7 +385,7 @@ class ValueShapeTests(unittest.TestCase):
                     [("VALUE_DATE_INVALID", "/metadata/0/value")],
                 )
 
-    def test_option_unknown(self):
+    def test_option_unknown_on_a_fixed_list(self):
         self.assertEqual(
             self.shape(_definition("enum", "single", ["a", "b"]), "c"),
             [("VALUE_OPTION_UNKNOWN", "/metadata/0/value")],
@@ -322,28 +395,56 @@ class ValueShapeTests(unittest.TestCase):
             [("VALUE_OPTION_UNKNOWN", "/metadata/0/value/1")],
         )
 
-    def test_option_repeated(self):
+    def test_empty_fixed_list_accepts_no_item(self):
         self.assertEqual(
-            self.shape(_definition("enum", "multiple", ["a", "b"]), ["a", "b", "a", "a"]),
-            [
-                ("VALUE_OPTION_REPEATED", "/metadata/0/value/2"),
-                ("VALUE_OPTION_REPEATED", "/metadata/0/value/3"),
-            ],
+            self.shape(_definition("enum", "single", []), "a"),
+            [("VALUE_OPTION_UNKNOWN", "/metadata/0/value")],
         )
 
-    def test_unknown_repeated_option_is_unknown_only(self):
+    def test_open_list_accepts_any_string(self):
+        self.assertEqual(self.shape(_definition("enum", "single", ["a"], "open"), "c"), [])
+        self.assertEqual(self.shape(_definition("enum", "multiple", [], "open"), ["c", "d"]), [])
+
+    def test_option_ids_compare_by_code_points(self):
+        self.assertEqual(
+            self.shape(_definition("enum", "single", ["é"]), "é"),
+            [("VALUE_OPTION_UNKNOWN", "/metadata/0/value")],
+        )
+
+    def test_value_repeated_for_every_type(self):
+        cases = [
+            (_definition("enum", "multiple", ["a", "b"]), ["a", "b", "a", "a"], [2, 3]),
+            (_definition("string", "multiple"), ["x", "y", "x"], [2]),
+            (_definition("integer", "multiple"), [1, Decimal("1.0"), 2], [1]),
+            (_definition("number", "multiple"), [Decimal("0.5"), Decimal("0.50")], [1]),
+            (_definition("boolean", "multiple"), [True, True], [1]),
+            (_definition("asset_reference", "multiple"), ["a-1", "a-1"], [1]),
+        ]
+        for definition, value, repeats in cases:
+            with self.subTest(definition=definition, value=value):
+                self.assertEqual(
+                    self.shape(definition, value),
+                    [("VALUE_REPEATED", "/metadata/0/value/%d" % k) for k in repeats],
+                )
+
+    def test_strings_with_different_code_points_are_not_repeats(self):
+        self.assertEqual(self.shape(_definition("string", "multiple"), ["é", "é"]), [])
+
+    def test_unknown_repeated_option_gets_both_findings(self):
+        # MD-7 and MD-8: an item can get both an option finding and a repeat finding.
         self.assertEqual(
             self.shape(_definition("enum", "multiple", ["a", "b"]), ["c", "a", "c", "a"]),
             [
                 ("VALUE_OPTION_UNKNOWN", "/metadata/0/value/0"),
                 ("VALUE_OPTION_UNKNOWN", "/metadata/0/value/2"),
-                ("VALUE_OPTION_REPEATED", "/metadata/0/value/3"),
+                ("VALUE_REPEATED", "/metadata/0/value/2"),
+                ("VALUE_REPEATED", "/metadata/0/value/3"),
             ],
         )
 
     def test_no_value_in_message(self):
-        for d in check_value_shape(_definition("enum", "single", ["a"]), "SECRET-VALUE", "/v"):
-            self.assertNotIn("SECRET-VALUE", d.message)
+        for d in check_value_shape(_definition("enum", "single", ["a"]), "SENTINEL-VALUE", "/v"):
+            self.assertNotIn("SENTINEL-VALUE", d.message)
 
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-"""The bundle in definitions/ is the frozen 2.0.0-draft.2 schema. Its bytes never change here."""
+"""The bundle in definitions/ is the frozen 2.0.0-draft.3 schema. Its bytes never change here."""
 import hashlib
 import unittest
 from pathlib import Path
@@ -6,16 +6,15 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[2]
 DEFINITIONS = REPO / "definitions"
 
-# OASIS 2.0.0-draft.2 bundle.
+# OASIS 2.0.0-draft.3 bundle.
 FROZEN_DIGESTS = {
-    "annotation.schema.json": "fd838a855dcfa2c8101d3964f351addcf7f0a4b8a5ddf01a1f3af19949193e7a",
-    "asset.schema.json": "77fa057c9de00aaf487d709e715e239c2ceedc6eaebadf317b5af68eb1a195e1",
-    "bundle-manifest.json": "2f3af80fd1843180da249bb8b33b525f040328fbc57f36440d8fa1f9a36bfc30",
-    "collection.schema.json": "8e29860c33e9f8fc0dc932c4634536e21c61aaf5120ba11bf85c93f3f6d8008a",
-    "common.schema.json": "13ee03a268a0f68858107909e4b325201ded103c77910e6b72226cfc6f3581bd",
-    "metadata_definition.schema.json": "e4c8e4961bd1069753cb7500e87b9119f38b31d6915bd9aea01cdec4e1f56094",
-    "package.schema.json": "a2a7e533ccb35a526ffe4957fff00c01526e159364644165892313d0c1ea7954",
-    "storage_location.schema.json": "b14937ed2e603a4369e40af6e4d1a631110c5096b2aa6151d8a160463fd6c349",
+    "asset.schema.json": "9909296b1049bb0a6f37948a5d431dae82a4920fbfdc8c260b4289809d123ae6",
+    "bundle-manifest.json": "b7ff8f5f5e322b906a9d40ec2f49f892b47b72515432e68368538c2c66e420fb",
+    "collection.schema.json": "0f22ddf5c8a37cd679c8d4173e8ea84cd85bbe392d45c279b5e367c653b3029e",
+    "common.schema.json": "f4bf65a6c214d0782250300a53201a390832a8d0fe7f2bd97af84aafcad3defd",
+    "metadata_definition.schema.json": "a251901b313761a2923adfa6bb16043a6400a5a0ef78ff0b95a8c161648aee2b",
+    "package.schema.json": "3ad4d94baf5d6bb1d2d1deff729598cf63a06368a53fb485cddadd42cc16929f",
+    "storage_location.schema.json": "42d5f6df84264ac918061613dddd075aa1b5746653d1d2612f6f8b8d9029e56e",
 }
 
 

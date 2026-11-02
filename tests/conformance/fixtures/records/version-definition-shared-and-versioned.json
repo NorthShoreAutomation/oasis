@@ -1,0 +1,73 @@
+{
+  "type": "package",
+  "spec_version": "2.0.0-draft.3",
+  "id": "pkg-0001",
+  "manifest": {
+    "producer": {
+      "name": "example-exporter",
+      "version": "0.1.0"
+    },
+    "produced_at": "2026-10-05T09:00:00Z",
+    "counts": {
+      "storage_locations": 0,
+      "metadata_definitions": 2,
+      "collections": 0,
+      "assets": 1
+    },
+    "namespaces": []
+  },
+  "metadata_definitions": [
+    {
+      "id": "md-a",
+      "value_type": "string",
+      "cardinality": "single"
+    },
+    {
+      "id": "md-b",
+      "value_type": "string",
+      "cardinality": "single"
+    }
+  ],
+  "assets": [
+    {
+      "id": "a-0001",
+      "title": "Example Clip",
+      "versions": [
+        {
+          "id": "v-1",
+          "ordinal": 0,
+          "metadata": [
+            {
+              "definition": "md-a",
+              "value": "one"
+            }
+          ]
+        },
+        {
+          "id": "v-2",
+          "ordinal": 1,
+          "metadata": [
+            {
+              "definition": "md-a",
+              "value": "two"
+            }
+          ]
+        }
+      ],
+      "unassigned": {
+        "metadata": [
+          {
+            "definition": "md-a",
+            "value": "three"
+          }
+        ]
+      },
+      "metadata": [
+        {
+          "definition": "md-a",
+          "value": "whole"
+        }
+      ]
+    }
+  ]
+}

@@ -76,19 +76,36 @@ class CommandTests(TempFiles, unittest.TestCase):
                 self.assertEqual(code, 0, out)
                 self.assertTrue(out.startswith("PASS status=complete "), out)
 
-    def test_annotation_full_has_two_warnings(self):
-        code, out, _ = run(EXAMPLES / "annotation-full.json")
-        self.assertEqual(code, 0, out)
-        warnings = [line for line in out.splitlines() if line.startswith("warning ")]
-        self.assertEqual(len(warnings), 2, out)
-        self.assertTrue(warnings[0].startswith("warning TIMELINE_UNAVAILABLE (root): "), out)
-        self.assertTrue(warnings[1].startswith("warning DEFINITION_UNAVAILABLE /metadata/0: "), out)
+    def test_examples_are_the_three_packages(self):
+        self.assertEqual(
+            [p.stem for p in sorted(EXAMPLES.glob("*.json"))],
+            ["package-complete", "package-full", "package-minimal"],
+        )
+
+    def test_warning_alone_still_passes(self):
+        # No draft.3 code is a warning, but the result record keeps the severity.
+        self.assertTrue(all(severity == "error" for _rule, severity, _message in CATALOG.values()))
+        record = validate.evaluate((EXAMPLES / "package-minimal.json").read_bytes(), DEFINITIONS)
+        record["diagnostics"] = [
+            {"code": "COUNT_MISMATCH", "rule": "PKG-3", "severity": "warning", "path": "", "message": "m"}
+        ]
+        self.assertEqual(validate.exit_code(record), 0)
+        record["diagnostics"][0]["severity"] = "error"
+        self.assertEqual(validate.exit_code(record), 1)
 
     def test_seconds_disagree_fails(self):
         code, out, _ = run(RECORDS / "time-seconds-disagree.json")
         self.assertEqual(code, 1, out)
-        self.assertTrue(out.startswith("FAIL status=complete type=asset structural=valid semantic=run\n"), out)
-        self.assertIn("\nerror SECONDS_DISAGREE ", out)
+        self.assertTrue(out.startswith("FAIL status=complete type=package structural=valid semantic=run\n"), out)
+        self.assertIn("\nerror SECONDS_DISAGREE /assets/0/annotations/0/start_seconds: ", out)
+
+    def test_number_limit_is_input_invalid_with_routing_fields(self):
+        code, out, _ = run(RECORDS / "number-range-core.json")
+        self.assertEqual(code, 1, out)
+        self.assertTrue(out.startswith("FAIL status=input-invalid type=package structural=not-run semantic=not-run\n"), out)
+        self.assertIn("\nerror NUMBER_OUT_OF_RANGE ", out)
+        record = json.loads(run(RECORDS / "number-range-core.json", "--json")[1])
+        self.assertEqual((record["type"], record["spec_version"]), ("package", "2.0.0-draft.3"))
 
     def test_spec_version_outside_major_2_is_unsupported(self):
         code, out, _ = run(RECORDS / "routing-spec-version-major-0.json")
@@ -105,8 +122,8 @@ class CommandTests(TempFiles, unittest.TestCase):
     def test_structural_invalid_fails(self):
         code, out, _ = run(RECORDS / "structural-asset-unknown-key.json")
         self.assertEqual(code, 1, out)
-        self.assertTrue(out.startswith("FAIL status=complete type=asset structural=invalid semantic=not-run\n"), out)
-        self.assertIn("schema errors: 1\n  (root) keyword unevaluatedProperties\n", out)
+        self.assertTrue(out.startswith("FAIL status=complete type=package structural=invalid semantic=not-run\n"), out)
+        self.assertIn("schema errors: 1\n  /assets/0 keyword unevaluatedProperties\n", out)
 
     def test_missing_file_is_setup_failure(self):
         code, out, _ = run(Path(self.directory.name) / "absent.json")
@@ -118,7 +135,7 @@ class CommandTests(TempFiles, unittest.TestCase):
         name = os.fsdecode(b"bad\xff.json")
         path = Path(self.directory.name) / name
         try:
-            shutil.copyfile(EXAMPLES / "asset-minimal.json", path)
+            shutil.copyfile(EXAMPLES / "package-minimal.json", path)
         except (OSError, UnicodeError):
             self.skipTest("the file system refuses a non-UTF-8 file name")
         code, out = run_strict(str(path))
@@ -132,13 +149,13 @@ class CommandTests(TempFiles, unittest.TestCase):
         record["file"].encode("utf-8")
 
     def test_bad_option_is_usage_error(self):
-        code, out, err = run(EXAMPLES / "asset-minimal.json", "--no-such-option")
+        code, out, err = run(EXAMPLES / "package-minimal.json", "--no-such-option")
         self.assertEqual(code, 2)
         self.assertEqual(out, "")
         self.assertIn("usage:", err)
 
     def test_huge_number_is_setup_failure(self):
-        document = load(EXAMPLES / "asset-minimal.json")
+        document = load(EXAMPLES / "package-minimal.json")
         text = json.dumps(document)[:-1] + ', "size": ' + "9" * 5000 + "}"
         path = self.write("huge.json", text.encode("utf-8"))
         code, out, _ = run(path)
@@ -152,9 +169,10 @@ class CommandTests(TempFiles, unittest.TestCase):
         self.assertIsNotNone(record["input_sha256"])
 
     def test_deep_constraint_pattern_is_setup_failure(self):
-        definition = load(EXAMPLES / "metadata_definition-full.json")
+        package = load(EXAMPLES / "package-full.json")
+        (definition,) = [d for d in package["metadata_definitions"] if "pattern" in d.get("constraints", {})]
         definition["constraints"]["pattern"] = "(" * 1500 + "a" + ")" * 1500
-        path = self.write("deep-pattern.json", definition)
+        path = self.write("deep-pattern.json", package)
         code, out, _ = run(path)
         self.assertEqual(code, 2, out[:400])
         self.assertTrue(out.startswith("ERROR status=setup-failed "), out[:400])
@@ -178,9 +196,10 @@ class CommandTests(TempFiles, unittest.TestCase):
         Draft202012Validator.check_schema(schema)
         checker = Draft202012Validator(schema)
         cases = {
-            "complete": EXAMPLES / "annotation-full.json",
+            "complete": EXAMPLES / "package-full.json",
             "complete-invalid": RECORDS / "structural-asset-unknown-key.json",
             "input-invalid": RECORDS / "input-bom.json",
+            "input-invalid-number": RECORDS / "number-range-core.json",
             "unsupported": RECORDS / "routing-spec-version-major-0.json",
             "setup-failed": Path(self.directory.name) / "absent.json",
         }
@@ -189,26 +208,27 @@ class CommandTests(TempFiles, unittest.TestCase):
                 code, out, _ = run(path, "--json")
                 record = json.loads(out)
                 self.assertEqual(sorted(checker.iter_errors(record), key=str), [])
-                self.assertEqual(record["execution_status"], name.replace("complete-invalid", "complete"))
+                status = {"complete-invalid": "complete", "input-invalid-number": "input-invalid"}.get(name, name)
+                self.assertEqual(record["execution_status"], status)
                 self.assertEqual(record["file"], str(path))
                 self.assertEqual(code, {"complete": 0, "setup-failed": 2}.get(name, 1))
 
     def test_record_fields(self):
-        data = (EXAMPLES / "asset-minimal.json").read_bytes()
+        data = (EXAMPLES / "package-minimal.json").read_bytes()
         record = validate.evaluate(data, DEFINITIONS)
         bundle = load_bundle(DEFINITIONS)
         self.assertEqual(
             record["harness"],
             {
                 "id": "oasis-python-reference-harness",
-                "version": "2.0.0-draft.2",
+                "version": "2.0.0-draft.3",
                 "dependencies": ["jsonschema==4.26.0", "referencing==0.37.0", "rfc3339-validator==0.1.4"],
             },
         )
         self.assertEqual(record["input_sha256"], parse_input(data).sha256)
         self.assertEqual(record["bundle_manifest_sha256"], bundle.manifest_sha256)
-        self.assertEqual(record["type"], "asset")
-        self.assertEqual(record["spec_version"], "2.0.0-draft.2")
+        self.assertEqual(record["type"], "package")
+        self.assertEqual(record["spec_version"], "2.0.0-draft.3")
         self.assertEqual(
             (record["execution_status"], record["structural"], record["semantic"]),
             ("complete", "valid", "run"),
@@ -220,7 +240,7 @@ class CommandTests(TempFiles, unittest.TestCase):
         self.assertEqual(list(validate.DEPENDENCIES), lines)
 
     def test_bundle_failure_is_setup_failure(self):
-        data = (EXAMPLES / "asset-minimal.json").read_bytes()
+        data = (EXAMPLES / "package-minimal.json").read_bytes()
         record = validate.evaluate(data, Path(self.directory.name))
         self.assertEqual(record["execution_status"], "setup-failed")
         self.assertIsNone(record["bundle_manifest_sha256"])
@@ -230,6 +250,11 @@ class CommandTests(TempFiles, unittest.TestCase):
         schema = load(RESULT_SCHEMA)
         codes = schema["$defs"]["diagnostic"]["properties"]["code"]["enum"]
         self.assertEqual(codes, sorted(CATALOG))
+        self.assertEqual(len(codes), 54)
+        self.assertEqual(schema["$defs"]["diagnostic"]["properties"]["severity"]["enum"], ["error", "warning"])
+        self.assertEqual(schema["properties"]["harness"]["properties"]["version"]["const"], validate.HARNESS_VERSION)
+        self.assertEqual(schema["properties"]["spec_version"]["enum"], ["2.0.0-draft.3", None])
+        self.assertEqual(schema["properties"]["type"]["enum"], ["package", None])
         self.assertEqual(schema["$id"], "https://www.northshoreautomation.com/schemas/oasis/2/conformance/result.schema.json")
 
 
@@ -238,10 +263,11 @@ class OutputSafetyTests(TempFiles, unittest.TestCase):
         sentinel = load(RECORDS / "sentinel-strings.json")
         unknown_key = dict(sentinel, ZZSENTINELZZ="value ZZSENTINELZZ")
         nested = load(RECORDS / "sentinel-strings.json")
-        nested["files"][0]["checksum"]["ZZSENTINELZZ"] = "value ZZSENTINELZZ"
+        nested["assets"][0]["files"][0]["checksum"]["ZZSENTINELZZ"] = "value ZZSENTINELZZ"
+        # Draft.3 has no connection object, so the credential
+        # sentinel lives in an extension value of a storage location.
         credential = load(EXAMPLES / "package-complete.json")
-        (location,) = [r for r in credential["storage_locations"] if "connection" in r]
-        location["connection"]["credential_reference"] = "ZZSENTINELZZ"
+        credential["storage_locations"][0]["extensions"] = {"archive_b": {"credential_reference": "ZZSENTINELZZ"}}
         namespace = load(RECORDS / "package-namespace-undeclared.json")
         namespace["assets"][0]["extensions"] = {"zzsentinelzz": {"rating": 4}}
         return {
@@ -254,7 +280,7 @@ class OutputSafetyTests(TempFiles, unittest.TestCase):
 
     def test_output_never_contains_input_values(self):
         expected = {
-            "sentinel-strings": ("complete", "valid", ["DEFINITION_UNAVAILABLE"]),
+            "sentinel-strings": ("complete", "valid", ["REFERENCE_UNRESOLVED"]),
             "unknown-key": ("complete", "invalid", []),
             "nested-unknown-key": ("complete", "invalid", []),
             "credential": ("complete", "valid", []),
@@ -272,7 +298,7 @@ class OutputSafetyTests(TempFiles, unittest.TestCase):
                 if name == "nested-unknown-key":
                     self.assertEqual(
                         record["structural_errors"],
-                        [{"path": "/files/0/checksum", "keyword": "additionalProperties"}],
+                        [{"path": "/assets/0/files/0/checksum", "keyword": "additionalProperties"}],
                     )
                 for output in (text, raw):
                     for sentinel in SENTINELS:
@@ -283,7 +309,7 @@ class OutputSafetyTests(TempFiles, unittest.TestCase):
         self.assertEqual(validate._printable("plain /a~1b"), "plain /a~1b")
 
     def test_human_escapes_control_characters(self):
-        record = validate.evaluate((EXAMPLES / "asset-minimal.json").read_bytes(), DEFINITIONS)
+        record = validate.evaluate((EXAMPLES / "package-minimal.json").read_bytes(), DEFINITIONS)
         record["limitations"] = ["Setup failed: bad\x01text."]
         record["diagnostics"] = [
             {"code": "INPUT_INVALID", "rule": "DOC-1", "severity": "error", "path": "/a\x02", "message": "m"}
@@ -304,35 +330,49 @@ class SafePointerTests(unittest.TestCase):
     def pairs(self, document):
         parsed = parse_input(json.dumps(document).encode("utf-8"))
         errors = self.bundle.entry_point(document["type"]).validate(parsed)
-        return {(validate.safe_pointer(error), error.validator) for error in errors}
+        return {(validate.safe_pointer(error), validate.schema_keyword(error)) for error in errors}
 
     def asset(self, **fields):
-        return dict(load(EXAMPLES / "asset-minimal.json"), **fields)
+        """A minimal package that holds one asset with the given fields."""
+        package = load(EXAMPLES / "package-minimal.json")
+        package["assets"] = [dict({"id": "a-0001", "title": "Example Clip"}, **fields)]
+        package["manifest"]["counts"]["assets"] = 1
+        return package
+
+    def test_control_package_is_valid(self):
+        self.assertEqual(self.pairs(self.asset()), set())
 
     def test_unknown_key_ends_at_the_object(self):
-        self.assertEqual(self.pairs(self.asset(ZZSENTINELZZ=1)), {("", "unevaluatedProperties")})
+        self.assertEqual(self.pairs(self.asset(ZZSENTINELZZ=1)), {("/assets/0", "unevaluatedProperties")})
 
     def test_nested_value_keeps_schema_named_steps(self):
         files = [
-            {"id": "f-1", "storage_location": "sl-01", "path": "a.bin"},
+            {"id": "f-1", "locations": [{"storage_location": "sl-01", "path": "a.bin"}]},
             {
                 "id": "f-2",
-                "storage_location": "sl-01",
-                "path": "b.bin",
+                "locations": [{"storage_location": "sl-01", "path": "b.bin"}],
                 "checksum": {"algorithm": "md5", "value": "XYZ"},
             },
         ]
         pairs = self.pairs(self.asset(files=files))
-        self.assertIn(("/files/1/checksum/value", "pattern"), pairs)
-        self.assertIn(("/files/1/checksum/value", "minLength"), pairs)
-        self.assertTrue(all(path == "/files/1/checksum/value" for path, _ in pairs), pairs)
+        self.assertIn(("/assets/0/files/1/checksum/value", "pattern"), pairs)
+        self.assertTrue(all(path == "/assets/0/files/1/checksum/value" for path, _ in pairs), pairs)
 
     def test_extension_namespace_key_is_cut(self):
         pairs = self.pairs(self.asset(extensions={"ZZSENTINELZZ": {"x": 1}, "oasis": {}}))
+        self.assertTrue(pairs)
         for path, _ in pairs:
             self.assertNotIn("ZZSENTINELZZ", path)
             self.assertNotIn("oasis", path)
-            self.assertTrue(path in ("", "/extensions"), pairs)
+            self.assertTrue(path in ("/assets/0", "/assets/0/extensions"), pairs)
+
+    def test_false_subschema_is_reported_as_false(self):
+        from jsonschema.exceptions import ValidationError
+
+        error = ValidationError("message", validator=None, path=[], schema_path=[])
+        self.assertEqual(validate.schema_keyword(error), "false")
+        error = ValidationError("message", validator="required", path=[], schema_path=[])
+        self.assertEqual(validate.schema_keyword(error), "required")
 
     def test_hand_built_paths(self):
         from jsonschema.exceptions import ValidationError

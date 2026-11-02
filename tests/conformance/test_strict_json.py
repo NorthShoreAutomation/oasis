@@ -147,27 +147,11 @@ class NumericGuardTests(unittest.TestCase):
         )
         self.assertNotIn(exponent, str(caught.exception))
 
-    def test_cumulative_budget_boundary(self):
-        # "1e9999" charges 1 coefficient digit plus 9,999 = 10,000 units.
-        ten = b"[" + b",".join([b"1e9999"] * 10) + b"]"
-        self.assertEqual(len(parse_input(ten).value), 10)
-        with self.assertRaises(NumericResourceRefused) as caught:
-            parse_input(b"[" + b",".join([b"1e9999"] * 10) + b",0]")
-        self.assertIn("100000", str(caught.exception))
-
-    def test_budget_counts_fraction_and_leading_zero_digits(self):
-        # "0.5e9997" charges 2 + 9,997 = 9,999; ten of them is 99,990.
-        # Plus "0.00000000" (9 digits) is 99,999; plus "10" is 100,001.
-        tokens = [b"0.5e9997"] * 10 + [b"0.00000000"]
-        parse_input(b"[" + b",".join(tokens) + b"]")
-        with self.assertRaises(NumericResourceRefused):
-            parse_input(b"[" + b",".join(tokens + [b"10"]) + b"]")
-
-    def test_budget_counts_object_member_values(self):
-        members = b",".join(b'"k%d": 1e9999' % i for i in range(10))
-        parse_input(b"{" + members + b"}")
-        with self.assertRaises(NumericResourceRefused):
-            parse_input(b"{" + members + b', "z": 1}')
+    def test_no_document_budget(self):
+        # Each token passes its own guards. No sum over the document applies.
+        tokens = [b"1e9999"] * 20 + [b"0.5e9997"] * 20
+        self.assertEqual(len(parse_input(b"[" + b",".join(tokens) + b"]").value), 40)
+        self.assertFalse(hasattr(strict_json, "MAX_EXPANSION_UNITS"))
 
     def test_int_digit_limit_setup_check(self):
         for limit in (0, 1024, 4300):

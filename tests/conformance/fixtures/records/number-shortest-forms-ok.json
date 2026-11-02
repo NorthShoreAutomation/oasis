@@ -1,0 +1,39 @@
+{
+  "type": "package",
+  "spec_version": "2.0.0-draft.3",
+  "id": "pkg-0001",
+  "manifest": {
+    "producer": {
+      "name": "example-exporter",
+      "version": "0.1.0"
+    },
+    "produced_at": "2026-10-05T09:00:00Z",
+    "counts": {
+      "storage_locations": 0,
+      "metadata_definitions": 0,
+      "collections": 0,
+      "assets": 1
+    },
+    "namespaces": [
+      {
+        "token": "vendor_a",
+        "owner": "Example Vendor A"
+      }
+    ]
+  },
+  "assets": [
+    {
+      "id": "a-0001",
+      "title": "Example Clip",
+      "extensions": {
+        "vendor_a": {
+          "pi": 3.141592653589793,
+          "sum": 0.30000000000000004,
+          "tenth": 0.1,
+          "small": 1e-7,
+          "decimal": 123456789012345.6
+        }
+      }
+    }
+  ]
+}

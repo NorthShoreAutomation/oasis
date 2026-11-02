@@ -1,0 +1,42 @@
+{
+  "type": "package",
+  "spec_version": "2.0.0-draft.3",
+  "id": "pkg-0001",
+  "manifest": {
+    "producer": {
+      "name": "example-exporter",
+      "version": "0.1.0"
+    },
+    "produced_at": "2026-10-05T09:00:00Z",
+    "counts": {
+      "storage_locations": 0,
+      "metadata_definitions": 0,
+      "collections": 1,
+      "assets": 1
+    },
+    "namespaces": []
+  },
+  "collections": [
+    {
+      "id": "col-01",
+      "title": "Example Reel",
+      "collection_type": "logical"
+    }
+  ],
+  "assets": [
+    {
+      "id": "a-0001",
+      "title": "Example Clip",
+      "member_of": [
+        {
+          "collection": "col-01",
+          "extensions": {
+            "vendor_a": {
+              "rank": 1
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 {
   "type": "package",
-  "spec_version": "2.0.0-draft.2",
+  "spec_version": "2.0.0-draft.3",
   "id": "pkg-0001",
   "manifest": {
     "producer": {
@@ -14,23 +14,12 @@
       "collections": 0,
       "assets": 2
     },
-    "completeness": {
-      "storage_locations": "complete",
-      "metadata_definitions": "complete",
-      "collections": "complete",
-      "assets": "complete"
-    },
     "namespaces": []
   },
   "assets": [
     {
-      "type": "asset",
-      "spec_version": "2.0.0-draft.2",
       "id": "a-0001",
       "title": "Example Clip",
-      "access": {
-        "status": "none"
-      },
       "timing": {
         "time_base": {
           "rate": {
@@ -39,24 +28,19 @@
           },
           "drop_frame": false
         },
-        "duration_frames": 100
+        "duration_frames": 750
       }
     },
     {
-      "type": "asset",
-      "spec_version": "2.0.0-draft.2",
       "id": "a-0002",
-      "title": "Example Clip",
-      "access": {
-        "status": "none"
-      },
+      "title": "Example Excerpt",
       "relationships": [
         {
-          "kind": "subclip_of",
+          "type": "derived_from",
           "target": "a-0001",
           "range": {
-            "start_frame": 50,
-            "end_frame": 150
+            "start_frame": 700,
+            "end_frame": 751
           }
         }
       ]

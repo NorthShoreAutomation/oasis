@@ -1,22 +1,22 @@
-"""Semantic checks of the 2.0 contract that a schema cannot express (Appendix B).
+"""Semantic checks of the 2.0.0-draft.3 contract that a schema cannot express (Appendix B).
 
 The diagnostic catalog lives here and nowhere else. Every check reads the
 exact-number tree from ``strict_json`` and never changes it (``DOC-3``).
 Integer-typed fields may be spelled as integral decimals (``DOC-2``), so every
 check converts them with ``as_int`` before arithmetic, comparison, or use as a
-key. Time arithmetic is exact (``timecode``).
+key. Time arithmetic is exact: seconds become ``Fraction`` values, and no
+binary number is ever made here.
 
-Precondition: the tree passed structural validation against the bundle
-entry point of its routed record type. The checks rely on the schema for field
-presence and JSON types and do not repeat it.
+Precondition: the tree is a package that passed the root checks, the number
+limits (``DOC-4``), and structural validation. The checks rely on the schema
+for field presence and JSON types and do not repeat it.
 
-Record checks take ``(record, path, context)``. ``path`` is the RFC 6901
-pointer of the record in the document. ``context`` is ``None`` for a
-standalone record: then nothing is resolved, and what needs another record is
-reported with a warning (``TIMELINE_UNAVAILABLE``, ``DEFINITION_UNAVAILABLE``).
-Inside a package, ``context`` is the ``PackageContext`` built by
-``check_package``: references resolve under ``PKG-6`` and the warnings above
-give way to the checks they stand for.
+Only a package is checked (``REC-2``). Every reference resolves inside the
+package (``PKG-6``). An asset holds its information in holders: the asset
+level, each version in array order, and ``unassigned``. A holder has a
+timeline only when its ``timing`` defines one (``TIME-12``): the asset level
+of an asset with no versions, or a version. Absent and empty ``versions``
+mean the same (``VER-1``).
 
 Messages are fixed catalog text and never carry an input value, and no
 pointer ever carries an extension key.
@@ -24,6 +24,7 @@ pointer ever carries an extension key.
 
 from dataclasses import dataclass
 from decimal import Decimal
+from fractions import Fraction
 from math import gcd
 
 from tests.conformance.formats import check_date, check_date_time
@@ -33,50 +34,88 @@ from tests.conformance.types import Diagnostic
 __all__ = [
     "CATALOG",
     "PackageContext",
+    "Timeline",
     "as_int",
     "check",
-    "check_annotation",
-    "check_asset",
-    "check_collection",
-    "check_metadata_definition",
     "check_package",
-    "check_storage_location",
     "check_value_shape",
     "diagnostic",
     "json_equal",
     "pointer",
     "resolve",
+    "timeline_of",
 ]
 
-# code: (rule, severity, message). The contract catalog, row by row.
+# code: (rule, severity, message). The contract catalog, row by row, in the
+# order of the catalog in docs/ADOPTION.md.
 CATALOG = {
     "INPUT_INVALID": ("DOC-1", "error", "Input bytes cannot be parsed under the strict JSON policy."),
-    "TYPE_UNSUPPORTED": ("UNS-1", "error", "The document root has no supported record type."),
-    "VERSION_UNSUPPORTED": ("REC-4, UNS-1", "error", "The declared spec_version is not supported by this checker."),
+    "NOT_EXCHANGE_DOCUMENT": ("REC-2", "error", "The document root is not a package exchange document."),
+    "VERSION_UNSUPPORTED": ("UNS-1", "error", "The declared spec_version is not supported by this checker."),
+    "NUMBER_OUT_OF_RANGE": ("DOC-4", "error", "A number has an absolute value greater than 2^53 - 1."),
+    "NUMBER_TOO_PRECISE": ("DOC-4", "error", "A number has more precision than a binary64 number holds."),
     "COUNT_MISMATCH": ("PKG-3", "error", "A declared count does not equal the length of its array."),
-    "REFERENCE_UNRESOLVED": ("PKG-6", "error", "A reference does not resolve in a complete registry."),
-    "REFERENCE_UNRESOLVED_PARTIAL": ("PKG-6", "warning", "A reference does not resolve in a partial registry."),
-    "ID_DUPLICATE": ("ID-1", "error", "A record id is repeated within its record type."),
-    "NESTED_ID_DUPLICATE": ("ID-4", "error", "A nested id is repeated within its record."),
-    "SNAPSHOT_MISMATCH": ("ID-6", "error", "A collection snapshot differs from the registry record."),
+    "REFERENCE_UNRESOLVED": ("PKG-6", "error", "A reference does not resolve in the package."),
+    "ID_DUPLICATE": ("ID-1", "error", "A record id is repeated within its record list."),
+    "NESTED_ID_DUPLICATE": ("ID-4", "error", "A nested id is repeated within its asset or definition."),
     "RATE_NOT_LOWEST_TERMS": ("TIME-2", "error", "A rate is not written in lowest terms."),
-    "RANGE_NOT_INCREASING": ("TIME-4", "error", "A range does not end after it starts."),
-    "TIMELINE_UNDECLARED": ("TIME-5, TIME-12", "error", "A frame field belongs to a timeline with no time base."),
-    "TIMELINE_UNAVAILABLE": (
-        "TIME-12, ANN-3",
-        "warning",
-        "The owning asset is not in the document, so timing agreement was not checked.",
+    "RANGE_NOT_INCREASING": ("TIME-4, TIME-13", "error", "A range does not end after it starts."),
+    "TIMELINE_UNDECLARED": (
+        "TIME-5, TIME-12",
+        "error",
+        "A frame field is on a timeline that is not in the frame form.",
     ),
-    "SECONDS_DISAGREE": ("TIME-7", "error", "A derived seconds value names a different frame."),
+    "SECONDS_DISAGREE": ("TIME-7", "error", "A seconds value names a different frame than its frame field."),
     "TIMECODE_DISAGREE": (
         "TIME-7, TIME-8",
         "error",
-        "A timecode label differs from the label derived from the frame value.",
+        "A timecode label differs from the label derived from its frame field.",
     ),
-    "FRAME_OUT_OF_BOUNDS": ("TIME-9", "error", "A frame position lies outside the asset duration."),
-    "SEQUENCE_RANGE_EMPTY": ("GRP-3", "error", "An image sequence range does not end after it starts."),
+    "SAMPLE_DISAGREE": (
+        "TIME-13",
+        "error",
+        "A sample value does not restate its seconds value at the sample rate.",
+    ),
+    "SAMPLE_RATE_UNDECLARED": (
+        "TIME-13",
+        "error",
+        "A sample field is on a timeline that declares no sample_rate.",
+    ),
+    "POSITION_OUT_OF_BOUNDS": ("TIME-9", "error", "A position lies outside the timeline length."),
+    "PART_START_OUT_OF_ORDER": (
+        "GRP-7",
+        "error",
+        "Part starts of one track pair do not increase with segment_index.",
+    ),
+    "SUBCLIP_LENGTH_DISAGREES": (
+        "REL-4",
+        "error",
+        "A subclip length does not agree with the length of its range on the target.",
+    ),
+    "LOCATION_DUPLICATE": ("FILE-6", "error", "A file lists one storage location more than once."),
+    "SEQUENCE_RANGE_EMPTY": ("FILE-8", "error", "An image sequence ends before it starts."),
+    "SEQUENCE_STEP_MISMATCH": (
+        "FILE-8",
+        "error",
+        "The last frame number is not reached from the first in whole steps.",
+    ),
+    "SEQUENCE_PATTERN_INVALID": (
+        "FILE-8",
+        "error",
+        "A sequence path does not hold the {frame} placeholder exactly once.",
+    ),
+    "SEQUENCE_FRAME_OUTSIDE": (
+        "FILE-8",
+        "error",
+        "A listed frame number is not an expected number of the sequence.",
+    ),
+    "SEQUENCE_IMAGE_REPEATED": ("FILE-8", "error", "A sequence lists details for one image more than once."),
     "TRACK_DUPLICATE": ("GRP-4", "error", "A file group repeats a track type and index pair."),
-    "FILE_REFERENCE_UNRESOLVED": ("GRP-4", "error", "A file group member names a file that is not in the asset."),
+    "FILE_REFERENCE_UNRESOLVED": (
+        "GRP-4",
+        "error",
+        "A file group member names a file that is not in the same holder.",
+    ),
     "SEGMENT_INDEX_MISSING": (
         "GRP-6",
         "error",
@@ -88,31 +127,68 @@ CATALOG = {
         "A file group repeats a segment_index within one track type and index pair.",
     ),
     "SEGMENT_OUT_OF_ORDER": ("GRP-6", "error", "File group segments are not in ascending segment_index order."),
-    "SEGMENT_GAP": (
-        "GRP-6",
+    "STREAM_DUPLICATE": ("GRP-10", "error", "A file group selects one stream of a file twice."),
+    "CHANNEL_LAYOUT_MISMATCH": ("GRP-11", "error", "A channel layout does not have channel_count entries."),
+    "STREAM_FACTS_DISAGREE": ("GRP-11", "error", "Two members describe one stream with different values."),
+    "SEQUENCE_FRAME_MISSING": (
+        "GRP-12",
         "error",
-        "A complete file group has a gap in the segment_index values of one track type and index pair.",
+        "A member shares a pair with sequence images but has no sequence_frame.",
+    ),
+    "SEQUENCE_FRAME_DUPLICATE": ("GRP-12", "error", "A file group repeats a sequence_frame within one pair."),
+    "SEQUENCE_FRAME_OUT_OF_ORDER": (
+        "GRP-12",
+        "error",
+        "Sequence images are not in ascending sequence_frame order.",
+    ),
+    "TRACK_PARTS_MIXED": ("GRP-12", "error", "One track pair mixes segments and sequence images."),
+    "SEQUENCE_FRAME_ON_COMPACT": (
+        "GRP-12",
+        "error",
+        "An explicit sequence image names a compact sequence file.",
     ),
     "ORDINAL_DUPLICATE": ("VER-2", "error", "Two versions share an ordinal."),
-    "VERSION_REFERENCE_UNRESOLVED": ("VER-3", "error", "A version reference names no version in the asset."),
-    "VERSION_WITHOUT_VERSIONS": ("VER-3", "error", "A version reference appears on an asset with no versions."),
+    "VERSION_REFERENCE_UNRESOLVED": (
+        "VER-6, REL-6",
+        "error",
+        "A version reference names no version of its asset.",
+    ),
+    "TARGET_VERSION_REQUIRED": (
+        "REL-6",
+        "error",
+        "A relationship range has no target_version, and its target has versions.",
+    ),
+    "DEFINITION_SHARED_AND_VERSIONED": (
+        "VER-7",
+        "error",
+        "A metadata definition used at asset level is also used in a version or in unassigned.",
+    ),
     "RELATIONSHIP_SELF": ("REL-3", "error", "A relationship targets its own asset."),
-    "COLLECTION_CYCLE": ("COL-4", "error", "A collection is its own ancestor."),
-    "MEMBERSHIP_DISAGREES": ("COL-5", "error", "An asset claims membership that a complete collection list denies."),
+    "RELATIONSHIP_DUPLICATE": (
+        "REL-5",
+        "error",
+        "A relationships list repeats an entry in every field except description and extensions.",
+    ),
+    "COLLECTION_CYCLE": ("COL-4", "error", "A member_of entry is on a cycle among collections."),
+    "MEMBERSHIP_DUPLICATE": (
+        "COL-7",
+        "error",
+        "A member_of list names one collection more than once without a position on each entry.",
+    ),
+    "POSITION_DUPLICATE": ("COL-7", "error", "Two entries that name one collection share a position."),
     "VALUE_SHAPE_MISMATCH": (
         "MD-4",
         "error",
         "A metadata value does not match the value_type and cardinality of its definition.",
     ),
     "VALUE_DATE_INVALID": ("MD-4, DT-1, DT-3", "error", "A date or date-time metadata value is not valid."),
-    "VALUE_OPTION_UNKNOWN": ("MD-4", "error", "An enum value is not an option id of its definition."),
-    "VALUE_OPTION_REPEATED": ("MD-4", "error", "A multiple enum value repeats an option id."),
-    "DEFINITION_UNAVAILABLE": (
-        "MD-4",
-        "warning",
-        "The metadata definition is not in the document, so the value shape was not checked.",
+    "VALUE_OPTION_UNKNOWN": (
+        "MD-4, MD-7",
+        "error",
+        "An enum value on a fixed list is not an option id of its definition.",
     ),
-    "DEFINITION_REPEATED": ("MD-5", "error", "A metadata array names the same definition twice."),
+    "VALUE_REPEATED": ("MD-8", "error", "A multiple value repeats an item."),
+    "DEFINITION_REPEATED": ("MD-5", "error", "A metadata list names the same definition twice."),
     "NAMESPACE_UNDECLARED": ("EXT-2", "error", "An extension namespace is used but not declared in the manifest."),
     "NAMESPACE_DECLARED_TWICE": ("EXT-2", "error", "A namespace token is declared more than once."),
 }
@@ -148,9 +224,16 @@ def as_int(value) -> int:
     raise TypeError("not an integer value")
 
 
+def _exact(value) -> Fraction:
+    """Return a JSON number (``int`` or finite ``Decimal``) as an exact ``Fraction`` (``DOC-2``)."""
+    if isinstance(value, bool) or not isinstance(value, (int, Decimal)):
+        raise TypeError("not a number value")
+    return Fraction(value)
+
+
 def _items(record, key):
     """Yield ``(index, item)`` for the array ``record[key]``, or nothing when absent."""
-    array = record.get(key)
+    array = record.get(key) if isinstance(record, dict) else None
     if isinstance(array, list):
         yield from enumerate(array)
 
@@ -164,13 +247,15 @@ def _is_json_number(value):
 
 
 def json_equal(a, b) -> bool:
-    """Compare two parsed JSON values exactly (``ID-6``, ``DOC-2``).
+    """Compare two parsed JSON values exactly (``DOC-2``).
 
-    Both values must have the same JSON type, where a boolean is its own type.
-    Numbers (``int`` or ``Decimal``) are equal when mathematically equal.
-    Objects need the same key set and equal members; arrays the same length
-    and equal items in order; strings compare exactly; ``null`` equals only
-    ``null``.
+    Used by ``COL-7``, ``REL-5``, ``MD-8``, and ``GRP-11``. Both values must
+    have the same JSON type, where a boolean is its own type. Numbers
+    (``int`` or ``Decimal``) are equal when mathematically equal. Objects need
+    the same key set and equal members, so an empty object never equals an
+    absent member; arrays need the same length and equal items in order;
+    strings compare by exact code points, with no Unicode normalization
+    (``DOC-3``); ``null`` equals only ``null``.
     """
     if isinstance(a, bool) or isinstance(b, bool):
         return isinstance(a, bool) and isinstance(b, bool) and a == b
@@ -187,6 +272,19 @@ def json_equal(a, b) -> bool:
     return False
 
 
+def _scalar_key(value):
+    """Return a hashable key that is equal for two scalars exactly when ``json_equal`` holds."""
+    if isinstance(value, bool):
+        return ("boolean", value)
+    if _is_json_number(value):
+        return ("number", _exact(value))
+    if isinstance(value, str):
+        return ("string", value)
+    if value is None:
+        return ("null", None)
+    return None
+
+
 # Package context.
 
 REGISTRIES = ("storage_locations", "metadata_definitions", "collections", "assets")
@@ -194,16 +292,13 @@ REGISTRIES = ("storage_locations", "metadata_definitions", "collections", "asset
 
 @dataclass(frozen=True)
 class PackageContext:
-    """What the record checks of one package resolve against.
+    """What the checks of one package resolve against (``PKG-6``).
 
     Each registry maps an id to the first record with that id (``ID-1``
-    reports every later one). ``completeness`` maps a registry name to
-    ``complete`` or ``partial`` from the manifest. ``namespaces`` holds the
-    declared extension tokens (``EXT-2``).
+    reports every later one). ``namespaces`` holds the declared extension
+    tokens (``EXT-2``).
     """
 
-    spec_version: str
-    completeness: dict
     storage_locations: dict
     metadata_definitions: dict
     collections: dict
@@ -211,18 +306,15 @@ class PackageContext:
     namespaces: frozenset
 
 
-def resolve(context, registry: str, target: str, path: str):
+def resolve(context, registry: str, target, path: str):
     """PKG-6 and ID-5: resolve the reference ``target`` in ``registry``.
 
-    Returns ``(record, None)`` when found. Otherwise returns ``(None, d)``
-    where ``d`` is ``REFERENCE_UNRESOLVED`` at ``path`` when the registry is
-    ``complete`` and ``REFERENCE_UNRESOLVED_PARTIAL`` when it is ``partial``.
+    Returns ``(record, None)`` when found, else ``(None, d)`` where ``d`` is
+    ``REFERENCE_UNRESOLVED`` at ``path``. Ids compare exactly.
     """
     records = getattr(context, registry)
     if isinstance(target, str) and target in records:
         return records[target], None
-    if context.completeness.get(registry) == "partial":
-        return None, diagnostic("REFERENCE_UNRESOLVED_PARTIAL", path)
     return None, diagnostic("REFERENCE_UNRESOLVED", path)
 
 
@@ -234,101 +326,235 @@ def _resolve_into(out, context, registry, target, path):
     return record
 
 
-# Identity.
+# Timelines.
 
-def _nested_id_duplicates(record, path, key):
-    """ID-4: a nested id is unique within its record; every repeat after the first is reported."""
-    seen = set()
+@dataclass(frozen=True)
+class Timeline:
+    """One timeline, read from a ``timing`` object (``TIME-11``).
+
+    ``rate`` is ``(numerator, denominator)`` in the frame form and ``None``
+    in the seconds form. ``frames`` is ``duration_frames`` or ``None``.
+    ``seconds`` is the exact length in seconds, or ``None`` when unknown: in
+    the frame form ``duration_frames * denominator / numerator``, in the
+    seconds form ``duration_seconds``. ``anchor`` is the frame-form
+    ``source_timecode``. ``sample_rate`` and ``samples`` come from
+    ``TIME-13``.
+    """
+
+    rate: tuple
+    drop_frame: bool
+    anchor: str
+    frames: int
+    seconds: Fraction
+    sample_rate: int
+    samples: int
+
+    @property
+    def frame_form(self) -> bool:
+        return self.rate is not None
+
+    def frame_duration(self) -> Fraction:
+        """One frame duration in seconds, ``denominator / numerator``."""
+        numerator, denominator = self.rate
+        return Fraction(denominator, numerator)
+
+    def frame_seconds(self, frame) -> Fraction:
+        """The start time in seconds of ``frame``, exactly."""
+        numerator, denominator = self.rate
+        return Fraction(frame * denominator, numerator)
+
+
+def timeline_of(timing):
+    """Return the ``Timeline`` of a ``timing`` object, or ``None`` when there is no ``timing``.
+
+    Never reads ``time_base`` unless it is present: a seconds-form timing may
+    carry ``source_timecode`` with its own ``timecode_base`` (``TIME-14``).
+    """
+    if not isinstance(timing, dict):
+        return None
+    sample_rate = as_int(timing["sample_rate"]) if "sample_rate" in timing else None
+    samples = as_int(timing["duration_samples"]) if "duration_samples" in timing else None
+    if "time_base" in timing:
+        time_base = timing["time_base"]
+        rate = (as_int(time_base["rate"]["numerator"]), as_int(time_base["rate"]["denominator"]))
+        frames = as_int(timing["duration_frames"]) if "duration_frames" in timing else None
+        seconds = Fraction(frames * rate[1], rate[0]) if frames is not None else None
+        return Timeline(
+            rate=rate,
+            drop_frame=time_base.get("drop_frame") is True,
+            anchor=timing.get("source_timecode"),
+            frames=frames,
+            seconds=seconds,
+            sample_rate=sample_rate,
+            samples=samples,
+        )
+    seconds = _exact(timing["duration_seconds"]) if "duration_seconds" in timing else None
+    return Timeline(
+        rate=None, drop_frame=False, anchor=None, frames=None, seconds=seconds,
+        sample_rate=sample_rate, samples=samples,
+    )
+
+
+def _check_lowest_terms(rate, path):
+    """TIME-2: a rate ``{numerator, denominator}`` is written in lowest terms."""
+    if gcd(as_int(rate["numerator"]), as_int(rate["denominator"])) != 1:
+        return [diagnostic("RATE_NOT_LOWEST_TERMS", path)]
+    return []
+
+
+def _check_timing(timing, path):
+    """Checks of one holder ``timing`` object, run on every holder, each version included.
+
+    TIME-2 on ``time_base`` and ``timecode_base`` rates. TIME-7:
+    ``duration_seconds`` restates ``duration_frames`` in the frame form.
+    TIME-13: ``duration_samples`` restates ``duration_seconds`` at
+    ``sample_rate``.
+    """
     out = []
-    for i, item in _items(record, key):
-        nested_id = item.get("id") if isinstance(item, dict) else None
-        if not isinstance(nested_id, str):
-            continue
-        if nested_id in seen:
-            out.append(diagnostic("NESTED_ID_DUPLICATE", pointer(path, key, i, "id")))
-        seen.add(nested_id)
+    for key in ("time_base", "timecode_base"):
+        base = timing.get(key)
+        if isinstance(base, dict):
+            out.extend(_check_lowest_terms(base["rate"], pointer(path, key, "rate")))
+    timeline = timeline_of(timing)
+    if timeline.frame_form and timeline.frames is not None and "duration_seconds" in timing:
+        numerator, denominator = timeline.rate
+        if nearest_frame(timing["duration_seconds"], numerator, denominator) != timeline.frames:
+            out.append(diagnostic("SECONDS_DISAGREE", pointer(path, "duration_seconds")))
+    if timeline.samples is not None and timeline.sample_rate is not None and "duration_seconds" in timing:
+        if nearest_frame(timing["duration_seconds"], timeline.sample_rate, 1) != timeline.samples:
+            out.append(diagnostic("SAMPLE_DISAGREE", pointer(path, "duration_samples")))
     return out
 
 
-# Time.
-
-def _rate(timing):
-    """Return the time base rate of ``timing`` as ``(numerator, denominator)`` integers."""
-    rate = timing["time_base"]["rate"]
-    return as_int(rate["numerator"]), as_int(rate["denominator"])
+_FRAME_FIELDS = ("start_frame", "end_frame")
+_SECONDS_FIELDS = ("start_seconds", "end_seconds")
+_SAMPLE_FIELDS = ("start_sample", "end_sample")
 
 
-def _check_rate(timing, path):
-    """TIME-2: a rate is written in lowest terms."""
-    numerator, denominator = _rate(timing)
-    if gcd(numerator, denominator) != 1:
-        return [diagnostic("RATE_NOT_LOWEST_TERMS", pointer(path, "time_base", "rate"))]
-    return []
+def _has_frame_field(marker):
+    return any(key in marker for key in _FRAME_FIELDS)
 
 
-def _check_range_order(span, path):
-    """TIME-4: a range has ``end_frame`` greater than ``start_frame``."""
-    if "start_frame" in span and "end_frame" in span:
-        if as_int(span["end_frame"]) <= as_int(span["start_frame"]):
-            return [diagnostic("RANGE_NOT_INCREASING", pointer(path, "end_frame"))]
-    return []
+def _check_order(marker, path):
+    """TIME-4 and TIME-13: a range ends after it starts.
+
+    The defining unit is frames when a frame field is present, else seconds.
+    Sample fields are compared on their own when both are present.
+    """
+    out = []
+    pairs = [_FRAME_FIELDS if _has_frame_field(marker) else _SECONDS_FIELDS, _SAMPLE_FIELDS]
+    for start, end in pairs:
+        if start in marker and end in marker and _exact(marker[end]) <= _exact(marker[start]):
+            out.append(diagnostic("RANGE_NOT_INCREASING", pointer(path, end)))
+    return out
 
 
-def _check_derived_values(annotation, path, timing):
-    """TIME-7 and TIME-8: derived seconds and labels agree with their frame values.
+def _check_frame_marker(marker, path, timeline):
+    """TIME-7, TIME-8, and TIME-9 for a marker whose frames define it, on a frame-form timeline.
 
     Seconds agree when ``nearest_frame`` (tie toward zero) equals the frame.
-    A label agrees when it equals the label derived from the asset's
-    ``source_timecode`` anchor. A label without an anchor, or at a rate
-    outside ``LABEL_RATES``, is rejected by the schema, so it is skipped here.
+    A label agrees when it equals the label derived from the ``source_timecode``
+    anchor. A label without an anchor, or at a rate outside ``LABEL_RATES``,
+    is rejected by the schema, so it is skipped here. Bounds: each frame field
+    greater than ``duration_frames`` is reported at that field, and so is the
+    ``start_frame`` of a range that equals it.
     """
-    numerator, denominator = _rate(timing)
-    drop_frame = timing["time_base"]["drop_frame"] is True
-    anchor = timing.get("source_timecode")
     out = []
+    numerator, denominator = timeline.rate
+    is_range = _is_range(marker)
     for end in ("start", "end"):
         frame_key = end + "_frame"
-        if frame_key not in annotation:
+        if frame_key not in marker:
             continue
-        frame = as_int(annotation[frame_key])
+        frame = as_int(marker[frame_key])
         seconds_key = end + "_seconds"
-        if seconds_key in annotation:
-            if nearest_frame(annotation[seconds_key], numerator, denominator) != frame:
-                out.append(diagnostic("SECONDS_DISAGREE", pointer(path, seconds_key)))
+        if seconds_key in marker and nearest_frame(marker[seconds_key], numerator, denominator) != frame:
+            out.append(diagnostic("SECONDS_DISAGREE", pointer(path, seconds_key)))
         label_key = end + "_timecode"
-        if label_key in annotation:
-            if anchor is None or (numerator, denominator) not in LABEL_RATES:
-                continue  # Structurally rejected (TIME-8 table and anchor rule).
+        if label_key in marker and timeline.anchor is not None and timeline.rate in LABEL_RATES:
             try:
-                derived = derive_label(anchor, frame, numerator, denominator, drop_frame)
+                derived = derive_label(timeline.anchor, frame, numerator, denominator, timeline.drop_frame)
             except ValueError:
-                continue  # An invalid anchor is structurally rejected.
-            if derived != annotation[label_key]:
+                derived = None  # An invalid anchor is structurally rejected.
+            if derived is not None and derived != marker[label_key]:
                 out.append(diagnostic("TIMECODE_DISAGREE", pointer(path, label_key)))
+        if timeline.frames is not None and (
+            frame > timeline.frames or (is_range and end == "start" and frame == timeline.frames)
+        ):
+            out.append(diagnostic("POSITION_OUT_OF_BOUNDS", pointer(path, frame_key)))
     return out
 
 
-def _check_bounds(span, path, timing):
-    """TIME-9: positions lie inside ``duration_frames`` D when D is declared.
+def _is_range(marker):
+    """A marker with an end field is a range (``TIME-4``)."""
+    return "end_frame" in marker or "end_seconds" in marker
 
-    A point needs ``0 <= start_frame < D``. A range needs
-    ``start_frame < D`` and ``end_frame <= D``; each field out of bounds is
-    reported, even when the range is also reversed (``TIME-4``). Without D no
-    upper bound is checked.
+
+def _check_seconds_bounds(marker, path, timeline):
+    """TIME-9 for a marker with no frame field.
+
+    Each seconds field greater than the length S is out of bounds, and so is
+    the ``start_seconds`` of a range that equals S.
     """
-    if "duration_frames" not in timing or "start_frame" not in span:
+    if timeline is None or timeline.seconds is None:
         return []
-    duration = as_int(timing["duration_frames"])
+    is_range = _is_range(marker)
     out = []
-    if not 0 <= as_int(span["start_frame"]) < duration:
-        out.append(diagnostic("FRAME_OUT_OF_BOUNDS", pointer(path, "start_frame")))
-    if "end_frame" in span and as_int(span["end_frame"]) > duration:
-        out.append(diagnostic("FRAME_OUT_OF_BOUNDS", pointer(path, "end_frame")))
+    for key in _SECONDS_FIELDS:
+        if key not in marker:
+            continue
+        seconds = _exact(marker[key])
+        if seconds > timeline.seconds or (is_range and key == "start_seconds" and seconds == timeline.seconds):
+            out.append(diagnostic("POSITION_OUT_OF_BOUNDS", pointer(path, key)))
     return out
 
 
-def _has_frame_field(record):
-    return "start_frame" in record or "end_frame" in record
+def _check_samples(marker, path, timeline):
+    """TIME-13 and TIME-9 for the sample fields of a marker.
+
+    With no timeline ``sample_rate``, ``SAMPLE_RATE_UNDECLARED`` once, at the
+    first sample field. Otherwise each sample field restates its seconds
+    field (``SAMPLE_DISAGREE``), and each sample field greater than
+    ``duration_samples`` is out of bounds. A marker with an end field is a
+    range (``TIME-4``). Its ``start_sample`` is also out of bounds when it
+    equals ``duration_samples``, with or without an ``end_sample``.
+    """
+    present = [key for key in _SAMPLE_FIELDS if key in marker]
+    if not present:
+        return []
+    if timeline is None or timeline.sample_rate is None:
+        return [diagnostic("SAMPLE_RATE_UNDECLARED", pointer(path, present[0]))]
+    is_range = _is_range(marker)
+    out = []
+    for key in present:
+        sample = as_int(marker[key])
+        seconds_key = key.replace("_sample", "_seconds")
+        if seconds_key in marker and nearest_frame(marker[seconds_key], timeline.sample_rate, 1) != sample:
+            out.append(diagnostic("SAMPLE_DISAGREE", pointer(path, key)))
+        if timeline.samples is not None and (
+            sample > timeline.samples or (is_range and key == "start_sample" and sample == timeline.samples)
+        ):
+            out.append(diagnostic("POSITION_OUT_OF_BOUNDS", pointer(path, key)))
+    return out
+
+
+def _check_marker(marker, path, timeline, undeclared_path):
+    """Section 6 checks of a marker against a known timeline (``None`` for no ``timing``).
+
+    A frame field on a timeline that is not in the frame form gives
+    ``TIMELINE_UNDECLARED`` at ``undeclared_path`` and no other frame check.
+    Order (``TIME-4``) is not checked here.
+    """
+    out = []
+    if _has_frame_field(marker):
+        if timeline is None or not timeline.frame_form:
+            out.append(diagnostic("TIMELINE_UNDECLARED", undeclared_path))
+        else:
+            out.extend(_check_frame_marker(marker, path, timeline))
+    else:
+        out.extend(_check_seconds_bounds(marker, path, timeline))
+    out.extend(_check_samples(marker, path, timeline))
+    return out
 
 
 # Metadata.
@@ -360,49 +586,53 @@ _SCALAR_TESTS = {
 }
 
 
-def _check_scalar(type_, option_ids, item, path):
-    """MD-4 for one scalar: JSON type, then date validity or enum option."""
+def _check_scalar(definition, option_ids, item, path):
+    """MD-4 and MD-7 for one scalar: JSON type, then date validity or the fixed option list."""
+    type_ = definition["value_type"]
     if not _SCALAR_TESTS[type_](item):
         return [diagnostic("VALUE_SHAPE_MISMATCH", path)]
     if type_ == "date" and not check_date(item):
         return [diagnostic("VALUE_DATE_INVALID", path)]
     if type_ == "datetime" and not check_date_time(item):
         return [diagnostic("VALUE_DATE_INVALID", path)]
-    if type_ == "enum" and item not in option_ids:
+    if type_ == "enum" and definition.get("list_type") == "fixed" and item not in option_ids:
         return [diagnostic("VALUE_OPTION_UNKNOWN", path)]
     return []
 
 
 def check_value_shape(definition, value, path: str) -> list:
-    """MD-4 and DT-3: a value matches the value_type and cardinality of its definition.
+    """MD-4, MD-7, MD-8, DT-1, and DT-3: a value matches its definition.
 
     ``path`` is the pointer of the ``value`` field. A ``single`` value is one
     scalar; a ``multiple`` value is an array (possibly empty) whose items are
     checked one by one at ``path/<k>``. ``date`` values follow ``DT-3`` and
-    ``datetime`` values ``DT-1``. An ``enum`` value is an option id, and a
-    ``multiple`` enum value repeats no item (every repeat after the first is
-    reported for known option ids only; an unknown id gets
-    ``VALUE_OPTION_UNKNOWN`` on every occurrence and no repeat code).
-    Reference-typed values are strings here; their resolution is ``MD-6`` in a
-    package. Constraints are never executed (``MD-2``).
+    ``datetime`` values ``DT-1``. An ``enum`` item on a ``fixed`` list is an
+    option id, compared by exact code points; an empty ``fixed`` list accepts
+    no item, and an ``open`` list accepts any string (``MD-7``). MD-8: in a
+    ``multiple`` value of any type, each repeat after the first is
+    ``VALUE_REPEATED``. Numbers compare by value, strings by code points, and
+    a boolean never equals a number. An item can get both an option or
+    resolution finding and a repeat finding. Constraints are never executed
+    (``MD-2``).
     """
-    type_ = definition["value_type"]
     option_ids = {o.get("id") for o in definition.get("options", ()) if isinstance(o, dict)}
     if definition["cardinality"] == "single":
         if isinstance(value, list):
             return [diagnostic("VALUE_SHAPE_MISMATCH", path)]
-        return _check_scalar(type_, option_ids, value, path)
+        return _check_scalar(definition, option_ids, value, path)
     if not isinstance(value, list):
         return [diagnostic("VALUE_SHAPE_MISMATCH", path)]
     out = []
     seen = set()
     for k, item in enumerate(value):
         item_path = pointer(path, k)
-        out.extend(_check_scalar(type_, option_ids, item, item_path))
-        if type_ == "enum" and isinstance(item, str) and item in option_ids:
-            if item in seen:
-                out.append(diagnostic("VALUE_OPTION_REPEATED", item_path))
-            seen.add(item)
+        out.extend(_check_scalar(definition, option_ids, item, item_path))
+        key = _scalar_key(item)
+        if key is None:
+            continue
+        if key in seen:
+            out.append(diagnostic("VALUE_REPEATED", item_path))
+        seen.add(key)
     return out
 
 
@@ -431,27 +661,21 @@ def _check_value_references(definition, value, value_path, context):
     return out
 
 
-def _check_metadata(record, path, context):
-    """MD-4 to MD-6 for the ``metadata`` array of one record or annotation.
+def _check_metadata(owner, path, context):
+    """MD-4 to MD-8 for one ``metadata`` list, checked on its own.
 
     MD-5: a definition id appears at most once; every repeat after the first
-    is reported at its ``definition``. Standalone (no context), no definition
-    is available, so every value gets ``DEFINITION_UNAVAILABLE`` (MD-4)
-    at the value object's pointer. In a package, ``definition`` resolves under
-    PKG-6 at its own pointer and the unresolved diagnostic replaces that
-    warning; a resolved definition gets MD-4 shape and MD-6 references.
+    is reported at its ``definition``. ``definition`` resolves under PKG-6 at
+    its own pointer; a resolved definition gets the value checks.
     """
     out = []
     seen = set()
-    for j, item in _items(record, "metadata"):
+    for j, item in _items(owner, "metadata"):
         item_path = pointer(path, "metadata", j)
         definition_id = item.get("definition")
         if definition_id in seen:
             out.append(diagnostic("DEFINITION_REPEATED", pointer(item_path, "definition")))
         seen.add(definition_id)
-        if context is None:
-            out.append(diagnostic("DEFINITION_UNAVAILABLE", item_path))
-            continue
         definition = _resolve_into(
             out, context, "metadata_definitions", definition_id, pointer(item_path, "definition")
         )
@@ -462,287 +686,514 @@ def _check_metadata(record, path, context):
     return out
 
 
+# Files and file groups.
+
+def _check_file(file, file_path, context):
+    """PKG-6, FILE-6, and FILE-8 for one file.
+
+    PKG-6: each ``locations/<k>/storage_location`` resolves. FILE-6: a repeated
+    storage location gives ``LOCATION_DUPLICATE`` at each repeat after the
+    first. FILE-8, when ``sequence`` is present: ``SEQUENCE_RANGE_EMPTY`` when
+    ``last_frame < first_frame``, else ``SEQUENCE_STEP_MISMATCH`` when the last
+    number is not reached in whole steps; ``SEQUENCE_PATTERN_INVALID`` at each
+    path whose count of ``{frame}`` is not 1; ``SEQUENCE_FRAME_OUTSIDE`` at each
+    ``images/<i>/frame`` and ``missing_frames`` item that is not an expected
+    number; ``SEQUENCE_IMAGE_REPEATED`` at each repeated image frame. A number
+    n is expected when ``first_frame <= n <= last_frame`` and
+    ``(n - first_frame) % step == 0``. An empty range expects no number and
+    reports no ``SEQUENCE_FRAME_OUTSIDE``.
+    """
+    out = []
+    seen = set()
+    for k, location in _items(file, "locations"):
+        location_path = pointer(file_path, "locations", k)
+        storage = location.get("storage_location")
+        _resolve_into(out, context, "storage_locations", storage, pointer(location_path, "storage_location"))
+        if storage in seen:
+            out.append(diagnostic("LOCATION_DUPLICATE", pointer(location_path, "storage_location")))
+        seen.add(storage)
+    sequence = file.get("sequence")
+    if not isinstance(sequence, dict):
+        return out
+    sequence_path = pointer(file_path, "sequence")
+    first = as_int(sequence["first_frame"])
+    last = as_int(sequence["last_frame"])
+    step = as_int(sequence["step"])
+    empty = last < first
+    if empty:
+        out.append(diagnostic("SEQUENCE_RANGE_EMPTY", pointer(sequence_path, "last_frame")))
+    elif (last - first) % step != 0:
+        out.append(diagnostic("SEQUENCE_STEP_MISMATCH", pointer(sequence_path, "step")))
+
+    def outside(number):
+        return not empty and not (first <= number <= last and (number - first) % step == 0)
+
+    for k, location in _items(file, "locations"):
+        location_path = pointer(file_path, "locations", k)
+        path = location.get("path")
+        if isinstance(path, str) and path.count("{frame}") != 1:
+            out.append(diagnostic("SEQUENCE_PATTERN_INVALID", pointer(location_path, "path")))
+        for j, number in _items(location, "missing_frames"):
+            if outside(as_int(number)):
+                out.append(diagnostic("SEQUENCE_FRAME_OUTSIDE", pointer(location_path, "missing_frames", j)))
+    frames_seen = set()
+    for i, image in _items(sequence, "images"):
+        frame_path = pointer(sequence_path, "images", i, "frame")
+        number = as_int(image["frame"])
+        if outside(number):
+            out.append(diagnostic("SEQUENCE_FRAME_OUTSIDE", frame_path))
+        if number in frames_seen:
+            out.append(diagnostic("SEQUENCE_IMAGE_REPEATED", frame_path))
+        frames_seen.add(number)
+    return out
+
+
+def _check_part_kind(field, members, duplicate_code, order_code):
+    """Unique values in ascending member order for ``segment_index`` or ``sequence_frame``.
+
+    The order check starts with no highest value, so negative values work.
+    """
+    out = []
+    seen = set()
+    highest = None
+    for member_path, member in members:
+        if field not in member:
+            continue
+        value = as_int(member[field])
+        value_path = pointer(member_path, field)
+        if value in seen:
+            out.append(diagnostic(duplicate_code, value_path))
+        elif highest is not None and value < highest:
+            out.append(diagnostic(order_code, value_path))
+        seen.add(value)
+        highest = value if highest is None else max(highest, value)
+    return out
+
+
+def _start_time(member, timeline):
+    """The exact start time of a part (GRP-7), or ``None`` when it has no usable start."""
+    if "start_frame" in member:
+        if timeline is None or not timeline.frame_form:
+            return None
+        return timeline.frame_seconds(as_int(member["start_frame"]))
+    if "start_seconds" in member:
+        return _exact(member["start_seconds"])
+    return None
+
+
+def _check_part_start(member, member_path, timeline):
+    """GRP-7 for one member start: TIME-5 frame form, TIME-7 agreement, and strict bounds.
+
+    A start must be less than the timeline length when the length is known.
+    """
+    out = []
+    if "start_frame" in member:
+        frame_path = pointer(member_path, "start_frame")
+        if timeline is None or not timeline.frame_form:
+            return [diagnostic("TIMELINE_UNDECLARED", frame_path)]
+        frame = as_int(member["start_frame"])
+        if "start_seconds" in member:
+            numerator, denominator = timeline.rate
+            if nearest_frame(member["start_seconds"], numerator, denominator) != frame:
+                out.append(diagnostic("SECONDS_DISAGREE", pointer(member_path, "start_seconds")))
+        if timeline.frames is not None and frame >= timeline.frames:
+            out.append(diagnostic("POSITION_OUT_OF_BOUNDS", frame_path))
+    elif "start_seconds" in member:
+        if timeline is not None and timeline.seconds is not None:
+            if _exact(member["start_seconds"]) >= timeline.seconds:
+                out.append(diagnostic("POSITION_OUT_OF_BOUNDS", pointer(member_path, "start_seconds")))
+    return out
+
+
+def _check_pair(members, timeline):
+    """GRP-4, GRP-6, GRP-12, and the GRP-7 order check for one ``(track_type, track_index)`` pair.
+
+    The first member that carries ``segment_index`` or ``sequence_frame``
+    sets the kind of the pair. Each later member that carries the other field
+    gives ``TRACK_PARTS_MIXED`` at that field, and a mixed pair skips the
+    other checks. A repeated pair with neither field gives
+    ``TRACK_DUPLICATE`` at every member after the first. A pair of segments
+    follows GRP-6, and a pair of sequence images follows GRP-12. Part starts
+    must increase strictly with ``segment_index``, checked only when the pair
+    passes GRP-6; the finding is at the later start field.
+    """
+    kind = None
+    mixed = []
+    for member_path, member in members:
+        for field in ("segment_index", "sequence_frame"):
+            if field not in member:
+                continue
+            if kind is None:
+                kind = field
+            elif field != kind:
+                mixed.append(diagnostic("TRACK_PARTS_MIXED", pointer(member_path, field)))
+    if mixed:
+        return mixed
+    if kind is None:
+        return [diagnostic("TRACK_DUPLICATE", member_path) for member_path, _m in members[1:]]
+    out = []
+    if kind == "sequence_frame":
+        out.extend(diagnostic("SEQUENCE_FRAME_MISSING", p) for p, m in members if "sequence_frame" not in m)
+        out.extend(_check_part_kind(
+            "sequence_frame", members, "SEQUENCE_FRAME_DUPLICATE", "SEQUENCE_FRAME_OUT_OF_ORDER"
+        ))
+        return out
+    if len(members) > 1:
+        out.extend(diagnostic("SEGMENT_INDEX_MISSING", p) for p, m in members if "segment_index" not in m)
+    out.extend(_check_part_kind("segment_index", members, "SEGMENT_INDEX_DUPLICATE", "SEGMENT_OUT_OF_ORDER"))
+    if out:
+        return out
+    previous = None
+    for member_path, member in members:
+        start = _start_time(member, timeline)
+        if start is None:
+            continue
+        if previous is not None and start <= previous:
+            field = "start_frame" if "start_frame" in member else "start_seconds"
+            out.append(diagnostic("PART_START_OUT_OF_ORDER", pointer(member_path, field)))
+        previous = start
+    return out
+
+
+def _check_group(group, group_path, files, timeline):
+    """GRP-4, GRP-6, GRP-7, GRP-10, GRP-11, GRP-12, and TIME-2 for one file group.
+
+    ``files`` maps the file ids of the group's holder to their file objects.
+    Per member: ``file`` names a file of the same holder
+    (``FILE_REFERENCE_UNRESOLVED``); ``frame_rate`` and
+    ``capture_frame_rate`` are in lowest terms; ``channel_layout`` has
+    ``channel_count`` entries; a ``(file, stream_index)`` repeat is
+    ``STREAM_DUPLICATE`` at the later ``stream_index``; ``sequence_frame`` on a
+    member whose file has ``sequence`` is ``SEQUENCE_FRAME_ON_COMPACT``; and
+    the part start checks. Then the pair checks (``_check_pair``).
+    """
+    out = []
+    pairs = {}
+    streams = set()
+    for j, member in _items(group, "members"):
+        member_path = pointer(group_path, "members", j)
+        file_id = member.get("file")
+        if file_id not in files:
+            out.append(diagnostic("FILE_REFERENCE_UNRESOLVED", pointer(member_path, "file")))
+        for key in ("frame_rate", "capture_frame_rate"):
+            if isinstance(member.get(key), dict):
+                out.extend(_check_lowest_terms(member[key], pointer(member_path, key)))
+        if isinstance(member.get("channel_layout"), list) and "channel_count" in member:
+            if len(member["channel_layout"]) != as_int(member["channel_count"]):
+                out.append(diagnostic("CHANNEL_LAYOUT_MISMATCH", pointer(member_path, "channel_layout")))
+        if "stream_index" in member:
+            stream = (file_id, as_int(member["stream_index"]))
+            if stream in streams:
+                out.append(diagnostic("STREAM_DUPLICATE", pointer(member_path, "stream_index")))
+            streams.add(stream)
+        if "sequence_frame" in member and isinstance(files.get(file_id), dict) and "sequence" in files[file_id]:
+            out.append(diagnostic("SEQUENCE_FRAME_ON_COMPACT", pointer(member_path, "sequence_frame")))
+        out.extend(_check_part_start(member, member_path, timeline))
+        pair = (member.get("track_type"), as_int(member["track_index"]))
+        pairs.setdefault(pair, []).append((member_path, member))
+    for members in pairs.values():
+        out.extend(_check_pair(members, timeline))
+    return out
+
+
+_STREAM_FACT_FIELDS = (
+    "track_type", "language", "codec", "bit_rate", "duration_seconds", "width", "height",
+    "display_aspect_ratio", "bit_depth", "frame_rate", "capture_frame_rate", "frame_count",
+    "scan_type", "sample_rate", "channel_count", "channel_layout",
+)
+
+
+def _check_stream_facts(holder, holder_path):
+    """GRP-11: members of one holder that select one stream state the same facts.
+
+    Visits the members of all file groups of the holder in array order, and
+    only members with ``stream_index``. For each ``(file, stream_index,
+    field)``, the first value seen is recorded; a later member whose value
+    differs (``json_equal``) gives ``STREAM_FACTS_DISAGREE`` at its field.
+    ``label`` is not a stream fact.
+    """
+    out = []
+    recorded = {}
+    for i, group in _items(holder, "file_groups"):
+        for j, member in _items(group, "members"):
+            if "stream_index" not in member:
+                continue
+            member_path = pointer(holder_path, "file_groups", i, "members", j)
+            stream = (member.get("file"), as_int(member["stream_index"]))
+            for field in _STREAM_FACT_FIELDS:
+                if field not in member:
+                    continue
+                key = (stream, field)
+                if key not in recorded:
+                    recorded[key] = member[field]
+                elif not json_equal(recorded[key], member[field]):
+                    out.append(diagnostic("STREAM_FACTS_DISAGREE", pointer(member_path, field)))
+    return out
+
+
+# Relationships.
+
+_RELATIONSHIP_IGNORED = ("description", "extensions")
+
+
+def _relationship_key_fields(relationship):
+    return {k: v for k, v in relationship.items() if k not in _RELATIONSHIP_IGNORED}
+
+
+def _check_relationship_duplicates(holder, holder_path):
+    """REL-5: within one list, an entry equal to an earlier one in every field except
+    ``description`` and ``extensions`` is reported at the later entry."""
+    out = []
+    earlier = []
+    for i, relationship in _items(holder, "relationships"):
+        fields = _relationship_key_fields(relationship)
+        if any(json_equal(fields, other) for other in earlier):
+            out.append(diagnostic("RELATIONSHIP_DUPLICATE", pointer(holder_path, "relationships", i)))
+        earlier.append(fields)
+    return out
+
+
+def _target_timeline(target, relationship):
+    """REL-6: return ``(known, timeline)`` of the target timeline of a relationship.
+
+    Known when ``target_version`` resolves, or when it is absent and the
+    target has no versions.
+    """
+    versions = [v for _i, v in _items(target, "versions")]
+    if "target_version" in relationship:
+        for version in versions:
+            if version.get("id") == relationship["target_version"]:
+                return True, timeline_of(version.get("timing"))
+        return False, None
+    if not versions:
+        return True, timeline_of(target.get("timing"))
+    return False, None
+
+
+def _range_length(span, target_timeline):
+    """REL-4: the exact range length on the target, or ``None`` when it has no end."""
+    if "start_frame" in span:
+        if "end_frame" not in span:
+            return None
+        frames = as_int(span["end_frame"]) - as_int(span["start_frame"])
+        return target_timeline.frame_seconds(frames)
+    if "start_seconds" in span and "end_seconds" in span:
+        return _exact(span["end_seconds"]) - _exact(span["start_seconds"])
+    return None
+
+
+def _check_subclip(relationship, rel_path, holder_timeline, target_timeline):
+    """REL-4: a ``subclip_of`` child length agrees with its range length on the target.
+
+    The child length is the holder timeline length; with no length the check
+    does not apply. The allowance is one frame duration of the slowest
+    frame-form timeline among the target and the child, or 0 when neither is
+    in the frame form. The lengths agree when they differ by less than the
+    allowance, or are equal when the allowance is 0. The child length must be
+    greater than 0. One finding, at the relationship.
+    """
+    if holder_timeline is None or holder_timeline.seconds is None:
+        return []
+    range_length = _range_length(relationship["range"], target_timeline)
+    if range_length is None:
+        return []
+    child = holder_timeline.seconds
+    frame_durations = [
+        t.frame_duration() for t in (target_timeline, holder_timeline) if t is not None and t.frame_form
+    ]
+    allowance = max(frame_durations) if frame_durations else Fraction(0)
+    difference = abs(child - range_length)
+    agrees = difference < allowance if allowance else difference == 0
+    if child <= 0 or not agrees:
+        return [diagnostic("SUBCLIP_LENGTH_DISAGREES", rel_path)]
+    return []
+
+
+def _check_relationship(asset, relationship, rel_path, holder_timeline, context):
+    """REL-3, REL-4, REL-6, TIME-4, and the target-timeline checks for one relationship.
+
+    REL-3: ``target`` is not the asset's own id and resolves under PKG-6.
+    TIME-4: a ``range`` ends after it starts, always. When ``target``
+    resolves: a ``target_version`` names a version of the target
+    (``VERSION_REFERENCE_UNRESOLVED``), and a ``range`` with no
+    ``target_version`` on a target with versions is
+    ``TARGET_VERSION_REQUIRED`` at the relationship. When the target timeline
+    is known (REL-6), a range with frame fields on a timeline not in the
+    frame form gives ``TIMELINE_UNDECLARED`` at the range; otherwise TIME-7,
+    TIME-8, and TIME-9 apply on that timeline, and a ``subclip_of`` with an
+    increasing range gets REL-4.
+    """
+    out = []
+    target_id = relationship.get("target")
+    target_path = pointer(rel_path, "target")
+    if target_id == asset.get("id"):
+        out.append(diagnostic("RELATIONSHIP_SELF", target_path))
+    target = _resolve_into(out, context, "assets", target_id, target_path)
+    span = relationship.get("range")
+    range_path = pointer(rel_path, "range")
+    order = _check_order(span, range_path) if isinstance(span, dict) else []
+    out.extend(order)
+    if target is None:
+        return out
+    has_versions = any(True for _ in _items(target, "versions"))
+    if "target_version" in relationship:
+        version_ids = {v.get("id") for _i, v in _items(target, "versions")}
+        if relationship["target_version"] not in version_ids:
+            out.append(diagnostic("VERSION_REFERENCE_UNRESOLVED", pointer(rel_path, "target_version")))
+    elif isinstance(span, dict) and has_versions:
+        out.append(diagnostic("TARGET_VERSION_REQUIRED", rel_path))
+    if not isinstance(span, dict):
+        return out
+    known, target_timeline = _target_timeline(target, relationship)
+    if not known:
+        return out
+    timeline_findings = _check_marker(span, range_path, target_timeline, range_path)
+    out.extend(timeline_findings)
+    undeclared = any(d.code == "TIMELINE_UNDECLARED" for d in timeline_findings)
+    if relationship.get("type") == "subclip_of" and not order and not undeclared:
+        out.extend(_check_subclip(relationship, rel_path, holder_timeline, target_timeline))
+    return out
+
+
 # Assets.
 
-def _check_versions(asset, path):
-    """VER-2: version ordinals are unique within the asset; every repeat after the first is reported."""
+def _holders(asset, path):
+    """Yield ``(holder, holder path, timeline)`` for each holder of an asset, in holder order.
+
+    The asset level, then each version in array order, then ``unassigned``.
+    The asset level has a timeline only when the asset has no versions.
+    """
+    versions = [(i, v) for i, v in _items(asset, "versions")]
+    asset_timeline = None if versions else timeline_of(asset.get("timing"))
+    yield asset, path, asset_timeline
+    for i, version in versions:
+        yield version, pointer(path, "versions", i), timeline_of(version.get("timing"))
+    unassigned = asset.get("unassigned")
+    if isinstance(unassigned, dict):
+        yield unassigned, pointer(path, "unassigned"), None
+
+
+def _check_nested_ids(asset, path):
+    """ID-4: version ids are unique within the asset; file, file group, and
+    annotation ids are unique across every holder. Each repeat after the first
+    is reported, in holder order."""
     out = []
     seen = set()
     for i, version in _items(asset, "versions"):
+        version_id = version.get("id")
+        if version_id in seen:
+            out.append(diagnostic("NESTED_ID_DUPLICATE", pointer(path, "versions", i, "id")))
+        seen.add(version_id)
+    seen_by_key = {"files": set(), "file_groups": set(), "annotations": set()}
+    for holder, holder_path, _timeline in _holders(asset, path):
+        for key, seen_ids in seen_by_key.items():
+            for i, item in _items(holder, key):
+                nested_id = item.get("id")
+                if not isinstance(nested_id, str):
+                    continue
+                if nested_id in seen_ids:
+                    out.append(diagnostic("NESTED_ID_DUPLICATE", pointer(holder_path, key, i, "id")))
+                seen_ids.add(nested_id)
+    return out
+
+
+def _check_versions(asset, path):
+    """VER-2 unique ordinals, VER-6 ``current_version``, and VER-7 one level per definition."""
+    out = []
+    seen = set()
+    version_ids = set()
+    for i, version in _items(asset, "versions"):
+        version_ids.add(version.get("id"))
         ordinal = as_int(version["ordinal"])
         if ordinal in seen:
             out.append(diagnostic("ORDINAL_DUPLICATE", pointer(path, "versions", i, "ordinal")))
         seen.add(ordinal)
+    if "current_version" in asset and asset["current_version"] not in version_ids:
+        out.append(diagnostic("VERSION_REFERENCE_UNRESOLVED", pointer(path, "current_version")))
+    asset_level = {item.get("definition") for _j, item in _items(asset, "metadata")}
+    if asset_level:
+        for holder, holder_path, _timeline in list(_holders(asset, path))[1:]:
+            for j, item in _items(holder, "metadata"):
+                if item.get("definition") in asset_level:
+                    out.append(diagnostic(
+                        "DEFINITION_SHARED_AND_VERSIONED", pointer(holder_path, "metadata", j, "definition")
+                    ))
     return out
 
 
-def _check_version_reference(asset, owner, owner_path):
-    """VER-3: a file, group, or embedded annotation ``version`` names a version of the asset.
-
-    When the asset has no ``versions`` array, any ``version`` reference is
-    rejected with ``VERSION_WITHOUT_VERSIONS``.
-    """
-    if "version" not in owner:
-        return []
-    version_path = pointer(owner_path, "version")
-    if "versions" not in asset:
-        return [diagnostic("VERSION_WITHOUT_VERSIONS", version_path)]
-    ids = {v.get("id") for _i, v in _items(asset, "versions")}
-    if owner["version"] not in ids:
-        return [diagnostic("VERSION_REFERENCE_UNRESOLVED", version_path)]
-    return []
-
-
-def _check_group(group, group_path, file_ids):
-    """GRP-3, GRP-4, and GRP-6 for one file group.
-
-    GRP-3: a member ``sequence_range`` has ``start`` less than ``end``.
-    GRP-4: every member ``file`` names a file of the asset, and
-    ``(track_type, track_index)`` pairs are unique in the file group except
-    for the segments of one spanned recording (GRP-6). A repeated pair where
-    no member carries ``segment_index`` gives ``TRACK_DUPLICATE`` at every
-    repeat after the first.
-    GRP-6, per pair that has at least one ``segment_index``: when the pair is
-    repeated, every member of it without ``segment_index`` gives
-    ``SEGMENT_INDEX_MISSING`` at the member. In member order, a repeated
-    ``segment_index`` gives ``SEGMENT_INDEX_DUPLICATE`` and a value lower than
-    an earlier one gives ``SEGMENT_OUT_OF_ORDER``, both at that
-    ``segment_index``. In a complete file group the distinct values are 0 to
-    n - 1; the lowest value that breaks this gives ``SEGMENT_GAP`` at its
-    first ``segment_index``. An incomplete file group may have gaps.
-    """
+def _check_holder(asset, holder, holder_path, timeline, context):
+    """The checks of one holder: files, file groups, stream facts, metadata,
+    annotations, and relationships."""
     out = []
-    pairs = {}
-    for j, member in _items(group, "members"):
-        member_path = pointer(group_path, "members", j)
-        span = member.get("sequence_range")
-        if isinstance(span, dict) and as_int(span["start"]) >= as_int(span["end"]):
-            out.append(diagnostic("SEQUENCE_RANGE_EMPTY", pointer(member_path, "sequence_range")))
-        if member.get("file") not in file_ids:
-            out.append(diagnostic("FILE_REFERENCE_UNRESOLVED", pointer(member_path, "file")))
-        pair = (member.get("track_type"), as_int(member["track_index"]))
-        pairs.setdefault(pair, []).append((member_path, member))
-    for members in pairs.values():
-        segments = [(p, as_int(m["segment_index"])) for p, m in members if "segment_index" in m]
-        if not segments:
-            out.extend(diagnostic("TRACK_DUPLICATE", p) for p, _m in members[1:])
-            continue
-        if len(members) > 1:
-            out.extend(diagnostic("SEGMENT_INDEX_MISSING", p) for p, m in members if "segment_index" not in m)
-        first_at = {}
-        highest = -1
-        for p, index in segments:
-            index_path = pointer(p, "segment_index")
-            if index in first_at:
-                out.append(diagnostic("SEGMENT_INDEX_DUPLICATE", index_path))
-            else:
-                if index < highest:
-                    out.append(diagnostic("SEGMENT_OUT_OF_ORDER", index_path))
-                first_at[index] = index_path
-            highest = max(highest, index)
-        if group.get("complete") is True:
-            for expected, index in enumerate(sorted(first_at)):
-                if index != expected:
-                    out.append(diagnostic("SEGMENT_GAP", first_at[index]))
-                    break
-    return out
-
-
-def _check_relationship(asset, relationship, rel_path, context):
-    """REL-3 target, TIME-4 range order, and TIME-12 and TIME-9 range timeline.
-
-    REL-3: ``target`` must not be the asset's own id, and in a package it
-    resolves under PKG-6 in ``assets``. TIME-4: a ``range`` ends after it
-    starts. TIME-12: the range is on the target's timeline. Standalone, the
-    target is not in the document, so ``TIMELINE_UNAVAILABLE`` is reported at
-    the range. In a package, a resolved target without ``timing`` gives
-    ``TIMELINE_UNDECLARED`` at the range; with ``timing``, TIME-9 bounds use the
-    target's ``duration_frames``. An unresolved target checks nothing more.
-    """
-    out = []
-    target_id = relationship.get("target")
-    if target_id == asset.get("id"):
-        out.append(diagnostic("RELATIONSHIP_SELF", pointer(rel_path, "target")))
-    target = None
-    if context is not None:
-        target = _resolve_into(out, context, "assets", target_id, pointer(rel_path, "target"))
-    span = relationship.get("range")
-    if isinstance(span, dict):
-        range_path = pointer(rel_path, "range")
-        out.extend(_check_range_order(span, range_path))
-        if context is None:
-            out.append(diagnostic("TIMELINE_UNAVAILABLE", range_path))
-        elif target is not None:
-            timing = target.get("timing")
-            if isinstance(timing, dict):
-                out.extend(_check_bounds(span, range_path, timing))
-            else:
-                out.append(diagnostic("TIMELINE_UNDECLARED", range_path))
-    return out
-
-
-def _check_embedded_annotation(asset, annotation, ann_path, context):
-    """ANN-3 and section 6 for an annotation inside its asset.
-
-    TIME-4 order, TIME-7 and TIME-8 derived values, TIME-9 bounds against the
-    asset ``timing``; VER-3 version reference; MD-4 to MD-6 metadata.
-    """
-    out = []
-    timing = asset.get("timing")
-    if _has_frame_field(annotation) and isinstance(timing, dict):
-        out.extend(_check_range_order(annotation, ann_path))
-        out.extend(_check_derived_values(annotation, ann_path, timing))
-        out.extend(_check_bounds(annotation, ann_path, timing))
-    out.extend(_check_version_reference(asset, annotation, ann_path))
-    out.extend(_check_metadata(annotation, ann_path, context))
+    files = {}
+    for i, file in _items(holder, "files"):
+        out.extend(_check_file(file, pointer(holder_path, "files", i), context))
+        files.setdefault(file.get("id"), file)
+    for i, group in _items(holder, "file_groups"):
+        out.extend(_check_group(group, pointer(holder_path, "file_groups", i), files, timeline))
+    out.extend(_check_stream_facts(holder, holder_path))
+    out.extend(_check_metadata(holder, holder_path, context))
+    for i, annotation in _items(holder, "annotations"):
+        annotation_path = pointer(holder_path, "annotations", i)
+        out.extend(_check_order(annotation, annotation_path))
+        out.extend(_check_marker(annotation, annotation_path, timeline, pointer(annotation_path, "start_frame")))
+        out.extend(_check_metadata(annotation, annotation_path, context))
+    for i, relationship in _items(holder, "relationships"):
+        out.extend(_check_relationship(
+            asset, relationship, pointer(holder_path, "relationships", i), timeline, context
+        ))
+    out.extend(_check_relationship_duplicates(holder, holder_path))
     return out
 
 
 def check_asset(asset, path: str, context) -> list:
-    """Record checks for one asset.
+    """Every check of one asset in its package.
 
-    ID-4 nested ids (files, file groups, versions, annotations); TIME-2 rate;
-    VER-2 ordinals; VER-3 version references; GRP-3, GRP-4, and GRP-6 file groups;
-    REL-3 and TIME-4 relationships (TIME-12 warning standalone); embedded
-    annotations (TIME-4, TIME-7, TIME-8, TIME-9); MD-4 to MD-6 metadata;
-    COL-4 self-parent and metadata on collection snapshots. In a package, also
-    PKG-6 file ``storage_location`` and the ``collections`` entries
-    (``_check_asset_collections``).
+    ID-4 nested ids; VER-2, VER-6, and VER-7; section 6 checks of each
+    ``timing`` (the asset with no versions, and each version); then the
+    checks of each holder (``_check_holder``).
     """
     out = []
-    for key in ("files", "file_groups", "versions", "annotations"):
-        out.extend(_nested_id_duplicates(asset, path, key))
-    timing = asset.get("timing")
-    if isinstance(timing, dict):
-        out.extend(_check_rate(timing, pointer(path, "timing")))
+    out.extend(_check_nested_ids(asset, path))
     out.extend(_check_versions(asset, path))
-    file_ids = {f.get("id") for _i, f in _items(asset, "files")}
-    for i, file in _items(asset, "files"):
-        file_path = pointer(path, "files", i)
-        out.extend(_check_version_reference(asset, file, file_path))
-        if context is not None and "storage_location" in file:
-            location_path = pointer(file_path, "storage_location")
-            _resolve_into(out, context, "storage_locations", file["storage_location"], location_path)
-    for i, group in _items(asset, "file_groups"):
-        group_path = pointer(path, "file_groups", i)
-        out.extend(_check_version_reference(asset, group, group_path))
-        out.extend(_check_group(group, group_path, file_ids))
-    for i, relationship in _items(asset, "relationships"):
-        out.extend(_check_relationship(asset, relationship, pointer(path, "relationships", i), context))
-    for i, annotation in _items(asset, "annotations"):
-        out.extend(_check_embedded_annotation(asset, annotation, pointer(path, "annotations", i), context))
-    out.extend(_check_metadata(asset, path, context))
-    if context is None:
-        for j, entry in _items(asset, "collections"):
-            if isinstance(entry, dict):
-                out.extend(check_collection(entry, pointer(path, "collections", j), None))
-    else:
-        out.extend(_check_asset_collections(asset, path, context))
+    if isinstance(asset.get("timing"), dict):
+        out.extend(_check_timing(asset["timing"], pointer(path, "timing")))
+    for i, version in _items(asset, "versions"):
+        if isinstance(version.get("timing"), dict):
+            out.extend(_check_timing(version["timing"], pointer(path, "versions", i, "timing")))
+    for holder, holder_path, timeline in _holders(asset, path):
+        out.extend(_check_holder(asset, holder, holder_path, timeline, context))
     return out
 
-
-def _check_asset_collections(asset, path, context):
-    """The asset ``collections`` entries in a package: PKG-6, ID-6, COL-5.
-
-    Each entry (an id string, or a snapshot's ``id``) resolves under PKG-6 in
-    ``collections``, reported at the entry pointer. A snapshot whose registry
-    record is present gets ID-6: every field other than ``members`` must be
-    ``json_equal`` to the registry record's, and the key sets must agree, else
-    ``SNAPSHOT_MISMATCH`` at the entry. The collection record checks then run
-    on the registry record only. A snapshot whose registry record is absent
-    gets the collection record checks itself. COL-5: when the resolved
-    collection has ``members.complete`` true and its ``members.assets`` lacks
-    this asset, ``MEMBERSHIP_DISAGREES`` at the entry.
-    """
-    out = []
-    for j, entry in _items(asset, "collections"):
-        entry_path = pointer(path, "collections", j)
-        snapshot = entry if isinstance(entry, dict) else None
-        collection_id = snapshot.get("id") if snapshot is not None else entry
-        registry_record = _resolve_into(out, context, "collections", collection_id, entry_path)
-        if registry_record is None:
-            if snapshot is not None:
-                out.extend(check_collection(snapshot, entry_path, context))
-            continue
-        if snapshot is not None and not _snapshot_agrees(snapshot, registry_record):
-            out.append(diagnostic("SNAPSHOT_MISMATCH", entry_path))
-        members = registry_record.get("members")
-        if isinstance(members, dict) and members.get("complete") is True:
-            if asset.get("id") not in members.get("assets", ()):
-                out.append(diagnostic("MEMBERSHIP_DISAGREES", entry_path))
-    return out
-
-
-def _snapshot_agrees(snapshot, record):
-    """ID-6: same key set apart from ``members``, and every shared field ``json_equal``."""
-    keys = set(snapshot) - {"members"}
-    if keys != set(record) - {"members"}:
-        return False
-    return all(json_equal(snapshot[k], record[k]) for k in keys)
-
-
-# Other record types.
 
 def check_collection(collection, path: str, context) -> list:
-    """Record checks for one collection: COL-4 self-parent and MD-4 to MD-6 metadata.
-
-    COL-4: a ``parent`` equal to the collection's own ``id`` is a cycle,
-    reported at ``/parent``. Cycles through other collections are found by
-    ``check_package``. In a package, PKG-6 also resolves ``parent`` (COL-4),
-    ``storage.storage_location``, and each ``members.assets`` item (COL-3).
-    """
+    """PKG-6 for ``storage.storage_location``, and MD-4 to MD-8 for the collection metadata."""
     out = []
-    if "parent" in collection and collection["parent"] == collection.get("id"):
-        out.append(diagnostic("COLLECTION_CYCLE", pointer(path, "parent")))
-    if context is not None:
-        if "parent" in collection:
-            _resolve_into(out, context, "collections", collection["parent"], pointer(path, "parent"))
-        storage = collection.get("storage")
-        if isinstance(storage, dict) and "storage_location" in storage:
-            _resolve_into(
-                out, context, "storage_locations", storage["storage_location"],
-                pointer(path, "storage", "storage_location"),
-            )
-        members = collection.get("members")
-        if isinstance(members, dict):
-            for k, asset_id in _items(members, "assets"):
-                _resolve_into(out, context, "assets", asset_id, pointer(path, "members", "assets", k))
+    storage = collection.get("storage")
+    if isinstance(storage, dict) and "storage_location" in storage:
+        _resolve_into(
+            out, context, "storage_locations", storage["storage_location"],
+            pointer(path, "storage", "storage_location"),
+        )
     out.extend(_check_metadata(collection, path, context))
     return out
 
 
-def check_storage_location(record, path: str, context) -> list:
-    """A storage location has no record-level semantic check (STO-2 is a producer obligation)."""
-    return []
-
-
 def check_metadata_definition(record, path: str, context) -> list:
     """ID-4: option ids are unique within the definition."""
-    return _nested_id_duplicates(record, path, "options")
-
-
-def check_annotation(record, path: str, context) -> list:
-    """Record checks for a standalone annotation (ANN-1, ANN-3, TIME-12).
-
-    Its asset is never in the same document, so any frame field gets the
-    ``TIMELINE_UNAVAILABLE`` warning at the record pointer. TIME-4 order is
-    still checked. MD-4 to MD-6 apply to its metadata.
-    """
     out = []
-    if _has_frame_field(record):
-        out.append(diagnostic("TIMELINE_UNAVAILABLE", path))
-        out.extend(_check_range_order(record, path))
-    out.extend(_check_metadata(record, path, context))
+    seen = set()
+    for i, option in _items(record, "options"):
+        option_id = option.get("id")
+        if option_id in seen:
+            out.append(diagnostic("NESTED_ID_DUPLICATE", pointer(path, "options", i, "id")))
+        seen.add(option_id)
     return out
 
 
-_RECORD_CHECKS = {
-    "asset": check_asset,
-    "collection": check_collection,
-    "storage_location": check_storage_location,
-    "metadata_definition": check_metadata_definition,
-    "annotation": check_annotation,
-}
+def check_storage_location(record, path: str, context) -> list:
+    """A storage location has no semantic check. STO-2 and the producer parts of STO-3 are not checkable."""
+    return []
 
 
 # Packages.
@@ -760,13 +1211,13 @@ def _check_counts(package, path):
     out = []
     counts = package["manifest"]["counts"]
     for registry in REGISTRIES:
-        if as_int(counts[registry]) != len(package.get(registry, ())):
+        if registry in counts and as_int(counts[registry]) != len(package.get(registry, ())):
             out.append(diagnostic("COUNT_MISMATCH", pointer(path, "manifest", "counts", registry)))
     return out
 
 
 def _check_ids(package, path):
-    """ID-1 and ID-2: ids are unique within each registry; every repeat after the first is reported."""
+    """ID-1 and ID-2: ids are unique within each record list; every repeat after the first is reported."""
     out = []
     for registry in REGISTRIES:
         seen = set()
@@ -779,21 +1230,15 @@ def _check_ids(package, path):
 
 
 def _build_context(package):
-    """Build the PackageContext from the first record of each id per registry."""
+    """Build the PackageContext from the first record of each id per record list."""
     registries = {}
     for registry in REGISTRIES:
         records = {}
         for _i, record in _items(package, registry):
             records.setdefault(record.get("id"), record)
         registries[registry] = records
-    manifest = package["manifest"]
-    tokens = frozenset(d.get("token") for _i, d in _items(manifest, "namespaces"))
-    return PackageContext(
-        spec_version=package.get("spec_version"),
-        completeness=dict(manifest["completeness"]),
-        namespaces=tokens,
-        **registries,
-    )
+    tokens = frozenset(d.get("token") for _i, d in _items(package["manifest"], "namespaces"))
+    return PackageContext(namespaces=tokens, **registries)
 
 
 def _check_declarations(package, path):
@@ -808,104 +1253,175 @@ def _check_declarations(package, path):
     return out
 
 
-def _slot(owner, path):
-    """Yield the ``extensions`` slot of ``owner`` as ``(slot pointer, object)`` when present."""
-    extensions = owner.get("extensions") if isinstance(owner, dict) else None
-    if isinstance(extensions, dict):
-        yield pointer(path, "extensions"), extensions
+def _extension_slots(package, path):
+    """Yield ``(slot pointer, extensions object)`` for every ``extensions`` slot of the package (EXT-1).
 
-
-def _each_slot(record, path, key):
-    for i, item in _items(record, key):
-        yield from _slot(item, pointer(path, key, i))
-
-
-def _collection_slots(collection, path):
-    yield from _slot(collection, path)
-    yield from _each_slot(collection, path, "metadata")
-
-
-def _asset_slots(asset, path, context):
-    """EXT-1 slots of an asset: the record, its nested entities, and unresolved snapshots.
-
-    A snapshot whose registry record is present is compared to that record
-    (ID-6) and is not walked again.
+    The walk follows the package tree and never descends into an extension
+    value, which is payload. The schema allows ``extensions`` only at its
+    slots, so every ``extensions`` member found is a slot. Explicit stack.
     """
-    yield from _slot(asset, path)
-    for key in ("files", "versions", "relationships", "metadata"):
-        yield from _each_slot(asset, path, key)
-    for i, group in _items(asset, "file_groups"):
-        group_path = pointer(path, "file_groups", i)
-        yield from _slot(group, group_path)
-        yield from _each_slot(group, group_path, "members")
-    for i, annotation in _items(asset, "annotations"):
-        annotation_path = pointer(path, "annotations", i)
-        yield from _slot(annotation, annotation_path)
-        yield from _each_slot(annotation, annotation_path, "metadata")
-    for j, entry in _items(asset, "collections"):
-        if isinstance(entry, dict) and entry.get("id") not in context.collections:
-            yield from _collection_slots(entry, pointer(path, "collections", j))
-
-
-def _package_slots(package, path, context):
-    """Every schema-defined ``extensions`` slot of the package (EXT-1)."""
-    yield from _slot(package, path)
-    for i, record in _items(package, "storage_locations"):
-        yield from _slot(record, pointer(path, "storage_locations", i))
-    for i, record in _items(package, "metadata_definitions"):
-        record_path = pointer(path, "metadata_definitions", i)
-        yield from _slot(record, record_path)
-        yield from _each_slot(record, record_path, "options")
-    for i, record in _items(package, "collections"):
-        yield from _collection_slots(record, pointer(path, "collections", i))
-    for i, record in _items(package, "assets"):
-        yield from _asset_slots(record, pointer(path, "assets", i), context)
+    stack = [(package, path)]
+    while stack:
+        node, node_path = stack.pop()
+        if isinstance(node, dict):
+            for key, item in node.items():
+                if key == "extensions":
+                    if isinstance(item, dict):
+                        yield pointer(node_path, key), item
+                    continue
+                stack.append((item, pointer(node_path, key)))
+        elif isinstance(node, list):
+            for index, item in enumerate(node):
+                stack.append((item, pointer(node_path, index)))
 
 
 def _check_namespaces_used(package, path, context):
     """EXT-2: every namespace used in a slot is declared.
 
     One ``NAMESPACE_UNDECLARED`` per slot that holds any undeclared token, at
-    the slot pointer. The value object of a namespace is payload and is never
-    descended into. Standalone records skip this check (EXT-5).
+    the slot pointer. The value of a namespace is payload and is never
+    descended into.
     """
     out = []
-    for slot_path, extensions in _package_slots(package, path, context):
+    for slot_path, extensions in _extension_slots(package, path):
         if any(token not in context.namespaces for token in extensions):
             out.append(diagnostic("NAMESPACE_UNDECLARED", slot_path))
     return out
 
 
-def _check_collection_cycles(package, path, context):
-    """COL-4: a collection is not its own ancestor.
+def _member_of_entries(package, path):
+    """Yield ``(owner path, owner id, list key, entry index, entry)`` for every ``member_of`` entry."""
+    for registry in ("assets", "collections"):
+        for i, record in _items(package, registry):
+            record_path = pointer(path, registry, i)
+            for j, entry in _items(record, "member_of"):
+                yield registry, record_path, record.get("id"), j, entry
 
-    Walks ``parent`` from each registry collection with a visited set and
-    reports ``COLLECTION_CYCLE`` at ``/collections/<i>/parent`` for every
-    collection on a cycle. A self-parent is reported by ``check_collection``.
+
+def _check_membership_references(package, path, context):
+    """PKG-6 and COL-3: each ``member_of/<j>/collection`` resolves."""
+    out = []
+    for _registry, record_path, _owner, j, entry in _member_of_entries(package, path):
+        _resolve_into(
+            out, context, "collections", entry.get("collection"),
+            pointer(record_path, "member_of", j, "collection"),
+        )
+    return out
+
+
+def _strongly_connected(graph):
+    """Return a map from node to component number, for the directed ``graph`` (Tarjan, iterative)."""
+    index_of = {}
+    low = {}
+    on_stack = set()
+    stack = []
+    component = {}
+    counter = 0
+    next_component = 0
+    for root in graph:
+        if root in index_of:
+            continue
+        work = [(root, iter(graph.get(root, ())))]
+        index_of[root] = low[root] = counter
+        counter += 1
+        stack.append(root)
+        on_stack.add(root)
+        while work:
+            node, successors = work[-1]
+            advanced = False
+            for successor in successors:
+                if successor not in graph:
+                    continue
+                if successor not in index_of:
+                    index_of[successor] = low[successor] = counter
+                    counter += 1
+                    stack.append(successor)
+                    on_stack.add(successor)
+                    work.append((successor, iter(graph.get(successor, ()))))
+                    advanced = True
+                    break
+                if successor in on_stack:
+                    low[node] = min(low[node], index_of[successor])
+            if advanced:
+                continue
+            work.pop()
+            if work:
+                parent = work[-1][0]
+                low[parent] = min(low[parent], low[node])
+            if low[node] == index_of[node]:
+                while True:
+                    member = stack.pop()
+                    on_stack.discard(member)
+                    component[member] = next_component
+                    if member == node:
+                        break
+                next_component += 1
+    return component
+
+
+def _check_collection_cycles(package, path):
+    """COL-4: membership among collections forms no cycle.
+
+    Edges run from a collection id to each collection id that its
+    ``member_of`` names. Every entry whose owner and target are one id, or
+    lie in one strongly connected component, is on a cycle and gives
+    ``COLLECTION_CYCLE`` at the entry.
+    """
+    graph = {}
+    entries = []
+    for i, collection in _items(package, "collections"):
+        owner = collection.get("id")
+        targets = graph.setdefault(owner, [])
+        for j, entry in _items(collection, "member_of"):
+            target = entry.get("collection")
+            targets.append(target)
+            entries.append((owner, target, pointer(path, "collections", i, "member_of", j)))
+    component = _strongly_connected(graph)
+    out = []
+    for owner, target, entry_path in entries:
+        if owner == target or (
+            target in component and component.get(owner) == component[target]
+        ):
+            out.append(diagnostic("COLLECTION_CYCLE", entry_path))
+    return out
+
+
+def _check_positions(package, path):
+    """COL-7: positions and repeated entries.
+
+    All entries that name one collection, from assets and collections
+    together, share one position scope. Positions compare by value. Every
+    entry that shares a position with another gives ``POSITION_DUPLICATE``.
+    When one ``member_of`` names a collection more than once and any of
+    those entries has no ``position``, each entry for it after the first gives
+    ``MEMBERSHIP_DUPLICATE``.
     """
     out = []
-    for i, collection in _items(package, "collections"):
-        own_id = collection.get("id")
-        current = collection.get("parent")
-        if current is None or current == own_id:
-            continue
-        visited = set()
-        while current in context.collections and current not in visited:
-            if current == own_id:
-                out.append(diagnostic("COLLECTION_CYCLE", pointer(path, "collections", i, "parent")))
-                break
-            visited.add(current)
-            current = context.collections[current].get("parent")
+    scopes = {}
+    lists = {}
+    for _registry, record_path, _owner, j, entry in _member_of_entries(package, path):
+        collection = entry.get("collection")
+        entry_path = pointer(record_path, "member_of", j)
+        if "position" in entry:
+            key = (collection, as_int(entry["position"]))
+            scopes.setdefault(key, []).append(entry_path)
+        lists.setdefault((record_path, collection), []).append((entry_path, entry))
+    for entry_paths in scopes.values():
+        if len(entry_paths) > 1:
+            out.extend(diagnostic("POSITION_DUPLICATE", p) for p in entry_paths)
+    for named in lists.values():
+        if len(named) > 1 and any("position" not in e for _p, e in named):
+            out.extend(diagnostic("MEMBERSHIP_DUPLICATE", p) for p, _e in named[1:])
     return out
 
 
 def check_package(package, path: str = "") -> list:
-    """Run the package checks and every record check in package context.
+    """Run every semantic check of one package.
 
-    PKG-3 counts; ID-1 and ID-2 ids per registry; EXT-2 declarations and
-    used namespaces; COL-4 cycles; then each registry record with the
-    context (PKG-6, ID-5, ID-6, TIME-9, TIME-12, REL-3, COL-4, COL-5, MD-4
-    to MD-6). Diagnostics are sorted by ``(path, code)``.
+    PKG-3 counts; ID-1 and ID-2 ids per record list; EXT-2 declarations and
+    used namespaces; COL-3 and PKG-6 membership references; COL-4 cycles;
+    COL-7 positions; then each record with the package context. Diagnostics
+    are sorted by ``(path, code)``.
     """
     out = []
     out.extend(_check_counts(package, path))
@@ -913,7 +1429,9 @@ def check_package(package, path: str = "") -> list:
     context = _build_context(package)
     out.extend(_check_declarations(package, path))
     out.extend(_check_namespaces_used(package, path, context))
-    out.extend(_check_collection_cycles(package, path, context))
+    out.extend(_check_membership_references(package, path, context))
+    out.extend(_check_collection_cycles(package, path))
+    out.extend(_check_positions(package, path))
     for registry, record_check in _REGISTRY_CHECKS.items():
         for i, record in _items(package, registry):
             out.extend(record_check(record, pointer(path, registry, i), context))
@@ -921,17 +1439,13 @@ def check_package(package, path: str = "") -> list:
 
 
 def check(value, routing) -> list:
-    """Run the semantic checks for the routed root record.
+    """Run the semantic checks for a routed package.
 
-    Runs nothing unless ``routing.status`` is ``selected``. Dispatches on
-    ``routing.kind``: a package is checked by ``check_package``; a standalone
-    record is checked with no context. Diagnostics are sorted by
-    ``(path, code)``.
+    Runs nothing unless ``routing.status`` is ``selected``. Only a package
+    routes (``REC-2``). Diagnostics are sorted by ``(path, code)``.
     """
     if routing.status != "selected":
         return []
-    if routing.kind == "package":
-        return check_package(value)
-    if routing.kind not in _RECORD_CHECKS:
-        raise ValueError("routing selected no supported record type")
-    return _sorted(_RECORD_CHECKS[routing.kind](value, "", None))
+    if routing.kind != "package":
+        raise ValueError("routing selected no package")
+    return check_package(value)
