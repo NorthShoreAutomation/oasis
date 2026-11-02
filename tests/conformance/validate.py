@@ -5,20 +5,26 @@ Run from the repository root::
     python3 -m tests.conformance.validate FILE [--json]
 
 Stages, in order. The first stage that stops decides the outcome, so setup
-outranks input, input outranks routing, and routing outranks structure:
+outranks input, input outranks routing, routing outranks the number limits,
+and the number limits outrank structure:
 
 1. Read the input file. An unreadable file is ``setup-failed``.
 2. Load the schema bundle from ``definitions`` and record the SHA-256 of its
-   manifest. A missing locked package or a bad bundle is ``setup-failed``.
-3. Strict-parse the input. A strict JSON policy violation is
-   ``input-invalid`` with one ``INPUT_INVALID`` diagnostic. A numeric
+   manifest. A missing locked package, a bad bundle, or a bundle whose
+   ``spec_version`` is not in the supported table is ``setup-failed``.
+3. Parse: strict-parse the input (``DOC-1``). A strict JSON policy violation
+   is ``input-invalid`` with one ``INPUT_INVALID`` diagnostic. A numeric
    resource refusal or nesting beyond the interpreter limit is
    ``setup-failed`` with a limitation that names the limit.
-4. Route on ``type`` and ``spec_version``. An unsupported document is
-   ``unsupported`` with the routing diagnostics; no schema is run.
-5. Structural validation against the selected entry point. Errors give
+4. Route: the root checks of ``REC-2`` and ``UNS-1``, in order (the exchange
+   document test, the exact version check, the root ``type`` test). A
+   failure is ``unsupported`` with one diagnostic; no other stage runs.
+5. Number limits (``DOC-4``). Findings give ``input-invalid`` with the
+   record ``type`` and ``spec_version`` set; no schema is run.
+6. Structural validation against the selected entry point. Errors give
    ``structural: invalid`` and the semantic stage is not run.
-6. Semantic checks. Diagnostics are sorted by path, then code.
+7. Semantic checks. Diagnostics are sorted by path, then code.
+8. Result: one result record.
 
 Exit codes:
 
@@ -56,8 +62,9 @@ from tests.conformance.types import InputInvalid, SetupFailed  # noqa: E402
 _import_failure = None
 try:
     from tests.conformance.bundle import read_manifest_bytes
-    from tests.conformance.document import route
+    from tests.conformance.document import SUPPORTED_VERSIONS, route
     from tests.conformance.loader import load_bundle
+    from tests.conformance.number_limits import check_number_limits
     from tests.conformance.semantic import CATALOG, check, diagnostic
     from tests.conformance.strict_json import parse_input
 except ModuleNotFoundError as error:
@@ -69,13 +76,14 @@ except SetupFailed as error:
     _import_failure = f"Setup failed: {error}."
 
 HARNESS_ID = "oasis-python-reference-harness"
-HARNESS_VERSION = "2.0.0-draft.2"
+HARNESS_VERSION = "2.0.0-draft.3"
 # The direct pins of requirements.txt.
 DEPENDENCIES = ("jsonschema==4.26.0", "referencing==0.37.0", "rfc3339-validator==0.1.4")
 
 ROOT = Path(__file__).resolve().parents[2] / "definitions"
 
 _UNREADABLE_INPUT = "Setup failed: input file cannot be read."
+_BUNDLE_VERSION = "Setup failed: the schema bundle version is not supported by this checker."
 _SEMANTIC_NESTING = "Setup failed: semantic check nesting exceeds the Python interpreter recursion limit."
 
 # Schema path steps that do not consume an instance step. Each maps to the
@@ -143,8 +151,13 @@ def _printable(text: str) -> str:
     return "".join(c if c.isprintable() else f"\\u{ord(c):04x}" for c in text)
 
 
+def schema_keyword(error) -> str:
+    """The failing schema keyword; a ``false`` subschema has none and is reported as ``false``."""
+    return error.validator if isinstance(error.validator, str) else "false"
+
+
 def _structural_errors(errors) -> list:
-    pairs = {(safe_pointer(error), error.validator) for error in errors}
+    pairs = {(safe_pointer(error), schema_keyword(error)) for error in errors}
     return [{"path": path, "keyword": keyword} for path, keyword in sorted(pairs)]
 
 
@@ -192,6 +205,8 @@ def evaluate(data: bytes, root: Path) -> dict:
         bundle = load_bundle(root, manifest_bytes)
     except SetupFailed as error:
         return _setup_failed(record, f"Setup failed: {error}.")
+    if bundle.manifest.spec_version not in SUPPORTED_VERSIONS:
+        return _setup_failed(record, _BUNDLE_VERSION)
 
     try:
         parsed = parse_input(data)
@@ -209,6 +224,12 @@ def evaluate(data: bytes, root: Path) -> dict:
     if routing.status != "selected":
         record["execution_status"] = "unsupported"
         record["diagnostics"] = _diagnostics(routing.diagnostics)
+        return record
+
+    limits = check_number_limits(parsed.value, bundle.property_names)
+    if limits:
+        record["execution_status"] = "input-invalid"
+        record["diagnostics"] = _diagnostics(limits)
         return record
 
     try:

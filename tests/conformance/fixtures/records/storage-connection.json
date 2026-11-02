@@ -1,0 +1,30 @@
+{
+  "type": "package",
+  "spec_version": "2.0.0-draft.3",
+  "id": "pkg-0001",
+  "manifest": {
+    "producer": {
+      "name": "example-exporter",
+      "version": "0.1.0"
+    },
+    "produced_at": "2026-10-05T09:00:00Z",
+    "counts": {
+      "storage_locations": 1,
+      "metadata_definitions": 0,
+      "collections": 0,
+      "assets": 0
+    },
+    "namespaces": []
+  },
+  "storage_locations": [
+    {
+      "id": "sl-02",
+      "name": "Example Share A",
+      "system": "network_share",
+      "root": "server_a.invalid:/export/share_a/",
+      "connection": {
+        "host": "server_a.invalid"
+      }
+    }
+  ]
+}

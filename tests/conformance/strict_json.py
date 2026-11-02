@@ -26,12 +26,9 @@ Numeric resource guards (operational setup guards, not OASIS ranges):
 - Exponent: the exponent digit text, ignoring its sign and leading zeros,
   must have at most 5 digits. This is checked before any integer is built
   from it. The exponent value must then be at most 10,000 in absolute value.
-- Expansion budget: each number token charges its coefficient digits plus the
-  absolute exponent value (0 when there is no exponent). Coefficient digits
-  are every digit character written before the exponent marker, in both the
-  integer part and the fraction part. The sign and decimal point are not
-  counted. Leading and trailing zeros are counted. The charges are summed over
-  every number token in the document. The sum must be at most 100,000.
+
+The guards apply to each number token on its own. There is no budget summed
+over the document.
 
 Error messages name the exceeded limit and never echo input values.
 """
@@ -52,7 +49,6 @@ from tests.conformance.types import (
 MAX_TOKEN_BYTES = 1024
 MAX_ABS_EXPONENT = 10000
 MAX_EXPONENT_DIGITS = len(str(MAX_ABS_EXPONENT))
-MAX_EXPANSION_UNITS = 100000
 
 NESTING_LIMIT_MESSAGE = "input nesting exceeds the Python interpreter recursion limit"
 
@@ -131,39 +127,29 @@ def _scan(node, lexemes):
         lexemes.append(node)
 
 
-def _charge(text):
-    """Guard one lexeme and return its expansion charge in digit units."""
+def _check_token(text):
+    """Apply the token length and exponent guards to one lexeme."""
     if len(text) > MAX_TOKEN_BYTES:
         raise NumericResourceRefused(
             "numeric token length exceeds %d bytes" % MAX_TOKEN_BYTES
         )
     marker = max(text.find("e"), text.find("E"))
     if marker < 0:
-        coefficient, exponent = text, 0
-    else:
-        coefficient = text[:marker]
-        digits = text[marker + 1 :].lstrip("+-").lstrip("0")
-        if len(digits) > MAX_EXPONENT_DIGITS:
-            raise NumericResourceRefused(
-                "absolute decimal exponent exceeds %d" % MAX_ABS_EXPONENT
-            )
-        exponent = int(digits) if digits else 0
-        if exponent > MAX_ABS_EXPONENT:
-            raise NumericResourceRefused(
-                "absolute decimal exponent exceeds %d" % MAX_ABS_EXPONENT
-            )
-    return sum(ch.isdigit() for ch in coefficient) + exponent
+        return
+    digits = text[marker + 1 :].lstrip("+-").lstrip("0")
+    if len(digits) > MAX_EXPONENT_DIGITS:
+        raise NumericResourceRefused(
+            "absolute decimal exponent exceeds %d" % MAX_ABS_EXPONENT
+        )
+    if digits and int(digits) > MAX_ABS_EXPONENT:
+        raise NumericResourceRefused(
+            "absolute decimal exponent exceeds %d" % MAX_ABS_EXPONENT
+        )
 
 
 def _guard(lexemes):
-    total = 0
     for lexeme in lexemes:
-        total += _charge(lexeme.text)
-        if total > MAX_EXPANSION_UNITS:
-            raise NumericResourceRefused(
-                "numeric expansion budget exceeds %d digit units per document"
-                % MAX_EXPANSION_UNITS
-            )
+        _check_token(lexeme.text)
 
 
 def _convert(node):

@@ -12,7 +12,7 @@
           "const": "oasis-python-reference-harness"
         },
         "version": {
-          "const": "2.0.0-draft.2"
+          "const": "2.0.0-draft.3"
         },
         "dependencies": {
           "type": "array",
@@ -60,17 +60,12 @@
     "type": {
       "enum": [
         "package",
-        "asset",
-        "collection",
-        "storage_location",
-        "metadata_definition",
-        "annotation",
         null
       ]
     },
     "spec_version": {
       "enum": [
-        "2.0.0-draft.2",
+        "2.0.0-draft.3",
         null
       ]
     },
@@ -245,43 +240,60 @@
       "properties": {
         "code": {
           "enum": [
+            "CHANNEL_LAYOUT_MISMATCH",
             "COLLECTION_CYCLE",
             "COUNT_MISMATCH",
             "DEFINITION_REPEATED",
-            "DEFINITION_UNAVAILABLE",
+            "DEFINITION_SHARED_AND_VERSIONED",
             "FILE_REFERENCE_UNRESOLVED",
-            "FRAME_OUT_OF_BOUNDS",
             "ID_DUPLICATE",
             "INPUT_INVALID",
-            "MEMBERSHIP_DISAGREES",
+            "LOCATION_DUPLICATE",
+            "MEMBERSHIP_DUPLICATE",
             "NAMESPACE_DECLARED_TWICE",
             "NAMESPACE_UNDECLARED",
             "NESTED_ID_DUPLICATE",
+            "NOT_EXCHANGE_DOCUMENT",
+            "NUMBER_OUT_OF_RANGE",
+            "NUMBER_TOO_PRECISE",
             "ORDINAL_DUPLICATE",
+            "PART_START_OUT_OF_ORDER",
+            "POSITION_DUPLICATE",
+            "POSITION_OUT_OF_BOUNDS",
             "RANGE_NOT_INCREASING",
             "RATE_NOT_LOWEST_TERMS",
             "REFERENCE_UNRESOLVED",
-            "REFERENCE_UNRESOLVED_PARTIAL",
+            "RELATIONSHIP_DUPLICATE",
             "RELATIONSHIP_SELF",
+            "SAMPLE_DISAGREE",
+            "SAMPLE_RATE_UNDECLARED",
             "SECONDS_DISAGREE",
-            "SEGMENT_GAP",
             "SEGMENT_INDEX_DUPLICATE",
             "SEGMENT_INDEX_MISSING",
             "SEGMENT_OUT_OF_ORDER",
+            "SEQUENCE_FRAME_DUPLICATE",
+            "SEQUENCE_FRAME_MISSING",
+            "SEQUENCE_FRAME_ON_COMPACT",
+            "SEQUENCE_FRAME_OUTSIDE",
+            "SEQUENCE_FRAME_OUT_OF_ORDER",
+            "SEQUENCE_IMAGE_REPEATED",
+            "SEQUENCE_PATTERN_INVALID",
             "SEQUENCE_RANGE_EMPTY",
-            "SNAPSHOT_MISMATCH",
+            "SEQUENCE_STEP_MISMATCH",
+            "STREAM_DUPLICATE",
+            "STREAM_FACTS_DISAGREE",
+            "SUBCLIP_LENGTH_DISAGREES",
+            "TARGET_VERSION_REQUIRED",
             "TIMECODE_DISAGREE",
-            "TIMELINE_UNAVAILABLE",
             "TIMELINE_UNDECLARED",
             "TRACK_DUPLICATE",
-            "TYPE_UNSUPPORTED",
+            "TRACK_PARTS_MIXED",
             "VALUE_DATE_INVALID",
-            "VALUE_OPTION_REPEATED",
             "VALUE_OPTION_UNKNOWN",
+            "VALUE_REPEATED",
             "VALUE_SHAPE_MISMATCH",
             "VERSION_REFERENCE_UNRESOLVED",
-            "VERSION_UNSUPPORTED",
-            "VERSION_WITHOUT_VERSIONS"
+            "VERSION_UNSUPPORTED"
           ]
         },
         "rule": {

@@ -67,6 +67,8 @@ The closing note explains how to reopen it.
 Within a major version series, a release does not make a previously valid record invalid.
 It does not remove a field, make a field required, or change a published meaning.
 Changes of that kind wait for a new major version.
+The promise starts at the first final release of a major version.
+Before that release, a draft can make changes of that kind. Each draft lists its changes in its contract.
 
 ## Related pages
 

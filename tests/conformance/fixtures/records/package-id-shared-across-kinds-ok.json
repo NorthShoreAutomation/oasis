@@ -1,6 +1,6 @@
 {
   "type": "package",
-  "spec_version": "2.0.0-draft.2",
+  "spec_version": "2.0.0-draft.3",
   "id": "pkg-0001",
   "manifest": {
     "producer": {
@@ -14,35 +14,19 @@
       "collections": 1,
       "assets": 1
     },
-    "completeness": {
-      "storage_locations": "complete",
-      "metadata_definitions": "complete",
-      "collections": "complete",
-      "assets": "complete"
-    },
     "namespaces": []
   },
   "collections": [
     {
-      "type": "collection",
-      "spec_version": "2.0.0-draft.2",
       "id": "x-1",
       "title": "Example Project",
-      "collection_kind": "logical",
-      "access": {
-        "status": "none"
-      }
+      "collection_type": "logical"
     }
   ],
   "assets": [
     {
-      "type": "asset",
-      "spec_version": "2.0.0-draft.2",
       "id": "x-1",
-      "title": "Example Clip",
-      "access": {
-        "status": "none"
-      }
+      "title": "Example Clip"
     }
   ]
 }

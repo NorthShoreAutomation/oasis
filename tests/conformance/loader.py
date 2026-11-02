@@ -332,6 +332,8 @@ class Bundle:
     schemas: dict = field(repr=False, compare=False)
     registry: referencing.Registry = field(repr=False, compare=False)
     _entry_points: dict = field(repr=False, compare=False)
+    # Every key of every ``properties`` keyword in the bundle schemas (DOC-4 paths).
+    property_names: frozenset = field(default=frozenset(), repr=False, compare=False)
 
     def entry_point(self, kind: str) -> EntryPoint:
         """Select a document root by kind, or raise SetupFailed."""
@@ -369,7 +371,24 @@ def _build(root: Path, manifest_sha256: str, manifest: BundleManifest) -> Bundle
         if entry.name in manifest.document_roots:
             validator = _Validator({"$ref": entry.id}, registry=registry, format_checker=checker)
             entry_points[entry.name] = EntryPoint(entry.name, validator)
-    return Bundle(root, manifest_sha256, manifest, schemas, registry, entry_points)
+    names = set()
+    for tree in schemas.values():
+        _collect_property_names(tree, names)
+    return Bundle(root, manifest_sha256, manifest, schemas, registry, entry_points, frozenset(names))
+
+
+def _collect_property_names(node, names: set) -> None:
+    """Add the keys of every ``properties`` keyword under ``node`` to ``names``."""
+    stack = [node]
+    while stack:
+        current = stack.pop()
+        if isinstance(current, dict):
+            for key, value in current.items():
+                if key == "properties" and isinstance(value, dict):
+                    names.update(value)
+                stack.append(value)
+        elif isinstance(current, list):
+            stack.extend(current)
 
 
 def load_bundle(root: Path, manifest_bytes: "bytes | None" = None) -> Bundle:

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://www.northshoreautomation.com/schemas/oasis/2/metadata_definition.schema.json",
   "title": "OASIS 2.0 metadata definition",
-  "description": "A metadata definition record: a field's label, value type, cardinality, enum options, and informative constraints. Its id names the field.",
+  "description": "A metadata definition record: a field's label, value type, cardinality, enum options and list type, and informative constraints. Its id names the field.",
   "type": "object",
   "allOf": [
     {
@@ -18,13 +18,23 @@
       },
       "then": {
         "required": [
-          "options"
+          "options",
+          "list_type"
         ]
       },
       "else": {
         "not": {
-          "required": [
-            "options"
+          "anyOf": [
+            {
+              "required": [
+                "options"
+              ]
+            },
+            {
+              "required": [
+                "list_type"
+              ]
+            }
           ]
         }
       }
@@ -101,9 +111,6 @@
     }
   ],
   "properties": {
-    "type": {
-      "const": "metadata_definition"
-    },
     "label": {
       "type": "string"
     },
@@ -129,9 +136,14 @@
         "multiple"
       ]
     },
+    "list_type": {
+      "enum": [
+        "fixed",
+        "open"
+      ]
+    },
     "options": {
       "type": "array",
-      "minItems": 1,
       "items": {
         "$ref": "common.schema.json#/$defs/option"
       }
@@ -144,7 +156,6 @@
     }
   },
   "required": [
-    "type",
     "value_type",
     "cardinality"
   ],

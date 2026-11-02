@@ -1,38 +1,37 @@
 # OASIS schema definitions
 
-Status: DRAFT 2.0.0-draft.2, not a final release. These files can change before the final release.
+Status: DRAFT 2.0.0-draft.3, not a final release. These files can change before the final release.
 Interoperability between independent implementations is not demonstrated.
 
 This directory holds the OASIS 2.0 schema bundle.
 OASIS means Open Asset Standard Interchange Schema.
 The schemas use JSON Schema 2020-12.
-The [contract](../docs/specification/2.0.0-draft.2/CONTRACT.md) is the normative text. It also states the rules that a schema cannot express.
+The [contract](../docs/specification/2.0.0-draft.3/CONTRACT.md) is the normative text. It also states the rules that a schema cannot express.
 
 For how to validate and exchange documents, read the [adopter guide](../docs/ADOPTION.md).
 For synthetic example documents, see [examples/](examples/README.md).
 
 ## Schema files
 
-The bundle has seven schema files.
+The bundle has six schema files.
 
 | File | Purpose |
 | --- | --- |
 | `common.schema.json` | Shared definitions, such as the record fields, time base, ranges, access summary, extensions, and date and date-time strings. It is not a document root. |
-| `package.schema.json` | A package: the manifest, the registries, and the assets. |
-| `asset.schema.json` | One asset, with its files, file groups, versions, relationships, metadata values, and annotations. |
-| `collection.schema.json` | One collection and its membership. |
-| `storage_location.schema.json` | One storage location. |
-| `metadata_definition.schema.json` | One metadata definition. |
-| `annotation.schema.json` | One standalone annotation. |
+| `package.schema.json` | A package: the manifest, the record lists, and the assets. It is the only document root. |
+| `asset.schema.json` | The asset record inside a package, with its versions, files, file groups, relationships, metadata values, and annotations. It is not a document root. |
+| `collection.schema.json` | The collection record inside a package. It is not a document root. |
+| `storage_location.schema.json` | The storage location record inside a package. It is not a document root. |
+| `metadata_definition.schema.json` | The metadata definition record inside a package. It is not a document root. |
 
-## Document roots
+## Document root
 
-A document root is one of six record types: `package`, `asset`, `collection`, `storage_location`, `metadata_definition`, and `annotation`.
-Each type has the schema file of the same name.
-A reader reads `type` and `spec_version` first, then selects the schema.
-`spec_version` is `2.0.0-draft.2` in this draft.
-This draft's checker reports any `spec_version` other than `2.0.0-draft.2` as unsupported, and it never validates such a document against these schemas.
-A document whose `spec_version` major is not 2 is never routed to a 2.x schema, and a document with no supported `type` is also reported as unsupported.
+The only document root is a package. Its schema is `package.schema.json`.
+There are no standalone records. Annotations live inside assets, and there is no `annotation.schema.json`.
+The package root carries `type` and `spec_version`. Records inside a package carry neither field.
+`spec_version` is `2.0.0-draft.3` in this draft.
+A checker compares `spec_version` exactly with `2.0.0-draft.3`.
+It reports any other value as unsupported, and it never validates such a document against these schemas.
 
 ## Bundle manifest
 
@@ -41,7 +40,7 @@ A document whose `spec_version` major is not 2 is never routed to a 2.x schema, 
 | Field | Meaning |
 | --- | --- |
 | `id_base` | The base of every schema identifier: `https://www.northshoreautomation.com/schemas/oasis/2/`. |
-| `document_roots` | The six record types that can be the root of a document. |
+| `document_roots` | The record types that can be the root of a document. In this draft the only one is `package`. |
 | `schemas[]` | One entry per schema file, with its `name` and `path`. |
 | `schemas[].$id` | The stable absolute identifier of the file. It equals the `$id` inside the file. |
 | `schemas[].sha256` | The SHA-256 digest of the file bytes. A loader refuses a file whose digest differs. |
@@ -58,11 +57,11 @@ A reference to any resource outside the bundle is a setup failure.
 
 ## Freeze digest
 
-The bundle for 2.0.0-draft.2 is frozen. Its files do not change within this draft.
+The bundle for 2.0.0-draft.3 is frozen. Its files do not change within this draft.
 The SHA-256 digest of `bundle-manifest.json` is:
 
 ```text
-2f3af80fd1843180da249bb8b33b525f040328fbc57f36440d8fa1f9a36bfc30
+b7ff8f5f5e322b906a9d40ec2f49f892b47b72515432e68368538c2c66e420fb
 ```
 
 The manifest holds the digest of every schema file, so this one digest fixes the whole bundle.

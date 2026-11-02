@@ -1,0 +1,72 @@
+{
+  "type": "package",
+  "spec_version": "2.0.0-draft.3",
+  "id": "pkg-0001",
+  "manifest": {
+    "producer": {
+      "name": "example-exporter",
+      "version": "0.1.0"
+    },
+    "produced_at": "2026-10-05T09:00:00Z",
+    "counts": {
+      "storage_locations": 0,
+      "metadata_definitions": 0,
+      "collections": 0,
+      "assets": 1
+    },
+    "namespaces": []
+  },
+  "assets": [
+    {
+      "id": "a-0001",
+      "title": "Example Clip",
+      "timing": {
+        "time_base": {
+          "rate": {
+            "numerator": 25,
+            "denominator": 1
+          },
+          "drop_frame": false
+        },
+        "duration_frames": 750
+      },
+      "annotations": [
+        {
+          "id": "an-1",
+          "purpose": "note"
+        },
+        {
+          "id": "an-2",
+          "purpose": "review",
+          "start_frame": 0
+        },
+        {
+          "id": "an-3",
+          "purpose": "quality",
+          "start_frame": 10,
+          "end_frame": 20
+        },
+        {
+          "id": "an-4",
+          "purpose": "transcript",
+          "start_seconds": 1,
+          "end_seconds": 2
+        },
+        {
+          "id": "an-5",
+          "purpose": "chapter",
+          "start_frame": 250
+        },
+        {
+          "id": "an-6",
+          "purpose": "keyword"
+        },
+        {
+          "id": "an-7",
+          "purpose": "other",
+          "category": "example"
+        }
+      ]
+    }
+  ]
+}

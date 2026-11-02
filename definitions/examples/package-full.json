@@ -1,39 +1,356 @@
 {
   "type": "package",
-  "spec_version": "2.0.0-draft.2",
+  "spec_version": "2.0.0-draft.3",
   "id": "pkg-0002",
   "source": {"system": "example-exporter", "instance": "site-north", "id": "export-2026-10-05"},
   "manifest": {
     "producer": {"name": "example-exporter", "version": "0.1.0"},
     "produced_at": "2026-10-05T09:00:00Z",
-    "counts": {"storage_locations": 1, "metadata_definitions": 1, "collections": 1, "assets": 1},
-    "completeness": {"storage_locations": "complete", "metadata_definitions": "complete", "collections": "complete", "assets": "partial"},
+    "counts": {"storage_locations": 2, "metadata_definitions": 3, "collections": 2, "assets": 3},
     "namespaces": [
       {"token": "vendor_a", "owner": "Vendor A", "schema": "https://vendor-a.example/oasis-extensions/1", "description": "Extension data from vendor A."}
     ],
-    "description": "One record of each registry kind and one asset."
+    "description": "Every field of every record type and nested object, at least once."
   },
   "storage_locations": [
-    {"type": "storage_location", "spec_version": "2.0.0-draft.2", "id": "sl-01", "name": "Example Shared Volume", "system": "filesystem", "root": "/mnt/example_volume"}
+    {
+      "id": "sl-01",
+      "source": {"system": "example-mam", "instance": "site-north", "id": "storage-01"},
+      "name": "Example Shared Volume",
+      "system": "network_share",
+      "root": "server_a:/export/share_a/",
+      "status": "active",
+      "description": "Shared project storage.",
+      "created": "2025-01-15T08:00:00Z",
+      "modified": "2026-09-01T12:00:00Z",
+      "extensions": {"vendor_a": {"tier": "primary"}}
+    },
+    {
+      "id": "sl-02",
+      "name": "Example Object Store",
+      "system": "s3",
+      "root": "example-bucket"
+    }
   ],
   "metadata_definitions": [
-    {"type": "metadata_definition", "spec_version": "2.0.0-draft.2", "id": "md-keywords", "label": "Keywords", "value_type": "string", "cardinality": "multiple"}
+    {
+      "id": "md-status",
+      "source": {"system": "example-mam", "id": "field-review-status"},
+      "label": "Review status",
+      "description": "Result of the last review.",
+      "value_type": "enum",
+      "cardinality": "single",
+      "list_type": "fixed",
+      "options": [
+        {"id": "approved", "label": "Approved", "extensions": {"vendor_a": {"colour": "green"}}},
+        {"id": "rejected", "label": "Rejected"}
+      ],
+      "required": false,
+      "extensions": {"vendor_a": {"field_group": "review"}}
+    },
+    {
+      "id": "md-keywords",
+      "label": "Keywords",
+      "value_type": "string",
+      "cardinality": "multiple",
+      "constraints": {"min_length": 1, "max_length": 64, "pattern": "^[a-z][a-z ]*$"}
+    },
+    {
+      "id": "md-rating",
+      "label": "Rating",
+      "value_type": "integer",
+      "cardinality": "single",
+      "constraints": {"minimum": 1, "maximum": 5}
+    }
   ],
   "collections": [
-    {"type": "collection", "spec_version": "2.0.0-draft.2", "id": "col-01", "title": "Example Project", "collection_kind": "logical", "members": {"complete": true, "assets": ["a-0001"]}, "access": {"status": "none"}}
+    {
+      "id": "col-01",
+      "source": {"system": "example-mam", "instance": "site-north", "id": "project-01"},
+      "title": "Example Project",
+      "collection_type": "logical",
+      "description": "All material of one example project.",
+      "created": "2026-01-05T09:00:00Z",
+      "modified": "2026-09-20T16:45:00Z",
+      "metadata": [{"definition": "md-keywords", "value": ["project"]}],
+      "access": {"status": "none"},
+      "extensions": {"vendor_a": {"colour": "blue"}}
+    },
+    {
+      "id": "col-02",
+      "title": "Example Renders Folder",
+      "collection_type": "storage",
+      "storage": {"storage_location": "sl-01", "path": "projects/project_a/renders"},
+      "member_of": [{"collection": "col-01", "position": 1, "extensions": {"vendor_a": {"pinned": true}}}]
+    }
   ],
   "assets": [
     {
-      "type": "asset",
-      "spec_version": "2.0.0-draft.2",
       "id": "a-0001",
-      "title": "Example Clip",
-      "files": [{"id": "f-1", "storage_location": "sl-01", "path": "clips/example_clip.mov", "role": "master", "label": "Camera original"}],
-      "file_groups": [{"id": "g-primary", "role": "primary", "label": "Camera original", "complete": true, "members": [{"file": "f-1", "track_type": "video", "track_index": 0}]}],
-      "metadata": [{"definition": "md-keywords", "value": ["example"]}],
-      "collections": ["col-01"],
+      "source": {"system": "example-mam", "instance": "site-north", "id": "asset-1001"},
+      "title": "Example Interview",
+      "category": "video",
+      "description": "An asset with two versions, whole-asset items, and unassigned items.",
+      "status": "active",
+      "created": "2026-03-05T10:00:00Z",
+      "modified": "2026-03-09T15:30:00Z",
+      "versions": [
+        {
+          "id": "v1",
+          "ordinal": 0,
+          "label": "Camera original",
+          "timing": {
+            "time_base": {"rate": {"numerator": 24000, "denominator": 1001}, "drop_frame": false},
+            "duration_frames": 2400
+          },
+          "files": [
+            {"id": "f-0101", "locations": [{"storage_location": "sl-01", "path": "projects/project_a/camera/clip_a_001.mov"}], "role": "master"},
+            {"id": "f-0102", "locations": [{"storage_location": "sl-01", "path": "projects/project_a/camera/clip_a_002.mov"}], "role": "master"}
+          ],
+          "file_groups": [
+            {
+              "id": "g-0101",
+              "role": "primary",
+              "label": "Recording split across two files",
+              "members": [
+                {"file": "f-0101", "track_type": "video", "track_index": 0, "segment_index": 0, "start_frame": 0, "start_seconds": 0},
+                {"file": "f-0102", "track_type": "video", "track_index": 0, "segment_index": 1, "start_frame": 1200, "start_seconds": 50.05}
+              ]
+            }
+          ],
+          "metadata": [{"definition": "md-rating", "value": 3}],
+          "relationships": [
+            {"type": "derived_from", "target": "a-0003", "range": {"start_frame": 0, "end_frame": 10}}
+          ]
+        },
+        {
+          "id": "v2",
+          "ordinal": 1,
+          "label": "Color corrected",
+          "created": "2026-03-09T15:30:00Z",
+          "modified": "2026-03-10T09:00:00Z",
+          "timing": {
+            "time_base": {"rate": {"numerator": 24000, "denominator": 1001}, "drop_frame": false},
+            "duration_frames": 2400,
+            "duration_seconds": 100.1,
+            "source_timecode": "01:00:00:00",
+            "sample_rate": 48000,
+            "duration_samples": 4804800
+          },
+          "files": [
+            {
+              "id": "f-0001",
+              "locations": [
+                {"storage_location": "sl-01", "path": "projects/project_a/masters/clip_a_v2.mov", "availability": "online", "extensions": {"vendor_a": {"copy_checked": "2026-03-11T08:00:00Z"}}},
+                {"storage_location": "sl-02", "path": "masters/clip_a_v2.mov", "availability": "nearline"}
+              ],
+              "size_bytes": 1073741824,
+              "checksum": {"algorithm": "sha256", "value": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"},
+              "media_type": "video/quicktime",
+              "created": "2026-03-09T15:30:00Z",
+              "modified": "2026-03-09T15:30:00Z",
+              "role": "master",
+              "label": "Picture and sound",
+              "reel_name": "reel_a",
+              "duration_seconds": 100.1,
+              "bit_rate": 85000000,
+              "extensions": {"vendor_a": {"ingest_profile": "profile_a"}}
+            },
+            {"id": "f-0002", "locations": [{"storage_location": "sl-01", "path": "projects/project_a/masters/clip_a_v2.vtt"}], "media_type": "text/vtt", "role": "sidecar"}
+          ],
+          "file_groups": [
+            {
+              "id": "g-0001",
+              "role": "primary",
+              "label": "Master",
+              "members": [
+                {
+                  "file": "f-0001",
+                  "track_type": "video",
+                  "track_index": 0,
+                  "stream_index": 0,
+                  "label": "Picture",
+                  "codec": "codec_a",
+                  "bit_rate": 82000000,
+                  "duration_seconds": 100.1,
+                  "width": 1920,
+                  "height": 1080,
+                  "display_aspect_ratio": {"numerator": 16, "denominator": 9},
+                  "bit_depth": 10,
+                  "frame_rate": {"numerator": 24000, "denominator": 1001},
+                  "capture_frame_rate": {"numerator": 48, "denominator": 1},
+                  "frame_count": 2400,
+                  "scan_type": "progressive",
+                  "extensions": {"vendor_a": {"color_note": "graded"}}
+                },
+                {
+                  "file": "f-0001",
+                  "track_type": "audio",
+                  "track_index": 0,
+                  "stream_index": 1,
+                  "label": "Stereo mix",
+                  "language": "en",
+                  "codec": "codec_b",
+                  "bit_rate": 2304000,
+                  "duration_seconds": 100.1,
+                  "bit_depth": 24,
+                  "sample_rate": 48000,
+                  "channel_count": 2,
+                  "channel_layout": ["left", "right"]
+                }
+              ],
+              "extensions": {"vendor_a": {"delivery": "broadcast"}}
+            },
+            {
+              "id": "g-0002",
+              "role": "companion",
+              "label": "Captions",
+              "members": [{"file": "f-0002", "track_type": "data", "track_index": 0, "language": "en"}]
+            }
+          ],
+          "metadata": [{"definition": "md-rating", "value": 4, "extensions": {"vendor_a": {"set_by": "reviewer-01"}}}],
+          "annotations": [
+            {
+              "id": "ann-0002",
+              "source": {"system": "example-review", "id": "comment-77"},
+              "purpose": "review",
+              "title": "Color change",
+              "text": "Change requested: soften the color in this range.",
+              "category": "color",
+              "author": "reviewer-01",
+              "visibility": "private",
+              "language": "en",
+              "created": "2026-03-10T10:00:00Z",
+              "modified": "2026-03-10T10:05:00Z",
+              "start_frame": 100,
+              "end_frame": 150,
+              "start_seconds": 4.170833,
+              "end_seconds": 6.25625,
+              "start_timecode": "01:00:04:04",
+              "end_timecode": "01:00:06:06",
+              "start_sample": 200200,
+              "end_sample": 300300,
+              "metadata": [{"definition": "md-status", "value": "rejected"}],
+              "extensions": {"vendor_a": {"thread": "t-1"}}
+            }
+          ],
+          "relationships": [
+            {"type": "variant_of", "target": "a-0003", "description": "Same content as the render sequence.", "extensions": {"vendor_a": {"match": "visual"}}}
+          ],
+          "extensions": {"vendor_a": {"grade": "final"}}
+        }
+      ],
+      "current_version": "v2",
+      "unassigned": {
+        "files": [
+          {"id": "f-0901", "locations": [{"storage_location": "sl-02", "path": "proxies/clip_a.mp4"}], "media_type": "video/mp4", "role": "preview"}
+        ],
+        "file_groups": [
+          {"id": "g-0901", "role": "preview", "members": [{"file": "f-0901", "track_type": "video", "track_index": 0}]}
+        ],
+        "metadata": [{"definition": "md-status", "value": "approved"}],
+        "annotations": [
+          {"id": "ann-0901", "purpose": "note", "text": "Approved for the web, version not stated."}
+        ],
+        "relationships": [
+          {"type": "derived_from", "target": "a-0003"}
+        ]
+      },
+      "files": [
+        {"id": "f-0010", "locations": [{"storage_location": "sl-01", "path": "projects/project_a/documents/release_a.pdf"}], "media_type": "application/pdf", "role": "sidecar", "label": "Release form"}
+      ],
+      "file_groups": [
+        {"id": "g-0010", "role": "companion", "members": [{"file": "f-0010", "track_type": "other", "track_index": 0}]}
+      ],
+      "relationships": [
+        {"type": "derived_from", "target": "a-0003", "description": "Rendered from the image sequence."}
+      ],
+      "metadata": [{"definition": "md-keywords", "value": ["interview", "example"]}],
+      "annotations": [
+        {"id": "ann-0001", "purpose": "note", "text": "A note about the whole asset."}
+      ],
+      "member_of": [{"collection": "col-01", "position": 2}],
       "access": {"status": "none"},
-      "extensions": {"vendor_a": {"note": "minimal asset in a full package"}}
+      "extensions": {"vendor_a": {"rating": 4}}
+    },
+    {
+      "id": "a-0002",
+      "title": "Example Sound Excerpt",
+      "category": "audio",
+      "status": "deleted",
+      "deleted": "2026-09-28T07:12:44Z",
+      "timing": {
+        "duration_seconds": 10.01,
+        "source_timecode": "10:00:00:00",
+        "timecode_base": {"rate": {"numerator": 25, "denominator": 1}, "drop_frame": false},
+        "sample_rate": 48000,
+        "duration_samples": 480480
+      },
+      "files": [
+        {"id": "f-0201", "locations": [{"storage_location": "sl-02", "path": "audio/clip_a_excerpt.wav"}], "media_type": "audio/wav", "role": "master"}
+      ],
+      "file_groups": [
+        {
+          "id": "g-0201",
+          "role": "primary",
+          "members": [{"file": "f-0201", "track_type": "audio", "track_index": 0, "stream_index": 0, "sample_rate": 48000, "channel_count": 1, "channel_layout": ["mono"]}]
+        }
+      ],
+      "relationships": [
+        {"type": "subclip_of", "target": "a-0001", "range": {"start_frame": 240, "end_frame": 480, "start_seconds": 10.01, "end_seconds": 20.02}, "target_version": "v2"}
+      ],
+      "annotations": [
+        {"id": "ann-0201", "purpose": "transcript", "text": "Example line of dialogue.", "language": "en", "start_seconds": 1.5, "end_seconds": 3.25, "start_sample": 72000, "end_sample": 156000}
+      ],
+      "member_of": [{"collection": "col-01"}],
+      "access": {"status": "restricted"}
+    },
+    {
+      "id": "a-0003",
+      "title": "Example Render Sequence",
+      "category": "image_sequence",
+      "timing": {
+        "time_base": {"rate": {"numerator": 24, "denominator": 1}, "drop_frame": false},
+        "duration_frames": 10
+      },
+      "files": [
+        {
+          "id": "f-0301",
+          "locations": [
+            {"storage_location": "sl-01", "path": "projects/project_a/renders/shot_a/frame.{frame}.exr", "missing_frames": [1005]},
+            {"storage_location": "sl-02", "path": "renders/shot_a/frame.{frame}.exr", "missing_frames": []}
+          ],
+          "media_type": "image/x-exr",
+          "sequence": {
+            "first_frame": 1001,
+            "last_frame": 1010,
+            "step": 1,
+            "padding": 4,
+            "images": [
+              {"frame": 1001, "size_bytes": 50331648},
+              {"frame": 1002, "size_bytes": 50331648, "checksum": {"algorithm": "blake3", "value": "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210"}}
+            ]
+          }
+        },
+        {"id": "f-0302", "locations": [{"storage_location": "sl-01", "path": "projects/project_a/renders/shot_a/thumbs/frame.1001.jpg"}], "size_bytes": 204800, "checksum": {"algorithm": "md5", "value": "0123456789abcdef0123456789abcdef"}, "media_type": "image/jpeg", "role": "thumbnail"},
+        {"id": "f-0303", "locations": [{"storage_location": "sl-01", "path": "projects/project_a/renders/shot_a/thumbs/frame.1006.jpg"}], "size_bytes": 204800, "media_type": "image/jpeg", "role": "thumbnail"}
+      ],
+      "file_groups": [
+        {
+          "id": "g-0301",
+          "role": "primary",
+          "members": [{"file": "f-0301", "track_type": "image", "track_index": 0, "width": 4096, "height": 2160, "display_aspect_ratio": {"numerator": 256, "denominator": 135}, "bit_depth": 16}]
+        },
+        {
+          "id": "g-0302",
+          "role": "thumbnail",
+          "members": [
+            {"file": "f-0302", "track_type": "image", "track_index": 0, "sequence_frame": 1001},
+            {"file": "f-0303", "track_type": "image", "track_index": 0, "sequence_frame": 1006}
+          ]
+        }
+      ],
+      "member_of": [{"collection": "col-02", "position": 10}]
     }
   ],
   "extensions": {

@@ -1,0 +1,80 @@
+{
+  "type": "package",
+  "spec_version": "2.0.0-draft.3",
+  "id": "pkg-0001",
+  "manifest": {
+    "producer": {
+      "name": "example-exporter",
+      "version": "0.1.0"
+    },
+    "produced_at": "2026-10-05T09:00:00Z",
+    "counts": {
+      "storage_locations": 0,
+      "metadata_definitions": 4,
+      "collections": 1,
+      "assets": 2
+    },
+    "namespaces": []
+  },
+  "metadata_definitions": [
+    {
+      "id": "md-shoot-date",
+      "value_type": "date",
+      "cardinality": "single"
+    },
+    {
+      "id": "md-reviewed",
+      "value_type": "datetime",
+      "cardinality": "multiple"
+    },
+    {
+      "id": "md-source",
+      "value_type": "asset_reference",
+      "cardinality": "single"
+    },
+    {
+      "id": "md-project",
+      "value_type": "collection_reference",
+      "cardinality": "single"
+    }
+  ],
+  "collections": [
+    {
+      "id": "col-01",
+      "title": "Example Collection",
+      "collection_type": "logical"
+    }
+  ],
+  "assets": [
+    {
+      "id": "a-0002",
+      "title": "Example Clip B"
+    },
+    {
+      "id": "a-0001",
+      "title": "Example Clip",
+      "metadata": [
+        {
+          "definition": "md-shoot-date",
+          "value": "2024-02-29"
+        },
+        {
+          "definition": "md-reviewed",
+          "value": [
+            "2026-01-02T10:00:00Z",
+            "2026-01-02t10:00:00.5z",
+            "2026-01-02T10:00:00-00:00"
+          ]
+        },
+        {
+          "definition": "md-source",
+          "value": "a-0002"
+        },
+        {
+          "definition": "md-project",
+          "value": "col-01"
+        }
+      ]
+    }
+  ]
+}

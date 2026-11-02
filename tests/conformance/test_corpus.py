@@ -10,57 +10,53 @@ from pathlib import Path
 from tests.conformance.corpus import DEFAULT_MANIFEST, FixtureCase, load_manifest
 from tests.conformance.document import route
 from tests.conformance.loader import load_bundle
-from tests.conformance.semantic import check
+from tests.conformance.number_limits import check_number_limits
+from tests.conformance.semantic import CATALOG, check
 from tests.conformance.strict_json import parse_input
 from tests.conformance.types import InputInvalid, SetupFailed
+from tests.conformance.validate import safe_pointer, schema_keyword
 
 REPO = Path(__file__).resolve().parents[2]
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
 RECORDS = FIXTURES / "records"
 
-# Rules of the coverage table whose check lives in semantic.py, document.py,
-# strict_json.py, timecode.py, or loader.py.
+# Rules of Appendix B whose check lives in semantic.py, document.py,
+# number_limits.py, strict_json.py, timecode.py, or formats.py. Each one has
+# at least one fixture.
 CHECKED_RULES = (
-    "DOC-1", "DOC-2", "DOC-3",
-    "REC-2", "REC-4", "UNS-1",
+    "DOC-1", "DOC-2", "DOC-3", "DOC-4",
+    "REC-2", "UNS-1",
     "PKG-3", "PKG-6",
-    "ID-1", "ID-2", "ID-4", "ID-5", "ID-6",
-    "TIME-2", "TIME-4", "TIME-5", "TIME-7", "TIME-8", "TIME-9", "TIME-12",
-    "GRP-3", "GRP-4", "GRP-6",
-    "VER-2", "VER-3",
-    "REL-3",
-    "COL-3", "COL-4", "COL-5",
-    "MD-2", "MD-4", "MD-5", "MD-6",
-    "DT-1", "DT-2", "DT-3",
-    "ANN-3",
-    "EXT-2", "EXT-5",
+    "ID-1", "ID-2", "ID-4", "ID-5",
+    "TIME-2", "TIME-4", "TIME-5", "TIME-7", "TIME-8", "TIME-9", "TIME-12", "TIME-13",
+    "FILE-6", "FILE-8",
+    "GRP-4", "GRP-6", "GRP-7", "GRP-10", "GRP-11", "GRP-12",
+    "VER-2", "VER-6", "VER-7",
+    "REL-3", "REL-4", "REL-5", "REL-6",
+    "COL-3", "COL-4", "COL-7",
+    "MD-4", "MD-5", "MD-6", "MD-7", "MD-8",
+    "DT-1", "DT-3",
+    "EXT-2",
 )
 
-# Rules that only the schema checks, each with a structural fixture.
-STRUCTURAL_RULES = ("TIME-6", "EXT-3", "AST-1", "REC-7", "PKG-2", "MD-2", "DT-1", "MD-4")
-
-# Structural case id: (failing keyword, RFC 6901 instance pointer).
-STRUCTURAL_ERRORS = {
-    "structural-asset-missing-title": ("required", ""),
-    "structural-asset-unknown-key": ("unevaluatedProperties", ""),
-    "structural-manifest-missing-counts": ("required", "/manifest"),
-    "structural-pattern-invalid-regex": ("format", "/constraints/pattern"),
-    "structural-date-time-space": ("format", "/manifest/produced_at"),
-    "structural-namespace-oasis": ("not", "/extensions"),
-    "structural-drop-frame-25": ("enum", "/timing/time_base/rate"),
-    "structural-metadata-value-object": ("anyOf", "/metadata/0/value"),
-    "package-snapshot-with-members": ("oneOf", "/assets/0/collections/0"),
-}
+# Rules that only the schema checks, each with a structurally invalid fixture.
+STRUCTURAL_RULES = (
+    "ACC-1", "ACC-2", "ANN-4", "AST-1", "DT-2", "EXT-3", "FILE-9", "MD-2", "PKG-2", "REC-7",
+    "STO-1", "TIME-6", "TIME-10", "TIME-14", "VER-4", "VER-5",
+)
 
 INPUT_INVALID = (("INPUT_INVALID", ""),)
-
-
-def _pointer(segments):
-    return "".join("/" + str(s).replace("~", "~0").replace("/", "~1") for s in segments)
+NUMBER_CODES = frozenset({"NUMBER_OUT_OF_RANGE", "NUMBER_TOO_PRECISE"})
 
 
 def _run(test, case, bundle):
-    """Run the pipeline on one case: (status, structural, pairs, structural errors)."""
+    """Run the pipeline on one case: (status, structural, pairs, structural errors).
+
+    The stages run in the order of the validate command: strict parse
+    (DOC-1), root checks (REC-2, UNS-1), number limits (DOC-4), schema, then
+    semantic checks. Structural errors are (keyword, pointer) pairs as the
+    command reports them.
+    """
     try:
         parsed = parse_input((FIXTURES / case.path).read_bytes())
     except InputInvalid:
@@ -68,9 +64,12 @@ def _run(test, case, bundle):
     routing = route(parsed.value)
     if routing.status != "selected":
         return "unsupported", "not-run", tuple((d.code, d.path) for d in routing.diagnostics), ()
+    limits = check_number_limits(parsed.value, bundle.property_names)
+    if limits:
+        return "input-invalid", "not-run", tuple((d.code, d.path) for d in limits), ()
     errors = bundle.entry_point(routing.kind).validate(parsed)
     if errors:
-        return "complete", "invalid", (), tuple((e.validator, _pointer(e.absolute_path)) for e in errors)
+        return "complete", "invalid", (), tuple((schema_keyword(e), safe_pointer(e)) for e in errors)
     before = copy.deepcopy(parsed.value)
     diagnostics = check(parsed.value, routing)
     # DOC-3: the semantic stage never changes the tree.
@@ -104,10 +103,20 @@ class ManifestTests(unittest.TestCase):
             {c.id for c in load_manifest() if "DOC-3" in c.rules},
             {c.id for c in load_manifest() if c.expected_structural == "valid"},
         )
-        self.assertEqual(
-            {c.id for c in load_manifest() if "DOC-1" in c.rules},
-            {c.id for c in load_manifest() if c.expected_status == "input-invalid"},
-        )
+        for case in load_manifest():
+            with self.subTest(case.id):
+                parse_refused = case.expected_diagnostics == INPUT_INVALID
+                self.assertEqual("DOC-1" in case.rules, parse_refused)
+                if case.expected_status == "input-invalid":
+                    self.assertTrue("DOC-1" in case.rules or "DOC-4" in case.rules)
+                    if not parse_refused:
+                        self.assertIn("DOC-4", case.rules)
+                        self.assertTrue(case.expected_diagnostics)
+                        self.assertLessEqual({code for code, _p in case.expected_diagnostics}, NUMBER_CODES)
+
+    def test_checked_rules_cover_the_catalog(self):
+        cited = {rule for rule, _severity, _message in CATALOG.values() for rule in rule.split(", ")}
+        self.assertLessEqual(cited, set(CHECKED_RULES))
 
     def test_structural_rules_have_structural_cases(self):
         covered = {r for c in load_manifest() if c.expected_structural == "invalid" for r in c.rules}
@@ -129,11 +138,13 @@ class SweepTests(unittest.TestCase):
                 self.assertEqual(structural, case.expected_structural)
                 self.assertEqual(pairs, case.expected_diagnostics)
                 if case.expected_structural == "invalid":
-                    self.assertIn(STRUCTURAL_ERRORS[case.id], errors)
+                    self.assertIn(case.expected_schema_error, errors)
 
     def test_every_structural_case_has_an_expected_error(self):
-        invalid = {c.id for c in load_manifest() if c.expected_structural == "invalid"}
-        self.assertEqual(invalid, set(STRUCTURAL_ERRORS))
+        for case in load_manifest():
+            with self.subTest(case.id):
+                invalid = case.expected_structural == "invalid"
+                self.assertEqual(case.expected_schema_error is not None, invalid)
 
     def test_input_fixtures_report_input_invalid(self):
         inputs = [c for c in load_manifest() if c.id.startswith("input-")]
@@ -149,7 +160,7 @@ class SweepTests(unittest.TestCase):
                 self.assertEqual(case.expected_diagnostics, INPUT_INVALID)
 
     def test_not_utf8_reports_input_invalid(self):
-        data = b'{"type": "asset\xff"}'
+        data = b'{"type": "package\xff"}'
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "not-utf8.json"
             path.write_bytes(data)
@@ -158,20 +169,26 @@ class SweepTests(unittest.TestCase):
 
 
 VALID_CASE = {
-    "id": "routing-ok-minimal-asset",
-    "path": "records/routing-ok-minimal-asset.json",
+    "id": "routing-ok-minimal-package",
+    "path": "records/routing-ok-minimal-package.json",
     "expected_status": "complete",
     "expected_structural": "valid",
     "expected_diagnostics": [],
     "rules": ["REC-2"],
-    "note": "A minimal asset.",
+    "note": "A minimal package.",
 }
+
+INVALID_CASE = dict(
+    VALID_CASE,
+    expected_structural="invalid",
+    expected_schema_error={"keyword": "required", "path": "/manifest"},
+)
 
 
 def _manifest(*cases):
     return {
         "manifest_version": "2.0.0",
-        "contract": "2.0.0-draft.2",
+        "contract": "2.0.0-draft.3",
         "provenance": {
             "kind": "synthetic",
             "source": "Newly authored OASIS conformance examples",
@@ -187,7 +204,7 @@ class ManifestShapeTests(unittest.TestCase):
         self.addCleanup(self.directory.cleanup)
         self.root = Path(self.directory.name)
         (self.root / "records").mkdir()
-        shutil.copy(RECORDS / "routing-ok-minimal-asset.json", self.root / "records")
+        shutil.copy(RECORDS / "routing-ok-minimal-package.json", self.root / "records")
 
     def load(self, document):
         path = self.root / "manifest.json"
@@ -201,6 +218,11 @@ class ManifestShapeTests(unittest.TestCase):
         (case,) = self.load(_manifest(VALID_CASE))
         self.assertEqual(case.expected_diagnostics, ())
         self.assertEqual(case.rules, ("REC-2",))
+        self.assertIsNone(case.expected_schema_error)
+
+    def test_valid_schema_error(self):
+        (case,) = self.load(_manifest(INVALID_CASE))
+        self.assertEqual(case.expected_schema_error, ("required", "/manifest"))
 
     def test_shape_problems_fail_setup(self):
         def changed(**fields):
@@ -231,13 +253,30 @@ class ManifestShapeTests(unittest.TestCase):
             ),
             "rules not strings": _manifest(changed(rules=[1])),
             "empty note": _manifest(changed(note="")),
-            "path outside records": _manifest(changed(path="../routing-ok-minimal-asset.json")),
+            "path outside records": _manifest(changed(path="../routing-ok-minimal-package.json")),
             "path not matching id": _manifest(changed(path="records/other.json")),
             "duplicate id": _manifest(VALID_CASE, VALID_CASE),
             "missing file": _manifest(
                 VALID_CASE, changed(id="absent", path="records/absent.json")
             ),
             "file without case": _manifest(),
+            "schema error on a valid case": _manifest(
+                changed(expected_schema_error={"keyword": "required", "path": ""})
+            ),
+            "invalid case without schema error": _manifest(changed(expected_structural="invalid")),
+            "schema error not object": _manifest(dict(INVALID_CASE, expected_schema_error="required")),
+            "schema error unknown key": _manifest(
+                dict(INVALID_CASE, expected_schema_error={"keyword": "required", "path": "", "x": 1})
+            ),
+            "schema error empty keyword": _manifest(
+                dict(INVALID_CASE, expected_schema_error={"keyword": "", "path": ""})
+            ),
+            "schema error path not pointer": _manifest(
+                dict(INVALID_CASE, expected_schema_error={"keyword": "required", "path": "manifest"})
+            ),
+            "schema error path bad escape": _manifest(
+                dict(INVALID_CASE, expected_schema_error={"keyword": "required", "path": "/a~2"})
+            ),
         }
         for name, document in bad.items():
             with self.subTest(name):

@@ -1,0 +1,76 @@
+{
+  "type": "package",
+  "spec_version": "2.0.0-draft.3",
+  "id": "pkg-0001",
+  "manifest": {
+    "producer": {
+      "name": "example-exporter",
+      "version": "0.1.0"
+    },
+    "produced_at": "2026-10-05T09:00:00Z",
+    "counts": {
+      "storage_locations": 0,
+      "metadata_definitions": 4,
+      "collections": 1,
+      "assets": 1
+    },
+    "namespaces": []
+  },
+  "metadata_definitions": [
+    {
+      "id": "md-keywords",
+      "value_type": "string",
+      "cardinality": "multiple"
+    },
+    {
+      "id": "md-related",
+      "value_type": "asset_reference",
+      "cardinality": "multiple"
+    },
+    {
+      "id": "md-project",
+      "value_type": "collection_reference",
+      "cardinality": "single"
+    },
+    {
+      "id": "md-source",
+      "value_type": "asset_reference",
+      "cardinality": "single"
+    }
+  ],
+  "collections": [
+    {
+      "id": "col-01",
+      "title": "Example Collection",
+      "collection_type": "logical"
+    }
+  ],
+  "assets": [
+    {
+      "id": "a-0001",
+      "title": "Example Clip",
+      "metadata": [
+        {
+          "definition": "md-keywords",
+          "value": [
+            "example"
+          ]
+        },
+        {
+          "definition": "md-related",
+          "value": [
+            "a-0001"
+          ]
+        },
+        {
+          "definition": "md-project",
+          "value": "col-01"
+        },
+        {
+          "definition": "md-source",
+          "value": "a-0099"
+        }
+      ]
+    }
+  ]
+}

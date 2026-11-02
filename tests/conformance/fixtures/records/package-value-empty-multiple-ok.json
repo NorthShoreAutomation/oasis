@@ -1,6 +1,6 @@
 {
   "type": "package",
-  "spec_version": "2.0.0-draft.2",
+  "spec_version": "2.0.0-draft.3",
   "id": "pkg-0001",
   "manifest": {
     "producer": {
@@ -14,18 +14,10 @@
       "collections": 0,
       "assets": 1
     },
-    "completeness": {
-      "storage_locations": "complete",
-      "metadata_definitions": "complete",
-      "collections": "complete",
-      "assets": "complete"
-    },
     "namespaces": []
   },
   "metadata_definitions": [
     {
-      "type": "metadata_definition",
-      "spec_version": "2.0.0-draft.2",
       "id": "md-keywords",
       "value_type": "string",
       "cardinality": "multiple"
@@ -33,13 +25,8 @@
   ],
   "assets": [
     {
-      "type": "asset",
-      "spec_version": "2.0.0-draft.2",
       "id": "a-0001",
       "title": "Example Clip",
-      "access": {
-        "status": "none"
-      },
       "metadata": [
         {
           "definition": "md-keywords",

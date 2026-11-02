@@ -1,0 +1,97 @@
+# OASIS 2.0 glossary
+
+Status: DRAFT 2.0.0-draft.3. Not a final release. Interoperability between independent implementations is not demonstrated.
+OASIS means Open Asset Standard Interchange Schema.
+
+Each term is defined by what can be observed in a document, with two examples from different kinds of system. The examples are illustrations, not vocabulary. No product name is part of any definition.
+
+| Term | Meaning | Example one | Example two |
+| --- | --- | --- | --- |
+| Package | One JSON document that carries a manifest, record lists, and asset records for one exchange. The unit of exchange and the only exchange document. It has its own `id`. It holds every record that its references need. | A nightly export of a newsroom's archive. | A hand-picked set of ten assets sent to a post house. |
+| Exchange document | A document that OASIS defines for exchange. Only a package is one. A record definition on its own is a part of a package, not an exchange document. | a package with one asset | a package with 1,200 assets |
+| Manifest | The part of a package that states who produced it, when, how many records of each type it holds, and which extension namespaces it uses. | Counts show 1,200 assets and 40 collections. | Counts show 3 assets and no collections. |
+| Record list | A package array that holds full records of one type: storage locations, metadata definitions, collections, or assets. Records reference each other by id. | Twelve storage locations referenced by 50,000 files. | One metadata definition used by every asset. |
+| Record | A full object in a record list, with an `id`. The record list that holds it states its type. Records inside a package carry no `type` and no `spec_version`. Only the package root carries them. | An asset in `assets`. | A collection in `collections`. |
+| Record type | What a record is: package, asset, collection, storage location, or metadata definition. The package root states it in `type`. The record list states it for every other record. | `package` at the root | an asset in `assets` |
+| Specification version | The `spec_version` string at the package root. A checker compares it exactly. It selects the contract rules and the schema bundle of that version (`UNS-1`). It is not an asset version. | `2.0.0-draft.3` | a later `2.0.0-draft.4` |
+| Unsupported document | A document whose `spec_version` the checker does not support, compared exactly. The checker reports it as unsupported and reports no other finding. | a package that declares a later draft | a package whose `spec_version` is `2.0.0-DRAFT.3` |
+| Identifier | The `id` string of a record, unique within its record type inside one package, or of a nested object (version, file, file group, annotation, option). Nested ids of an asset are unique across every holder of the asset. Not meaningful across packages without `source`. | `a-0001` | `f-0003` |
+| Source | Provenance of a record: the producing system, optionally one deployment of it, and the entity's identifier there. Never used to resolve references. | system `catalog-x`, instance `london`, id `4471` | system `archive-y`, id `urn:...` |
+| Reference | A string naming the id of a target of one stated type. Every reference resolves inside the package. A file reference resolves in the same holder. A version reference resolves in the named asset. | a location entry's `storage_location` | a file group member's `file` |
+| Number limits | The RFC 7493 section 2.2 limits on every JSON number in a package: an absolute value of at most 2^53 - 1, and a value that binary64 keeps exactly in its shortest form. A value that does not fit is written as a string. | `9007199254740991` is the largest allowed | a 64-bit identifier written as a string |
+| Asset | A described content item: the thing a system catalogs, with its files, versions, metadata, annotations, and collection memberships. | A news story's video. | A photograph with three renditions. |
+| Tombstone | An asset with a `deleted` date. It records that the source reported the asset deleted. It is a fact about the source, never an instruction to delete anything in a receiving system. | an asset deleted last week, still exported for audit | an asset the source can still restore |
+| Holder | The part of an asset that holds an item: the asset level, a version, or the unassigned area. The holder states the version of the item. | annotations in a version | files at the asset level |
+| File | The recorded content of an asset, described once, with a list of its stored copies. Size, checksum, and technical fields hold for every copy. A file may have no known copy. | `clip.mov` with a copy on a shared volume and a copy on tape | a lost file whose size and checksum are still known |
+| Copy | One location entry of a file: a storage location and a path where the source reports identical bytes. A copy is not a rendition and not a version. | a copy on a shared volume | the same file on an archive tape |
+| Availability | How the source reports a copy when the package is produced: online, nearline, or offline. Absent means unknown. Not a deletion statement. | `online` on a shared volume | `offline` on a tape on a shelf |
+| Storage location | A named place where copies are stored, with a storage type and a root. It has no connection settings. Validation never connects to it. | a mounted volume | a cloud bucket |
+| Storage system | The `system` value of a storage location: `source_local`, `network_share`, `s3`, `gcs`, `azure_blob`, `tape`, or `other`. It states what `root` and `path` hold. | `network_share` | `s3` |
+| Source-local path | A path that only the source system can resolve, such as a drive letter, a mount point, or a source alias. The storage system is `source_local`. | `Z:\` as a root | `[alias_a]` as a root |
+| Locator | The `path` of a copy within a storage location, as the source writes it. Not a URI. Validation never opens it. | `projects/2026/clip.mov` | an object key |
+| Checksum | A producer's declared digest of a file's bytes, with the algorithm named. It holds for every copy. Validation never computes it. | `sha256` and 64 hex characters | `md5` and 32 hex characters |
+| File role | What one file is on its own: master, mezzanine, preview, thumbnail, sidecar, other. Optional. It does not group files. | `master` for a camera original | `sidecar` for a caption file |
+| Reel name | The camera roll, card, magazine, or source tape on which the content of a file was first recorded, as the source states it. Not a storage location and not an identifier. | `A001` | a source tape name |
+| File group | An explicit set of files of one holder that belong together for one purpose, with a role, an optional label, and ordered members. Grouping is never inferred. | primary file group: one video file and two audio files | thumbnail file group: one still |
+| File group role | The purpose of a file group: primary, preview, thumbnail, companion, other. Purpose, not format. A holder may have several groups with one role. | `primary` | `companion` for a caption file |
+| Member | One file's place in a file group: track type, track index, optional stream index, optional segment index and part start, optional sequence frame, and an optional track description. | video track 0 | audio track 1, 2 channels, French |
+| Track | One stream that a file group presents, identified by track type and track index. | video 0 | audio 3 |
+| Stream | One stream inside a file, selected by its position in the container's own list of streams, counting from 0. Not a track ID. | stream 0 of a WAV file | stream 2 of a file with one video and two audio streams |
+| Capture frame rate | The constant rate at which the camera captured the frames of a video stream. It never sets a timeline. | `120/1` played at `24/1` | `25/1`, the same as playback |
+| Segment index | The order of one file within a recording that is split across several files. Order only. A gap shows missing parts. | segment 0 and segment 1 of one camera recording | segments 0 to 3 of a long take |
+| Part start | The optional position where one segment starts on the holder's timeline, in frames, seconds, or both. | start frame 0 and start frame 4500 | start 0 seconds and 180 seconds |
+| Image sequence | A numbered series of still images. The compact form is one file with a frame range, a step, and a name pattern. The explicit form is one member per image file. | frames 1001 to 1250 in one file | 48 image members numbered 0 to 47 |
+| Version | One state of an asset that the source keeps, with an id and an ordinal. It holds its own timing, files, file groups, metadata, annotations, and relationships. | version 3 of an edited clip | the original upload |
+| Current version | The version that the source treats as current, named by `current_version`. Absent means unknown. Never chosen from ordinal or dates. | the latest edit | an older version that the source restored as current |
+| Implied original version | The one version of an asset with no versions. It has no id. Everything at the asset level belongs to it. | a photo with one rendition set | a clip that was never revised |
+| Unassigned information | The `unassigned` area of an asset with versions. It holds items that the source holds for one version without naming which. It is not a version and has no timeline. | a file whose version the source lost | a comment with no version |
+| Ordinal | The integer that orders versions within an asset, lowest first. Unique within the asset. It never selects the current version. Array position carries no meaning. | 0 | 3 |
+| Relationship | A typed link from one asset to another: derived from, subclip of, or variant of, with an optional target version and an optional time range on the target. | subclip of a master version, frames 240 to 480 | variant of a primary in another language |
+| Time base | A rational frame rate and a drop-frame flag. A frame-form timeline has one. Every frame number is read against it. | 24000/1001, non-drop | 30000/1001, drop |
+| Rate | A frame rate as integer numerator over denominator in lowest terms. | 25/1 | 60000/1001 |
+| Frame form | Timing with a time base. Positions are integer frames, with optional seconds and timecode labels that restate them. | a 25/1 video of 7,500 frames | a 24000/1001 film transfer |
+| Seconds form | Timing with no time base and a required length in elapsed seconds. Positions are seconds. | a 90-second audio recording | a variable-rate screen recording |
+| Timeline | The axis that a position belongs to. A `timing` object defines one: on the asset when it has no versions, or on a version. Annotations and part starts use their holder's. A relationship range uses the target version's, or the target asset's when it has no versions. | an asset of 7,200 frames | the target version of a subclip relationship |
+| Defining unit | The unit that defines a position: frames when a frame field is present, else seconds. | frames for start frame 100 | seconds for start 4.5 seconds |
+| Elapsed seconds | Time measured in seconds from the start of a timeline. Read as exact decimals. | 4.5 | 0.04 |
+| Length | The length of a timeline: `duration_frames` in the frame form, or `duration_seconds` in the seconds form. | 7,200 frames | 90 seconds |
+| End boundary | The position equal to the length. It marks the point immediately after the last frame or sample. A point may sit there. A range ends there at the latest. | frame 7200 of a 7,200-frame timeline | 90 seconds of a 90-second timeline |
+| Restated value | A value that restates another in a second unit: seconds that restate frames, or samples that restate seconds. It must name the same frame or sample. | `4.170833` seconds for frame 100 at 24000/1001 | sample 48000 for 1 second at 48000 |
+| Source timecode anchor | The optional timecode label of the start of a timeline in the source material. In the frame form, the label of frame 0. In the seconds form, the label at its own timecode base. Lets labels be derived from frame numbers. Assumes continuous timecode. | `01:00:00:00` | `09:59:30;00` |
+| Timecode base | The time base of a seconds-form `source_timecode`. It counts the label only. It creates no frame positions. | 25/1 for an audio recording | 30000/1001, drop |
+| Sample rate | The audio samples per second of a timeline or an audio member. Not a frame rate and never a time base. | 48000 | 96000 |
+| Sample position | An integer sample count that restates a seconds position at the timeline's sample rate. | sample 48000 | sample 0 |
+| Frame position | An integer count of frames from the first presented frame of a frame-form timeline. | start 100, end 150 | a point at 7200 |
+| Time range | A position with a start and an end, in its defining unit. The start is included and the end is excluded. | frames 100 to 150 | seconds 10 to 20 |
+| Point | A position with no end. Marks an instant. | a chapter marker | a quality flag at one frame |
+| Drop-frame | Timecode numbering that skips frame labels so the label tracks clock time at 30000/1001 or 60000/1001. Allowed only at those rates. | `00:01:00;02` | `00:10:00;00` |
+| Timecode label | A `HH:MM:SS:FF` or `HH:MM:SS;FF` string at one of the supported label rates. A label, never the authority. The `source_timecode` anchor of a holder's timing is a label, in the frame form or the seconds form. A label on a marker is allowed only with a frame position, and only when the holder declares the anchor. | `01:02:03:04` | `00:59:59;29` |
+| Preview timeline | The timeline that a `preview` file group shares with the primary content of its version. Positions apply to it unchanged. A trimmed rendition is not a preview. | an HD proxy of a version | a low-bitrate viewing copy |
+| Collection | A named grouping of assets and collections that the source system stores, with a collection type. Its members name it. A saved search is not a collection. | a project folder | a mirrored storage folder |
+| Collection type | The `collection_type` field: logical, storage, or other. A storage collection declares the storage location and path it mirrors. | `logical` for a project | `storage` for a folder on a volume |
+| Membership | The fact that an asset or a collection belongs to a collection. The member records it in `member_of`. An absent entry never states non-membership. | an asset in two projects | a collection inside a parent collection |
+| Membership entry | One item of `member_of`: a collection reference, an optional position, and optional extensions. | collection `c-0001` | collection `c-0002`, position 3 |
+| Position | The integer that orders members of one collection, lowest first. Unique within the collection. Array and record order carry no meaning. | 1 | -5 |
+| Metadata definition | A record that describes a field: its id, an optional label, the value type, cardinality, list type and options for an enum, and informative constraints. | `md-shoot-date`, date, single | `md-keywords`, string, multiple |
+| Metadata value | A `definition` reference and a `value` whose JSON shape follows the definition's value type and cardinality. Repeated items are rejected. | `"2026-03-04"` | `["news", "sport"]` |
+| List type | Whether an enum accepts only its options (`fixed`) or any string (`open`). Required for an enum. | `fixed` for an approval state | `open` for keywords |
+| Option | One defined value of an enum definition: an id and an optional label. A value item that equals an option id is that option. | id `appr`, label `Approved` | id `rej`, no label |
+| Cardinality | Whether a definition takes one value (`single`) or an array of values (`multiple`). | `single` for a shoot date | `multiple` for keywords |
+| Constraint | Informative data about a source field's limits. Not executed by validators. | min 0, max 100 | pattern `^[A-Z]{3}$` |
+| Annotation | A statement about an asset or one of its versions, optionally about a time range of it, with a purpose. It is nested in its holder. | a reviewer's note on frames 100 to 150 | a chapter point |
+| Purpose | What an annotation is for: note, review, quality, transcript, chapter, keyword, other. Not a system's type name. | `review` | `transcript` |
+| Visibility | Who can see an annotation in the source: `public` (no annotation-specific restriction) or `private` (restricted). Absent means unknown. | `public` for a shared note | `private` for a personal note |
+| Author | A neutral name or identifier for who made an annotation. Not an access principal. | `j.smith` | `auto-transcriber-2` |
+| Extension | A namespaced object of producer or vendor data that the standard does not define. The only place for undeclared keys. A consumer that re-emits it keeps its values (`EXT-4`). | namespace `vendor_a` | namespace `broadcaster_internal` |
+| Namespace token | A lowercase key that names an extension owner, declared in the manifest. | `vendor_a` | `broadcaster_internal` |
+| Namespace declaration | The manifest entry for a token: owner, optional schema link, optional description. | owner `Vendor A Ltd` | owner `Example Broadcaster` |
+| Access summary | The optional `access.status` of an asset or collection: none or restricted. Absent means unknown. OASIS prescribes no enforcement. | `none` | `restricted` |
+| Closed object | An object whose allowed keys are all declared. Undeclared keys outside `extensions` make the record invalid. | an asset | a file object |
+| Schema identifier | The stable absolute `$id` of each schema file. Never fetched; loaded from the schema bundle. | the asset schema id | the package schema id |
+| Schema bundle | The set of schema files for one specification version with a manifest of identifiers and digests. Loaded offline. | the 2.0.0-draft.3 schema bundle | a later 2.0.0-draft.4 schema bundle |
+| Archive bundle | A planned multi-file delivery form for long-term archiving. It uses the same record definitions as the package. Not defined in this draft. | a later revision's archive bundle | the same records spread over several files |
+| Producer | Software that writes OASIS documents. | an archive exporter | a backup tool |
+| Consumer | Software that reads OASIS documents and produces a declared outcome. | an importer | a catalog indexer |
+| Structural validity | Agreement with the selected schema. One result among several. | the package parses and matches the schemas | a record fails a required field |
+| Semantic conformance | Agreement with the rules a schema cannot express, checked by a conformance checker. | all references resolve, counts match | a reversed range is reported |
+| Draft | A published specification that is not final, with stated gaps. It claims no interoperability or readiness. | `2.0.0-draft.3` | a later `2.0.0-draft.4` |

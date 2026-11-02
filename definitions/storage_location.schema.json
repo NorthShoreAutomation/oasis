@@ -2,28 +2,99 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://www.northshoreautomation.com/schemas/oasis/2/storage_location.schema.json",
   "title": "OASIS 2.0 storage location",
-  "description": "A storage location record: a named place where files live, with a storage kind token and an opaque root. It carries no secret values. Validation never connects to it.",
+  "description": "A storage location record: a named place where files live, with a storage system and a root. It carries no secret values. Validation never connects to it.",
   "type": "object",
   "allOf": [
     {
       "$ref": "common.schema.json#/$defs/record_base"
+    },
+    {
+      "if": {
+        "required": [
+          "system"
+        ],
+        "properties": {
+          "system": {
+            "enum": [
+              "network_share",
+              "s3",
+              "gcs",
+              "azure_blob",
+              "tape"
+            ]
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "root"
+        ],
+        "properties": {
+          "root": {
+            "minLength": 1
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "system"
+        ],
+        "properties": {
+          "system": {
+            "enum": [
+              "s3",
+              "gcs"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "root": {
+            "pattern": "^[^/]+$"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "system"
+        ],
+        "properties": {
+          "system": {
+            "const": "azure_blob"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "root": {
+            "pattern": "^[^/]+/[^/]+$"
+          }
+        }
+      }
     }
   ],
   "properties": {
-    "type": {
-      "const": "storage_location"
-    },
     "name": {
       "$ref": "common.schema.json#/$defs/nonempty_string"
     },
     "system": {
-      "$ref": "common.schema.json#/$defs/token"
+      "enum": [
+        "source_local",
+        "network_share",
+        "s3",
+        "gcs",
+        "azure_blob",
+        "tape",
+        "other"
+      ]
     },
     "root": {
       "type": "string"
-    },
-    "connection": {
-      "$ref": "common.schema.json#/$defs/connection"
     },
     "status": {
       "type": "string"
@@ -39,7 +110,6 @@
     }
   },
   "required": [
-    "type",
     "name",
     "system"
   ],

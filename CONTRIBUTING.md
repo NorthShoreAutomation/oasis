@@ -52,6 +52,7 @@ python3 -W error -m unittest discover -s tests/conformance -t . -p 'test_*.py'
 - A changelog entry for any change that belongs in the release notes.
 
 Within a major series, a change must not make a previously valid record invalid, remove a field, make a field required, or change a published meaning.
+This rule starts at the first final release of the series. Before that release, a draft can make changes of that kind. Each draft lists its changes in its contract.
 
 ## Reporting problems
 

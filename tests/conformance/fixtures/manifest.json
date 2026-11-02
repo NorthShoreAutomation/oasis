@@ -1,6 +1,6 @@
 {
   "manifest_version": "2.0.0",
-  "contract": "2.0.0-draft.2",
+  "contract": "2.0.0-draft.3",
   "provenance": {
     "kind": "synthetic",
     "source": "Newly authored OASIS conformance examples",
@@ -8,21 +8,311 @@
   },
   "cases": [
     {
-      "id": "collection-self-parent",
-      "path": "records/collection-self-parent.json",
+      "id": "bit-rate-string",
+      "path": "records/bit-rate-string.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "type",
+        "path": "/assets/0/file_groups/0/members/0/bit_rate"
+      },
+      "rules": [
+        "FILE-7",
+        "GRP-11"
+      ],
+      "note": "A member bit_rate written as a text string."
+    },
+    {
+      "id": "capture-rate-not-lowest-terms",
+      "path": "records/capture-rate-not-lowest-terms.json",
       "expected_status": "complete",
       "expected_structural": "valid",
       "expected_diagnostics": [
         [
-          "COLLECTION_CYCLE",
-          "/parent"
+          "RATE_NOT_LOWEST_TERMS",
+          "/assets/0/file_groups/0/members/0/capture_frame_rate"
         ]
       ],
       "rules": [
-        "COL-4",
+        "TIME-2",
+        "GRP-11",
         "DOC-3"
       ],
-      "note": "A standalone collection names itself as parent."
+      "note": "Member capture_frame_rate 240000/2002."
+    },
+    {
+      "id": "capture-rate-on-audio",
+      "path": "records/capture-rate-on-audio.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "false",
+        "path": "/assets/0/file_groups/0/members/0"
+      },
+      "rules": [
+        "GRP-11"
+      ],
+      "note": "capture_frame_rate on an audio member."
+    },
+    {
+      "id": "capture-rate-stream-disagree",
+      "path": "records/capture-rate-stream-disagree.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "STREAM_FACTS_DISAGREE",
+          "/assets/0/file_groups/1/members/0/capture_frame_rate"
+        ]
+      ],
+      "rules": [
+        "GRP-11",
+        "DOC-3"
+      ],
+      "note": "Two groups give stream 0 of file f-1 different capture rates."
+    },
+    {
+      "id": "channel-count-on-video",
+      "path": "records/channel-count-on-video.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "false",
+        "path": "/assets/0/file_groups/0/members/0"
+      },
+      "rules": [
+        "GRP-11"
+      ],
+      "note": "channel_count on a video member."
+    },
+    {
+      "id": "channel-layout-mismatch",
+      "path": "records/channel-layout-mismatch.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "CHANNEL_LAYOUT_MISMATCH",
+          "/assets/0/file_groups/0/members/0/channel_layout"
+        ]
+      ],
+      "rules": [
+        "GRP-11",
+        "DOC-3"
+      ],
+      "note": "channel_count is 2 and channel_layout has one entry."
+    },
+    {
+      "id": "channel-name-short-label",
+      "path": "records/channel-name-short-label.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "enum",
+        "path": "/assets/0/file_groups/0/members/0/channel_layout/0"
+      },
+      "rules": [
+        "GRP-11"
+      ],
+      "note": "A channel layout with short labels instead of channel names."
+    },
+    {
+      "id": "file-draft2-shape",
+      "path": "records/file-draft2-shape.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "additionalProperties",
+        "path": "/assets/0/files/0"
+      },
+      "rules": [
+        "FILE-1",
+        "FILE-6",
+        "REC-7"
+      ],
+      "note": "A file with the draft.2 storage_location and path keys."
+    },
+    {
+      "id": "file-status",
+      "path": "records/file-status.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "additionalProperties",
+        "path": "/assets/0/files/0"
+      },
+      "rules": [
+        "FILE-1",
+        "REC-7"
+      ],
+      "note": "A file with the removed status key."
+    },
+    {
+      "id": "files-ok-camera-reel-capture",
+      "path": "records/files-ok-camera-reel-capture.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "FILE-9",
+        "GRP-11",
+        "DOC-3"
+      ],
+      "note": "Camera and sound reel names, and a capture rate above the playback rate."
+    },
+    {
+      "id": "files-ok-copies",
+      "path": "records/files-ok-copies.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "FILE-6",
+        "STO-3",
+        "DOC-3"
+      ],
+      "note": "One file with three identical copies on three storage locations."
+    },
+    {
+      "id": "files-ok-model",
+      "path": "records/files-ok-model.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "FILE-1",
+        "FILE-6",
+        "FILE-7",
+        "GRP-1",
+        "GRP-3",
+        "GRP-10",
+        "GRP-11",
+        "STO-3",
+        "DOC-3"
+      ],
+      "note": "One master file with an online and an offline copy, and a preview file, in two groups."
+    },
+    {
+      "id": "files-ok-mux",
+      "path": "records/files-ok-mux.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "GRP-10",
+        "GRP-11",
+        "DOC-3"
+      ],
+      "note": "One file with three streams. Labels of one stream may differ between groups."
+    },
+    {
+      "id": "files-ok-no-known-copy",
+      "path": "records/files-ok-no-known-copy.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "FILE-6",
+        "DOC-3"
+      ],
+      "note": "An empty and an absent locations list both state that no copy is known."
+    },
+    {
+      "id": "files-ok-original-version",
+      "path": "records/files-ok-original-version.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "VER-1",
+        "VER-6",
+        "GRP-10",
+        "GRP-11",
+        "DOC-3"
+      ],
+      "note": "An original version with one file and its two streams."
+    },
+    {
+      "id": "files-ok-tape-copies",
+      "path": "records/files-ok-tape-copies.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "FILE-6",
+        "GRP-6",
+        "GRP-7",
+        "STO-3",
+        "DOC-3"
+      ],
+      "note": "A three-part recording with each part on two tapes."
+    },
+    {
+      "id": "files-ok-track-descriptions",
+      "path": "records/files-ok-track-descriptions.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "GRP-11",
+        "GRP-10",
+        "DOC-3"
+      ],
+      "note": "Members that describe video, audio, and data tracks."
+    },
+    {
+      "id": "files-ok-two-records-one-nas",
+      "path": "records/files-ok-two-records-one-nas.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "FILE-6",
+        "STO-3",
+        "DOC-3"
+      ],
+      "note": "Two shares on one server are two storage location records."
+    },
+    {
+      "id": "frame-rate-not-lowest-terms",
+      "path": "records/frame-rate-not-lowest-terms.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "RATE_NOT_LOWEST_TERMS",
+          "/assets/0/file_groups/0/members/0/frame_rate"
+        ]
+      ],
+      "rules": [
+        "TIME-2",
+        "GRP-11",
+        "DOC-3"
+      ],
+      "note": "Member frame_rate 60000/2002."
+    },
+    {
+      "id": "group-complete-key",
+      "path": "records/group-complete-key.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "additionalProperties",
+        "path": "/assets/0/file_groups/0"
+      },
+      "rules": [
+        "GRP-1",
+        "GRP-6",
+        "REC-7"
+      ],
+      "note": "A file group with the removed complete key."
     },
     {
       "id": "group-file-unresolved",
@@ -32,35 +322,18 @@
       "expected_diagnostics": [
         [
           "FILE_REFERENCE_UNRESOLVED",
-          "/file_groups/0/members/0/file"
+          "/assets/0/file_groups/0/members/0/file"
         ]
       ],
       "rules": [
         "GRP-4",
         "DOC-3"
       ],
-      "note": "A file group member names a file that is not in the asset."
+      "note": "A member names file f-9, which the asset does not hold."
     },
     {
-      "id": "group-segment-gap-complete",
-      "path": "records/group-segment-gap-complete.json",
-      "expected_status": "complete",
-      "expected_structural": "valid",
-      "expected_diagnostics": [
-        [
-          "SEGMENT_GAP",
-          "/file_groups/0/members/1/segment_index"
-        ]
-      ],
-      "rules": [
-        "GRP-6",
-        "DOC-3"
-      ],
-      "note": "A complete file group skips segment 1 of a spanned recording."
-    },
-    {
-      "id": "group-segment-gap-incomplete-ok",
-      "path": "records/group-segment-gap-incomplete-ok.json",
+      "id": "group-ok-segment-gap",
+      "path": "records/group-ok-segment-gap.json",
       "expected_status": "complete",
       "expected_structural": "valid",
       "expected_diagnostics": [],
@@ -68,7 +341,134 @@
         "GRP-6",
         "DOC-3"
       ],
-      "note": "An incomplete file group keeps the original segment numbers, so a gap is allowed."
+      "note": "Segments 0 and 2: the gap shows that part 1 is not in the group. No group states that it is complete."
+    },
+    {
+      "id": "group-ok-segment-single",
+      "path": "records/group-ok-segment-single.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "GRP-6",
+        "DOC-3"
+      ],
+      "note": "One member that is part 3 of a larger recording."
+    },
+    {
+      "id": "group-part-start-frame-seconds-form",
+      "path": "records/group-part-start-frame-seconds-form.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "TIMELINE_UNDECLARED",
+          "/assets/0/file_groups/0/members/1/start_frame"
+        ]
+      ],
+      "rules": [
+        "GRP-7",
+        "TIME-5",
+        "DOC-3"
+      ],
+      "note": "A frame part start on a holder whose timing is in the seconds form."
+    },
+    {
+      "id": "group-part-start-out-of-bounds",
+      "path": "records/group-part-start-out-of-bounds.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "POSITION_OUT_OF_BOUNDS",
+          "/assets/0/file_groups/0/members/1/start_seconds"
+        ]
+      ],
+      "rules": [
+        "GRP-7",
+        "TIME-9",
+        "DOC-3"
+      ],
+      "note": "A part starts at 960 seconds, which is the length."
+    },
+    {
+      "id": "group-part-start-out-of-order",
+      "path": "records/group-part-start-out-of-order.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "PART_START_OUT_OF_ORDER",
+          "/assets/0/file_groups/0/members/2/start_seconds"
+        ]
+      ],
+      "rules": [
+        "GRP-7",
+        "DOC-3"
+      ],
+      "note": "Segment 2 starts at 320 seconds, before segment 1 at 645 seconds."
+    },
+    {
+      "id": "group-part-start-seconds-disagree",
+      "path": "records/group-part-start-seconds-disagree.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "SECONDS_DISAGREE",
+          "/assets/0/file_groups/0/members/1/start_seconds"
+        ]
+      ],
+      "rules": [
+        "GRP-7",
+        "TIME-7",
+        "DOC-3"
+      ],
+      "note": "Frame 8000 at 25/1 is 320 seconds, not 321."
+    },
+    {
+      "id": "group-part-start-without-segment",
+      "path": "records/group-part-start-without-segment.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "dependentRequired",
+        "path": "/assets/0/file_groups/0/members/0"
+      },
+      "rules": [
+        "GRP-7"
+      ],
+      "note": "A whole-recording member has a part start."
+    },
+    {
+      "id": "group-part-starts-ok",
+      "path": "records/group-part-starts-ok.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "GRP-7",
+        "TIME-7",
+        "TIME-9",
+        "DOC-3"
+      ],
+      "note": "Part starts increase with segment_index. Frame 16125 at 25/1 is 645 seconds."
+    },
+    {
+      "id": "group-preview-ok",
+      "path": "records/group-preview-ok.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "GRP-2",
+        "GRP-5",
+        "GRP-8",
+        "FILE-5",
+        "DOC-3"
+      ],
+      "note": "Two primary groups, one preview group, two master files, and one sidecar file in two groups."
     },
     {
       "id": "group-segment-index-duplicate",
@@ -78,14 +478,14 @@
       "expected_diagnostics": [
         [
           "SEGMENT_INDEX_DUPLICATE",
-          "/file_groups/0/members/1/segment_index"
+          "/assets/0/file_groups/0/members/1/segment_index"
         ]
       ],
       "rules": [
         "GRP-6",
         "DOC-3"
       ],
-      "note": "Two segments of one recording share a segment_index."
+      "note": "Two segments of one pair use index 0."
     },
     {
       "id": "group-segment-index-missing",
@@ -95,14 +495,14 @@
       "expected_diagnostics": [
         [
           "SEGMENT_INDEX_MISSING",
-          "/file_groups/0/members/1"
+          "/assets/0/file_groups/0/members/1"
         ]
       ],
       "rules": [
         "GRP-6",
         "DOC-3"
       ],
-      "note": "A member shares a track type and index pair with a segment but has no segment_index."
+      "note": "A member shares a pair with a segment but has no segment_index."
     },
     {
       "id": "group-segment-out-of-order",
@@ -112,26 +512,14 @@
       "expected_diagnostics": [
         [
           "SEGMENT_OUT_OF_ORDER",
-          "/file_groups/0/members/1/segment_index"
+          "/assets/0/file_groups/0/members/1/segment_index"
         ]
       ],
       "rules": [
         "GRP-6",
         "DOC-3"
       ],
-      "note": "Segments are not listed in ascending segment_index order."
-    },
-    {
-      "id": "group-segment-single-incomplete-ok",
-      "path": "records/group-segment-single-incomplete-ok.json",
-      "expected_status": "complete",
-      "expected_structural": "valid",
-      "expected_diagnostics": [],
-      "rules": [
-        "GRP-6",
-        "DOC-3"
-      ],
-      "note": "A single exported segment of a larger recording keeps its original number in an incomplete file group."
+      "note": "Segment 0 follows segment 1 in member order."
     },
     {
       "id": "group-segments-ok",
@@ -140,27 +528,11 @@
       "expected_structural": "valid",
       "expected_diagnostics": [],
       "rules": [
+        "GRP-4",
         "GRP-6",
         "DOC-3"
       ],
-      "note": "One recording split across three files, numbered 0 to 2 in member order."
-    },
-    {
-      "id": "group-sequence-range-empty",
-      "path": "records/group-sequence-range-empty.json",
-      "expected_status": "complete",
-      "expected_structural": "valid",
-      "expected_diagnostics": [
-        [
-          "SEQUENCE_RANGE_EMPTY",
-          "/file_groups/0/members/0/sequence_range"
-        ]
-      ],
-      "rules": [
-        "GRP-3",
-        "DOC-3"
-      ],
-      "note": "An image sequence range does not end after it starts."
+      "note": "Three segments of one recording in ascending order."
     },
     {
       "id": "group-track-duplicate",
@@ -170,14 +542,14 @@
       "expected_diagnostics": [
         [
           "TRACK_DUPLICATE",
-          "/file_groups/0/members/1"
+          "/assets/0/file_groups/0/members/1"
         ]
       ],
       "rules": [
         "GRP-4",
         "DOC-3"
       ],
-      "note": "A file group repeats a track type and index pair."
+      "note": "Two whole-recording members repeat the pair video 0."
     },
     {
       "id": "input-bom",
@@ -193,7 +565,7 @@
       "rules": [
         "DOC-1"
       ],
-      "note": "A UTF-8 byte-order mark before the document is refused."
+      "note": "A byte-order mark precedes a minimal package."
     },
     {
       "id": "input-duplicate-member",
@@ -209,7 +581,7 @@
       "rules": [
         "DOC-1"
       ],
-      "note": "An object that repeats a member name is refused."
+      "note": "The package root repeats the member name type."
     },
     {
       "id": "input-nan",
@@ -225,7 +597,7 @@
       "rules": [
         "DOC-1"
       ],
-      "note": "A NaN literal in a numeric field is refused."
+      "note": "duration_frames is the NaN literal, which JSON does not allow."
     },
     {
       "id": "input-unpaired-surrogate",
@@ -241,7 +613,73 @@
       "rules": [
         "DOC-1"
       ],
-      "note": "A string with an unpaired surrogate escape is refused."
+      "note": "The asset title holds an unpaired surrogate escape."
+    },
+    {
+      "id": "language-und",
+      "path": "records/language-und.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "not",
+        "path": "/assets/0/file_groups/0/members/0/language"
+      },
+      "rules": [
+        "GRP-11"
+      ],
+      "note": "The member language und in upper case."
+    },
+    {
+      "id": "language-underscore",
+      "path": "records/language-underscore.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "pattern",
+        "path": "/assets/0/file_groups/0/members/0/language"
+      },
+      "rules": [
+        "GRP-11"
+      ],
+      "note": "A language tag with an underscore."
+    },
+    {
+      "id": "location-duplicate",
+      "path": "records/location-duplicate.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "LOCATION_DUPLICATE",
+          "/assets/0/files/0/locations/1/storage_location"
+        ]
+      ],
+      "rules": [
+        "FILE-6",
+        "DOC-3"
+      ],
+      "note": "One file lists storage location sl-01 twice."
+    },
+    {
+      "id": "location-unresolved",
+      "path": "records/location-unresolved.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "REFERENCE_UNRESOLVED",
+          "/assets/0/files/0/locations/0/storage_location"
+        ]
+      ],
+      "rules": [
+        "PKG-6",
+        "ID-5",
+        "FILE-6",
+        "DOC-3"
+      ],
+      "note": "A copy names storage location sl-99, which the package does not hold."
     },
     {
       "id": "metadata-definition-repeated",
@@ -250,41 +688,30 @@
       "expected_structural": "valid",
       "expected_diagnostics": [
         [
-          "DEFINITION_UNAVAILABLE",
-          "/metadata/0"
-        ],
-        [
-          "DEFINITION_UNAVAILABLE",
-          "/metadata/1"
-        ],
-        [
           "DEFINITION_REPEATED",
-          "/metadata/1/definition"
+          "/assets/0/metadata/1/definition"
         ]
       ],
       "rules": [
-        "MD-4",
         "MD-5",
         "DOC-3"
       ],
-      "note": "A standalone asset names one metadata definition twice."
+      "note": "One metadata list names md-keywords twice."
     },
     {
-      "id": "metadata-value-definition-unavailable",
-      "path": "records/metadata-value-definition-unavailable.json",
+      "id": "missing-frames-without-sequence",
+      "path": "records/missing-frames-without-sequence.json",
       "expected_status": "complete",
-      "expected_structural": "valid",
-      "expected_diagnostics": [
-        [
-          "DEFINITION_UNAVAILABLE",
-          "/metadata/0"
-        ]
-      ],
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "false",
+        "path": "/assets/0/files/0/locations/0"
+      },
       "rules": [
-        "MD-4",
-        "DOC-3"
+        "FILE-8"
       ],
-      "note": "A standalone metadata value has no definition in the document."
+      "note": "missing_frames on a copy of a file with no sequence."
     },
     {
       "id": "nested-id-duplicate-files",
@@ -294,14 +721,14 @@
       "expected_diagnostics": [
         [
           "NESTED_ID_DUPLICATE",
-          "/files/1/id"
+          "/assets/0/files/1/id"
         ]
       ],
       "rules": [
         "ID-4",
         "DOC-3"
       ],
-      "note": "Two files in one asset share an id."
+      "note": "Two files of one asset share id f-1."
     },
     {
       "id": "nested-id-duplicate-options",
@@ -311,14 +738,307 @@
       "expected_diagnostics": [
         [
           "NESTED_ID_DUPLICATE",
-          "/options/1/id"
+          "/metadata_definitions/0/options/1/id"
         ]
       ],
       "rules": [
         "ID-4",
         "DOC-3"
       ],
-      "note": "Two options in one metadata definition share an id."
+      "note": "Two options of one definition share id opt-a."
+    },
+    {
+      "id": "number-boundary-ok",
+      "path": "records/number-boundary-ok.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "DOC-4",
+        "DOC-3"
+      ],
+      "note": "Numbers at plus and minus 2^53 - 1 meet the range limit."
+    },
+    {
+      "id": "number-precision-17-digits",
+      "path": "records/number-precision-17-digits.json",
+      "expected_status": "input-invalid",
+      "expected_structural": "not-run",
+      "expected_diagnostics": [
+        [
+          "NUMBER_TOO_PRECISE",
+          "/assets/0/annotations/0/start_seconds"
+        ]
+      ],
+      "rules": [
+        "DOC-4",
+        "TIME-3"
+      ],
+      "note": "0.10000000000000001 has the same binary64 number as 0.1, so it is not the shortest form."
+    },
+    {
+      "id": "number-precision-extension",
+      "path": "records/number-precision-extension.json",
+      "expected_status": "input-invalid",
+      "expected_structural": "not-run",
+      "expected_diagnostics": [
+        [
+          "NUMBER_TOO_PRECISE",
+          "/assets/0/extensions"
+        ]
+      ],
+      "rules": [
+        "DOC-4"
+      ],
+      "note": "A 32-digit value inside an extension payload is not the shortest form of its binary64 number."
+    },
+    {
+      "id": "number-range-core",
+      "path": "records/number-range-core.json",
+      "expected_status": "input-invalid",
+      "expected_structural": "not-run",
+      "expected_diagnostics": [
+        [
+          "NUMBER_OUT_OF_RANGE",
+          "/assets/0/files/0/size_bytes"
+        ]
+      ],
+      "rules": [
+        "DOC-4",
+        "FILE-7"
+      ],
+      "note": "size_bytes is 2^53, one above the range limit."
+    },
+    {
+      "id": "number-range-extension",
+      "path": "records/number-range-extension.json",
+      "expected_status": "input-invalid",
+      "expected_structural": "not-run",
+      "expected_diagnostics": [
+        [
+          "NUMBER_OUT_OF_RANGE",
+          "/assets/0/extensions"
+        ]
+      ],
+      "rules": [
+        "DOC-4"
+      ],
+      "note": "A number inside an extension payload is above the range limit. The path stops at extensions."
+    },
+    {
+      "id": "number-range-unknown-key",
+      "path": "records/number-range-unknown-key.json",
+      "expected_status": "input-invalid",
+      "expected_structural": "not-run",
+      "expected_diagnostics": [
+        [
+          "NUMBER_OUT_OF_RANGE",
+          "/assets/0"
+        ]
+      ],
+      "rules": [
+        "DOC-4"
+      ],
+      "note": "Two numbers above the range limit sit under a key that no schema names. The path stops before the unknown key, and the two findings share one path, so one diagnostic remains."
+    },
+    {
+      "id": "number-shortest-forms-ok",
+      "path": "records/number-shortest-forms-ok.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "DOC-4",
+        "DOC-3"
+      ],
+      "note": "Shortest forms with up to 17 significant digits meet the precision limit."
+    },
+    {
+      "id": "number-spellings-ok",
+      "path": "records/number-spellings-ok.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "DOC-2",
+        "DOC-4",
+        "TIME-9",
+        "DOC-3"
+      ],
+      "note": "100.0 and 1e2 are whole numbers and so are integers. The point at frame 100 equals the length."
+    },
+    {
+      "id": "number-subnormal-java",
+      "path": "records/number-subnormal-java.json",
+      "expected_status": "input-invalid",
+      "expected_structural": "not-run",
+      "expected_diagnostics": [
+        [
+          "NUMBER_TOO_PRECISE",
+          "/assets/0/extensions"
+        ]
+      ],
+      "rules": [
+        "DOC-4"
+      ],
+      "note": "4.9e-324 is the smallest subnormal as some languages print it; its shortest form is 5e-324."
+    },
+    {
+      "id": "number-subnormal-ok",
+      "path": "records/number-subnormal-ok.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "DOC-4",
+        "DOC-3"
+      ],
+      "note": "5e-324 is the shortest form of the smallest subnormal number."
+    },
+    {
+      "id": "number-tie-even-ok",
+      "path": "records/number-tie-even-ok.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "DOC-4",
+        "TIME-3",
+        "DOC-3"
+      ],
+      "note": "100000000000000.12 is the shortest form of its binary64 number."
+    },
+    {
+      "id": "number-tie-odd",
+      "path": "records/number-tie-odd.json",
+      "expected_status": "input-invalid",
+      "expected_structural": "not-run",
+      "expected_diagnostics": [
+        [
+          "NUMBER_TOO_PRECISE",
+          "/assets/0/timing/duration_seconds"
+        ]
+      ],
+      "rules": [
+        "DOC-4",
+        "TIME-3"
+      ],
+      "note": "A value between two binary64 numbers whose shortest form ends in another digit."
+    },
+    {
+      "id": "number-underflow",
+      "path": "records/number-underflow.json",
+      "expected_status": "input-invalid",
+      "expected_structural": "not-run",
+      "expected_diagnostics": [
+        [
+          "NUMBER_TOO_PRECISE",
+          "/assets/0/annotations/0/start_seconds"
+        ]
+      ],
+      "rules": [
+        "DOC-4",
+        "TIME-3"
+      ],
+      "note": "1e-400 becomes 0 in binary64, so its value is not the shortest form."
+    },
+    {
+      "id": "package-annotation-purposes-ok",
+      "path": "records/package-annotation-purposes-ok.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "ANN-2",
+        "ANN-3",
+        "TIME-5",
+        "DOC-3"
+      ],
+      "note": "Every purpose token, with frame fields on a frame-form timeline."
+    },
+    {
+      "id": "package-annotation-visibility-ok",
+      "path": "records/package-annotation-visibility-ok.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "ANN-1",
+        "ANN-4",
+        "DOC-3"
+      ],
+      "note": "Public, private, and absent visibility."
+    },
+    {
+      "id": "package-annotation-zero-point-ok",
+      "path": "records/package-annotation-zero-point-ok.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "TIME-4",
+        "ANN-5",
+        "DOC-3"
+      ],
+      "note": "A point at 0 seconds is the start of the timeline, not an absent position."
+    },
+    {
+      "id": "package-annotation-zero-range",
+      "path": "records/package-annotation-zero-range.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "RANGE_NOT_INCREASING",
+          "/assets/0/annotations/0/end_seconds"
+        ]
+      ],
+      "rules": [
+        "TIME-4",
+        "ANN-5",
+        "DOC-3"
+      ],
+      "note": "A seconds range from 0 to 0 is not a range. A point at 0 has no end."
+    },
+    {
+      "id": "package-array-order-ok",
+      "path": "records/package-array-order-ok.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "PKG-8",
+        "VER-2",
+        "COL-7",
+        "DOC-3"
+      ],
+      "note": "Versions and collection members appear out of order in their arrays. Order comes from ordinal and position."
+    },
+    {
+      "id": "package-asset-access-absent-ok",
+      "path": "records/package-asset-access-absent-ok.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "ACC-1",
+        "ACC-2",
+        "DOC-3"
+      ],
+      "note": "Absent, none, and restricted access."
+    },
+    {
+      "id": "package-asset-deleted-ok",
+      "path": "records/package-asset-deleted-ok.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "AST-1",
+        "AST-3",
+        "DOC-3"
+      ],
+      "note": "An asset that the source reported deleted."
     },
     {
       "id": "package-collection-cycle",
@@ -328,18 +1048,18 @@
       "expected_diagnostics": [
         [
           "COLLECTION_CYCLE",
-          "/collections/0/parent"
+          "/collections/0/member_of/0"
         ],
         [
           "COLLECTION_CYCLE",
-          "/collections/1/parent"
+          "/collections/1/member_of/0"
         ]
       ],
       "rules": [
         "COL-4",
         "DOC-3"
       ],
-      "note": "Two collections name each other as parent."
+      "note": "Two collections are members of each other."
     },
     {
       "id": "package-collection-cycle-tail",
@@ -349,18 +1069,31 @@
       "expected_diagnostics": [
         [
           "COLLECTION_CYCLE",
-          "/collections/0/parent"
+          "/collections/0/member_of/0"
         ],
         [
           "COLLECTION_CYCLE",
-          "/collections/1/parent"
+          "/collections/1/member_of/0"
         ]
       ],
       "rules": [
         "COL-4",
         "DOC-3"
       ],
-      "note": "A collection whose parent chain enters a cycle is not itself on the cycle."
+      "note": "col-03 leads into a cycle but is not part of it, so its entry is not reported."
+    },
+    {
+      "id": "package-collection-deep-ok",
+      "path": "records/package-collection-deep-ok.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "COL-3",
+        "COL-4",
+        "DOC-3"
+      ],
+      "note": "Four levels. The asset is a member of col-04 and also of col-01 directly."
     },
     {
       "id": "package-collection-self-parent",
@@ -370,14 +1103,58 @@
       "expected_diagnostics": [
         [
           "COLLECTION_CYCLE",
-          "/collections/0/parent"
+          "/collections/0/member_of/0"
         ]
       ],
       "rules": [
         "COL-4",
         "DOC-3"
       ],
-      "note": "A registry collection names itself as parent."
+      "note": "A collection names itself."
+    },
+    {
+      "id": "package-collection-storage-ok",
+      "path": "records/package-collection-storage-ok.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "COL-1",
+        "COL-2",
+        "PKG-6",
+        "DOC-3"
+      ],
+      "note": "A storage collection that mirrors a folder on a share."
+    },
+    {
+      "id": "package-collection-storage-unresolved",
+      "path": "records/package-collection-storage-unresolved.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "REFERENCE_UNRESOLVED",
+          "/collections/0/storage/storage_location"
+        ]
+      ],
+      "rules": [
+        "COL-2",
+        "PKG-6",
+        "DOC-3"
+      ],
+      "note": "A storage collection names storage location sl-09, which the package does not hold."
+    },
+    {
+      "id": "package-collection-two-parents-ok",
+      "path": "records/package-collection-two-parents-ok.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "COL-4",
+        "DOC-3"
+      ],
+      "note": "A collection that belongs to two collections."
     },
     {
       "id": "package-count-absent-array-ok",
@@ -386,10 +1163,24 @@
       "expected_structural": "valid",
       "expected_diagnostics": [],
       "rules": [
+        "PKG-1",
         "PKG-3",
         "DOC-3"
       ],
-      "note": "An absent registry array counts as zero."
+      "note": "Absent arrays count as 0: storage_locations, metadata_definitions, and collections are absent and counted 0."
+    },
+    {
+      "id": "package-count-empty-array-ok",
+      "path": "records/package-count-empty-array-ok.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "PKG-1",
+        "PKG-3",
+        "DOC-3"
+      ],
+      "note": "An empty collections array counts as 0."
     },
     {
       "id": "package-count-mismatch",
@@ -406,7 +1197,21 @@
         "PKG-3",
         "DOC-3"
       ],
-      "note": "A declared asset count differs from the array length."
+      "note": "The manifest counts 2 assets. The package holds 1."
+    },
+    {
+      "id": "package-definition-present-ok",
+      "path": "records/package-definition-present-ok.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "MD-3",
+        "MD-5",
+        "PKG-6",
+        "DOC-3"
+      ],
+      "note": "A value names a definition that the package holds."
     },
     {
       "id": "package-id-duplicate-assets",
@@ -424,7 +1229,20 @@
         "ID-2",
         "DOC-3"
       ],
-      "note": "Two assets in one package share an id."
+      "note": "Two assets share id a-0001."
+    },
+    {
+      "id": "package-id-inner-space-ok",
+      "path": "records/package-id-inner-space-ok.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "REC-5",
+        "ID-5",
+        "DOC-3"
+      ],
+      "note": "Spaces inside an id are allowed."
     },
     {
       "id": "package-id-shared-across-kinds-ok",
@@ -437,37 +1255,57 @@
         "ID-2",
         "DOC-3"
       ],
-      "note": "One id used by records of different types does not collide."
+      "note": "An asset and a collection share one id string."
     },
     {
-      "id": "package-membership-disagrees",
-      "path": "records/package-membership-disagrees.json",
+      "id": "package-membership-duplicate",
+      "path": "records/package-membership-duplicate.json",
       "expected_status": "complete",
       "expected_structural": "valid",
       "expected_diagnostics": [
         [
-          "MEMBERSHIP_DISAGREES",
-          "/assets/0/collections/0"
+          "MEMBERSHIP_DUPLICATE",
+          "/assets/0/member_of/1"
         ]
       ],
       "rules": [
-        "COL-3",
-        "COL-5",
+        "COL-7",
         "DOC-3"
       ],
-      "note": "An asset claims a collection whose complete member list omits it."
+      "note": "One member_of names col-01 twice without positions."
     },
     {
-      "id": "package-membership-partial-ok",
-      "path": "records/package-membership-partial-ok.json",
+      "id": "package-membership-ok",
+      "path": "records/package-membership-ok.json",
       "expected_status": "complete",
       "expected_structural": "valid",
       "expected_diagnostics": [],
       "rules": [
-        "COL-5",
+        "COL-1",
+        "COL-3",
+        "COL-7",
+        "PKG-6",
         "DOC-3"
       ],
-      "note": "An asset claims a collection whose member list is not complete."
+      "note": "An asset and a collection are both members of col-01."
+    },
+    {
+      "id": "package-membership-unresolved",
+      "path": "records/package-membership-unresolved.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "REFERENCE_UNRESOLVED",
+          "/assets/0/member_of/0/collection"
+        ]
+      ],
+      "rules": [
+        "COL-3",
+        "PKG-6",
+        "DOC-3"
+      ],
+      "note": "member_of names col-09, which the package does not hold."
     },
     {
       "id": "package-namespace-declared-twice",
@@ -484,7 +1322,7 @@
         "EXT-2",
         "DOC-3"
       ],
-      "note": "The manifest declares one namespace token twice."
+      "note": "Token vendor_a is declared twice."
     },
     {
       "id": "package-namespace-payload-nested-ok",
@@ -493,10 +1331,11 @@
       "expected_structural": "valid",
       "expected_diagnostics": [],
       "rules": [
+        "EXT-1",
         "EXT-2",
         "DOC-3"
       ],
-      "note": "Keys inside a namespace payload are opaque and never checked."
+      "note": "An extensions key inside a namespace value is payload, not a namespace use."
     },
     {
       "id": "package-namespace-undeclared",
@@ -513,7 +1352,25 @@
         "EXT-2",
         "DOC-3"
       ],
-      "note": "An asset uses an extension namespace that the manifest does not declare."
+      "note": "Namespace vendor_a is used and not declared."
+    },
+    {
+      "id": "package-namespace-undeclared-nested",
+      "path": "records/package-namespace-undeclared-nested.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "NAMESPACE_UNDECLARED",
+          "/assets/0/member_of/0/extensions"
+        ]
+      ],
+      "rules": [
+        "EXT-1",
+        "EXT-2",
+        "DOC-3"
+      ],
+      "note": "A membership entry uses namespace vendor_a, which the manifest does not declare."
     },
     {
       "id": "package-namespace-unused-ok",
@@ -525,43 +1382,106 @@
         "EXT-2",
         "DOC-3"
       ],
-      "note": "A declared namespace that no record uses is permitted."
+      "note": "A declared token need not be used."
     },
     {
-      "id": "package-reference-unresolved-complete",
-      "path": "records/package-reference-unresolved-complete.json",
+      "id": "package-pattern-ok",
+      "path": "records/package-pattern-ok.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "MD-2",
+        "DOC-3"
+      ],
+      "note": "Constraints are data. A checker never runs them over values."
+    },
+    {
+      "id": "package-position-duplicate",
+      "path": "records/package-position-duplicate.json",
       "expected_status": "complete",
       "expected_structural": "valid",
       "expected_diagnostics": [
         [
-          "REFERENCE_UNRESOLVED",
-          "/assets/0/files/0/storage_location"
+          "POSITION_DUPLICATE",
+          "/assets/0/member_of/0"
+        ],
+        [
+          "POSITION_DUPLICATE",
+          "/assets/1/member_of/0"
         ]
       ],
       "rules": [
-        "PKG-6",
-        "ID-5",
+        "COL-7",
+        "DOC-2",
         "DOC-3"
       ],
-      "note": "A file storage_location does not resolve in a complete registry."
+      "note": "Two members of col-01 share position 2, written 2 and 2.0."
     },
     {
-      "id": "package-reference-unresolved-partial",
-      "path": "records/package-reference-unresolved-partial.json",
+      "id": "package-position-mixed-ok",
+      "path": "records/package-position-mixed-ok.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "COL-7",
+        "DOC-3"
+      ],
+      "note": "One member with a position and one without in the same collection."
+    },
+    {
+      "id": "package-position-ok",
+      "path": "records/package-position-ok.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "COL-7",
+        "DOC-3"
+      ],
+      "note": "Positions may be zero or negative."
+    },
+    {
+      "id": "package-position-repeat-ok",
+      "path": "records/package-position-repeat-ok.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "COL-7",
+        "DOC-3"
+      ],
+      "note": "One asset at two positions of one collection. Positions need not be consecutive."
+    },
+    {
+      "id": "package-relationship-distinct-ok",
+      "path": "records/package-relationship-distinct-ok.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "REL-5",
+        "DOC-3"
+      ],
+      "note": "Two entries with different ranges are not duplicates."
+    },
+    {
+      "id": "package-relationship-duplicate",
+      "path": "records/package-relationship-duplicate.json",
       "expected_status": "complete",
       "expected_structural": "valid",
       "expected_diagnostics": [
         [
-          "REFERENCE_UNRESOLVED_PARTIAL",
-          "/assets/0/files/0/storage_location"
+          "RELATIONSHIP_DUPLICATE",
+          "/assets/1/relationships/1"
         ]
       ],
       "rules": [
-        "PKG-6",
-        "ID-5",
+        "REL-5",
         "DOC-3"
       ],
-      "note": "A file storage_location does not resolve in a partial registry."
+      "note": "Two entries differ only in description."
     },
     {
       "id": "package-relationship-range-out-of-bounds",
@@ -570,15 +1490,16 @@
       "expected_structural": "valid",
       "expected_diagnostics": [
         [
-          "FRAME_OUT_OF_BOUNDS",
+          "POSITION_OUT_OF_BOUNDS",
           "/assets/1/relationships/0/range/end_frame"
         ]
       ],
       "rules": [
         "TIME-9",
+        "REL-1",
         "DOC-3"
       ],
-      "note": "A relationship range ends past the target asset duration."
+      "note": "The range ends after the 750 frames of the target."
     },
     {
       "id": "package-relationship-target-no-timing",
@@ -596,93 +1517,38 @@
         "TIME-12",
         "DOC-3"
       ],
-      "note": "A relationship range targets an asset with no timing."
+      "note": "A frame range on a target with no timing."
     },
     {
-      "id": "package-snapshot-extra-field",
-      "path": "records/package-snapshot-extra-field.json",
+      "id": "package-relationship-target-unresolved",
+      "path": "records/package-relationship-target-unresolved.json",
       "expected_status": "complete",
       "expected_structural": "valid",
       "expected_diagnostics": [
         [
-          "SNAPSHOT_MISMATCH",
-          "/assets/0/collections/0"
+          "REFERENCE_UNRESOLVED",
+          "/assets/0/relationships/0/target"
         ]
       ],
       "rules": [
-        "ID-6",
-        "DOC-3"
-      ],
-      "note": "A collection snapshot carries a field the registry record does not have."
-    },
-    {
-      "id": "package-snapshot-mismatch-field",
-      "path": "records/package-snapshot-mismatch-field.json",
-      "expected_status": "complete",
-      "expected_structural": "valid",
-      "expected_diagnostics": [
-        [
-          "SNAPSHOT_MISMATCH",
-          "/assets/0/collections/0"
-        ]
-      ],
-      "rules": [
-        "ID-6",
-        "DOC-3"
-      ],
-      "note": "A collection snapshot title differs from the registry record."
-    },
-    {
-      "id": "package-snapshot-missing-field",
-      "path": "records/package-snapshot-missing-field.json",
-      "expected_status": "complete",
-      "expected_structural": "valid",
-      "expected_diagnostics": [
-        [
-          "SNAPSHOT_MISMATCH",
-          "/assets/0/collections/0"
-        ]
-      ],
-      "rules": [
-        "ID-6",
-        "DOC-3"
-      ],
-      "note": "A collection snapshot omits a field the registry record has."
-    },
-    {
-      "id": "package-snapshot-namespace-undeclared-partial",
-      "path": "records/package-snapshot-namespace-undeclared-partial.json",
-      "expected_status": "complete",
-      "expected_structural": "valid",
-      "expected_diagnostics": [
-        [
-          "REFERENCE_UNRESOLVED_PARTIAL",
-          "/assets/0/collections/0"
-        ],
-        [
-          "NAMESPACE_UNDECLARED",
-          "/assets/0/collections/0/extensions"
-        ]
-      ],
-      "rules": [
+        "REL-3",
         "PKG-6",
-        "ID-6",
-        "EXT-2",
         "DOC-3"
       ],
-      "note": "An unresolved snapshot in a partial registry still has its namespaces checked."
+      "note": "The relationship target a-0099 is not in the package."
     },
     {
-      "id": "package-snapshot-with-members",
-      "path": "records/package-snapshot-with-members.json",
+      "id": "package-relationship-target-version-distinct-ok",
+      "path": "records/package-relationship-target-version-distinct-ok.json",
       "expected_status": "complete",
-      "expected_structural": "invalid",
+      "expected_structural": "valid",
       "expected_diagnostics": [],
       "rules": [
-        "ID-6",
-        "COL-5"
+        "REL-5",
+        "REL-6",
+        "DOC-3"
       ],
-      "note": "A collection snapshot that carries members is structurally invalid."
+      "note": "Entries that differ only in target_version are not duplicates."
     },
     {
       "id": "package-value-date-invalid",
@@ -700,11 +1566,29 @@
         "DT-3",
         "DOC-3"
       ],
-      "note": "A date metadata value names a day that does not exist."
+      "note": "2025-02-29 is not a Gregorian date."
     },
     {
-      "id": "package-value-definition-unresolved-complete",
-      "path": "records/package-value-definition-unresolved-complete.json",
+      "id": "package-value-datetime-invalid",
+      "path": "records/package-value-datetime-invalid.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "VALUE_DATE_INVALID",
+          "/assets/0/metadata/0/value"
+        ]
+      ],
+      "rules": [
+        "MD-4",
+        "DT-1",
+        "DOC-3"
+      ],
+      "note": "A datetime value on 30 February."
+    },
+    {
+      "id": "package-value-definition-unresolved",
+      "path": "records/package-value-definition-unresolved.json",
       "expected_status": "complete",
       "expected_structural": "valid",
       "expected_diagnostics": [
@@ -714,11 +1598,23 @@
         ]
       ],
       "rules": [
-        "PKG-6",
         "MD-5",
+        "PKG-6",
         "DOC-3"
       ],
-      "note": "A metadata value names a definition missing from a complete registry."
+      "note": "A value names definition md-scene, which the package does not hold."
+    },
+    {
+      "id": "package-value-distinct-ok",
+      "path": "records/package-value-distinct-ok.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "MD-8",
+        "DOC-3"
+      ],
+      "note": "Strings compare by exact code points, so example and Example differ."
     },
     {
       "id": "package-value-empty-multiple-ok",
@@ -728,9 +1624,139 @@
       "expected_diagnostics": [],
       "rules": [
         "MD-4",
+        "MD-7",
         "DOC-3"
       ],
-      "note": "An empty array is a valid multiple value."
+      "note": "An empty multiple value."
+    },
+    {
+      "id": "package-value-fixed-list-empty",
+      "path": "records/package-value-fixed-list-empty.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "VALUE_OPTION_UNKNOWN",
+          "/assets/0/metadata/0/value"
+        ]
+      ],
+      "rules": [
+        "MD-7",
+        "DOC-3"
+      ],
+      "note": "An empty fixed list accepts no value item."
+    },
+    {
+      "id": "package-value-fixed-list-label",
+      "path": "records/package-value-fixed-list-label.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "VALUE_OPTION_UNKNOWN",
+          "/assets/0/metadata/0/value"
+        ]
+      ],
+      "rules": [
+        "MD-7",
+        "DOC-3"
+      ],
+      "note": "The value is an option label, not an option id. Values never match labels."
+    },
+    {
+      "id": "package-value-fixed-list-outside",
+      "path": "records/package-value-fixed-list-outside.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "VALUE_OPTION_UNKNOWN",
+          "/assets/0/metadata/0/value"
+        ]
+      ],
+      "rules": [
+        "MD-7",
+        "DOC-3"
+      ],
+      "note": "A fixed list rejects text outside its options."
+    },
+    {
+      "id": "package-value-multiple-fixed-unknown",
+      "path": "records/package-value-multiple-fixed-unknown.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "VALUE_OPTION_UNKNOWN",
+          "/assets/0/metadata/0/value/1"
+        ]
+      ],
+      "rules": [
+        "MD-4",
+        "MD-7",
+        "DOC-3"
+      ],
+      "note": "The second item of a multiple fixed list value is not an option id."
+    },
+    {
+      "id": "package-value-number-repeated",
+      "path": "records/package-value-number-repeated.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "VALUE_REPEATED",
+          "/assets/0/metadata/0/value/1"
+        ]
+      ],
+      "rules": [
+        "MD-8",
+        "DOC-2",
+        "DOC-3"
+      ],
+      "note": "1 and 1.0 are the same number."
+    },
+    {
+      "id": "package-value-open-list-empty-ok",
+      "path": "records/package-value-open-list-empty-ok.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "MD-7",
+        "DOC-3"
+      ],
+      "note": "An empty open list accepts any value item."
+    },
+    {
+      "id": "package-value-open-list-outside-ok",
+      "path": "records/package-value-open-list-outside-ok.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "MD-7",
+        "DOC-3"
+      ],
+      "note": "An open list accepts text outside its options."
+    },
+    {
+      "id": "package-value-open-list-repeated",
+      "path": "records/package-value-open-list-repeated.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "VALUE_REPEATED",
+          "/assets/0/metadata/0/value/2"
+        ]
+      ],
+      "rules": [
+        "MD-7",
+        "MD-8",
+        "DOC-3"
+      ],
+      "note": "An open list value repeats a text item."
     },
     {
       "id": "package-value-option-repeated",
@@ -739,15 +1765,15 @@
       "expected_structural": "valid",
       "expected_diagnostics": [
         [
-          "VALUE_OPTION_REPEATED",
+          "VALUE_REPEATED",
           "/assets/0/metadata/0/value/1"
         ]
       ],
       "rules": [
-        "MD-4",
+        "MD-8",
         "DOC-3"
       ],
-      "note": "A multiple enum value repeats an option id."
+      "note": "A multiple enum value repeats appr."
     },
     {
       "id": "package-value-option-unknown",
@@ -762,27 +1788,64 @@
       ],
       "rules": [
         "MD-4",
+        "MD-7",
         "DOC-3"
       ],
-      "note": "An enum value is not an option id of its definition."
+      "note": "A fixed list value that is not an option id."
     },
     {
-      "id": "package-value-reference-partial",
-      "path": "records/package-value-reference-partial.json",
+      "id": "package-value-reference-unresolved",
+      "path": "records/package-value-reference-unresolved.json",
       "expected_status": "complete",
       "expected_structural": "valid",
       "expected_diagnostics": [
         [
-          "REFERENCE_UNRESOLVED_PARTIAL",
+          "REFERENCE_UNRESOLVED",
           "/assets/0/metadata/3/value"
         ]
       ],
       "rules": [
-        "PKG-6",
         "MD-6",
+        "PKG-6",
         "DOC-3"
       ],
-      "note": "A reference-typed value does not resolve in a partial registry."
+      "note": "An asset_reference value names a-0099, which the package does not hold."
+    },
+    {
+      "id": "package-value-reference-whitespace",
+      "path": "records/package-value-reference-whitespace.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "REFERENCE_UNRESOLVED",
+          "/assets/0/metadata/0/value"
+        ]
+      ],
+      "rules": [
+        "ID-5",
+        "MD-6",
+        "PKG-6",
+        "DOC-3"
+      ],
+      "note": "A reference value with a leading space can never match an id."
+    },
+    {
+      "id": "package-value-repeated",
+      "path": "records/package-value-repeated.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "VALUE_REPEATED",
+          "/assets/1/metadata/0/value/1"
+        ]
+      ],
+      "rules": [
+        "MD-8",
+        "DOC-3"
+      ],
+      "note": "A multiple reference value repeats a-0002."
     },
     {
       "id": "package-value-shape-mismatch",
@@ -799,7 +1862,109 @@
         "MD-4",
         "DOC-3"
       ],
-      "note": "A metadata value does not match the cardinality of its definition."
+      "note": "A multiple definition with a single string value."
+    },
+    {
+      "id": "package-value-types-ok",
+      "path": "records/package-value-types-ok.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "MD-4",
+        "MD-6",
+        "PKG-6",
+        "DT-1",
+        "DT-2",
+        "DT-3",
+        "DOC-3"
+      ],
+      "note": "A leap-day date, three date-time forms, and two reference values that resolve."
+    },
+    {
+      "id": "reel-name-empty",
+      "path": "records/reel-name-empty.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "minLength",
+        "path": "/assets/0/files/0/reel_name"
+      },
+      "rules": [
+        "FILE-9"
+      ],
+      "note": "An empty reel_name."
+    },
+    {
+      "id": "relationship-range-frames-seconds-form-target",
+      "path": "records/relationship-range-frames-seconds-form-target.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "TIMELINE_UNDECLARED",
+          "/assets/1/relationships/0/range"
+        ]
+      ],
+      "rules": [
+        "TIME-5",
+        "TIME-12",
+        "REL-1",
+        "DOC-3"
+      ],
+      "note": "A frame range on a target whose timing is in the seconds form."
+    },
+    {
+      "id": "relationship-range-not-increasing",
+      "path": "records/relationship-range-not-increasing.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "RANGE_NOT_INCREASING",
+          "/assets/1/relationships/0/range/end_frame"
+        ]
+      ],
+      "rules": [
+        "TIME-4",
+        "REL-1",
+        "DOC-3"
+      ],
+      "note": "A range from frame 50 to frame 50."
+    },
+    {
+      "id": "relationship-range-seconds-disagree",
+      "path": "records/relationship-range-seconds-disagree.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "SECONDS_DISAGREE",
+          "/assets/1/relationships/0/range/start_seconds"
+        ]
+      ],
+      "rules": [
+        "TIME-7",
+        "REL-1",
+        "DOC-3"
+      ],
+      "note": "Frame 25 at 25/1 is 1 second, not 2."
+    },
+    {
+      "id": "relationship-range-without-end",
+      "path": "records/relationship-range-without-end.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "anyOf",
+        "path": "/assets/1/relationships/0/range"
+      },
+      "rules": [
+        "REL-1"
+      ],
+      "note": "A range with a start and no end."
     },
     {
       "id": "relationship-self",
@@ -809,66 +1974,131 @@
       "expected_diagnostics": [
         [
           "RELATIONSHIP_SELF",
-          "/relationships/0/target"
+          "/assets/0/relationships/0/target"
         ]
       ],
       "rules": [
         "REL-3",
         "DOC-3"
       ],
-      "note": "A relationship targets its own asset."
+      "note": "An asset is derived from itself."
     },
     {
-      "id": "routing-no-type",
-      "path": "records/routing-no-type.json",
-      "expected_status": "unsupported",
-      "expected_structural": "not-run",
+      "id": "relationship-subclip-length-disagrees",
+      "path": "records/relationship-subclip-length-disagrees.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
       "expected_diagnostics": [
         [
-          "TYPE_UNSUPPORTED",
-          ""
+          "SUBCLIP_LENGTH_DISAGREES",
+          "/assets/1/relationships/0"
         ]
       ],
       "rules": [
-        "REC-2",
-        "REC-4",
-        "UNS-1"
+        "REL-4",
+        "DOC-3"
       ],
-      "note": "A record with no type member is not routed to any schema."
+      "note": "The child has 1000 frames, 40 seconds, for a 10-second range. That is a speed change."
     },
     {
-      "id": "routing-ok-minimal-asset",
-      "path": "records/routing-ok-minimal-asset.json",
+      "id": "relationship-subclip-length-ok",
+      "path": "records/relationship-subclip-length-ok.json",
       "expected_status": "complete",
       "expected_structural": "valid",
       "expected_diagnostics": [],
       "rules": [
-        "REC-2",
+        "REL-4",
+        "REL-3",
         "DOC-3"
       ],
-      "note": "A minimal asset derived from the examples is routed and complete."
+      "note": "Frames 250 to 500 at 25/1 are 10 seconds, and the child is 10 seconds long."
     },
     {
-      "id": "routing-root-array",
-      "path": "records/routing-root-array.json",
-      "expected_status": "unsupported",
-      "expected_structural": "not-run",
+      "id": "relationship-subclip-length-rates-ok",
+      "path": "records/relationship-subclip-length-rates-ok.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "REL-4",
+        "DOC-3"
+      ],
+      "note": "Frames 0 to 100 at 50/1 are 2 seconds, and the child is 50 frames at 25/1."
+    },
+    {
+      "id": "relationship-subclip-length-rounded-frames",
+      "path": "records/relationship-subclip-length-rounded-frames.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
       "expected_diagnostics": [
         [
-          "TYPE_UNSUPPORTED",
-          ""
-        ],
-        [
-          "VERSION_UNSUPPORTED",
-          "/spec_version"
+          "SUBCLIP_LENGTH_DISAGREES",
+          "/assets/1/relationships/0"
         ]
       ],
       "rules": [
-        "REC-2",
-        "REC-4",
-        "UNS-1"
+        "REL-4",
+        "DOC-3"
       ],
-      "note": "A root array has neither a type nor a spec_version."
+      "note": "At one rate the frame counts must be equal: 299 range frames and a 300-frame child."
+    },
+    {
+      "id": "relationship-subclip-length-rounded-ok",
+      "path": "records/relationship-subclip-length-rounded-ok.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "REL-4",
+        "DOC-3"
+      ],
+      "note": "299 frames at 30000/1001 differ from 10 seconds by less than one frame."
+    },
+    {
+      "id": "relationship-subclip-no-child-length-ok",
+      "path": "records/relationship-subclip-no-child-length-ok.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "REL-4",
+        "DOC-3"
+      ],
+      "note": "The child states no length, so the length check does not apply."
+    },
+    {
+      "id": "relationship-subclip-seconds-unequal",
+      "path": "records/relationship-subclip-seconds-unequal.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "SUBCLIP_LENGTH_DISAGREES",
+          "/assets/1/relationships/0"
+        ]
+      ],
+      "rules": [
+        "REL-4",
+        "DOC-3"
+      ],
+      "note": "With no frame-form timeline the lengths must be equal: 10 seconds and 10.001 seconds."
+    },
+    {
+      "id": "relationship-subclip-zero-length",
+      "path": "records/relationship-subclip-zero-length.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "SUBCLIP_LENGTH_DISAGREES",
+          "/assets/1/relationships/0"
+        ]
+      ],
+      "rules": [
+        "REL-4",
+        "DOC-3"
+      ],
+      "note": "The child length is 0. It is within one frame at 24/1 of the one-frame range, but a child length must be above 0."
     },
     {
       "id": "routing-foreign-object",
@@ -877,24 +2107,50 @@
       "expected_structural": "not-run",
       "expected_diagnostics": [
         [
-          "TYPE_UNSUPPORTED",
+          "NOT_EXCHANGE_DOCUMENT",
           ""
-        ],
-        [
-          "VERSION_UNSUPPORTED",
-          "/spec_version"
         ]
       ],
       "rules": [
-        "REC-2",
-        "REC-4",
-        "UNS-1"
+        "REC-2"
       ],
-      "note": "A document from another format, with neither type nor spec_version, is reported as unsupported."
+      "note": "An object of another format has no spec_version and is not an exchange document."
     },
     {
-      "id": "routing-spec-version-major-0",
-      "path": "records/routing-spec-version-major-0.json",
+      "id": "routing-no-type",
+      "path": "records/routing-no-type.json",
+      "expected_status": "unsupported",
+      "expected_structural": "not-run",
+      "expected_diagnostics": [
+        [
+          "NOT_EXCHANGE_DOCUMENT",
+          ""
+        ]
+      ],
+      "rules": [
+        "REC-2"
+      ],
+      "note": "A root with a supported spec_version and no type member is not an exchange document."
+    },
+    {
+      "id": "routing-ok-minimal-package",
+      "path": "records/routing-ok-minimal-package.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "REC-1",
+        "REC-2",
+        "PKG-3",
+        "PKG-6",
+        "COL-3",
+        "DOC-3"
+      ],
+      "note": "A one-asset export: the asset and the collection that its member_of names."
+    },
+    {
+      "id": "routing-previous-draft",
+      "path": "records/routing-previous-draft.json",
       "expected_status": "unsupported",
       "expected_structural": "not-run",
       "expected_diagnostics": [
@@ -904,10 +2160,26 @@
         ]
       ],
       "rules": [
-        "REC-4",
+        "REC-2",
         "UNS-1"
       ],
-      "note": "A spec_version with a major below 2 is unsupported."
+      "note": "A package of the previous draft is not supported."
+    },
+    {
+      "id": "routing-root-array",
+      "path": "records/routing-root-array.json",
+      "expected_status": "unsupported",
+      "expected_structural": "not-run",
+      "expected_diagnostics": [
+        [
+          "NOT_EXCHANGE_DOCUMENT",
+          ""
+        ]
+      ],
+      "rules": [
+        "REC-2"
+      ],
+      "note": "A root that is an array is not an exchange document."
     },
     {
       "id": "routing-spec-version-3x",
@@ -921,14 +2193,30 @@
         ]
       ],
       "rules": [
-        "REC-4",
+        "REC-2",
         "UNS-1"
       ],
-      "note": "A future major spec_version is unsupported."
+      "note": "A later major version is not supported."
     },
     {
       "id": "routing-spec-version-absent",
       "path": "records/routing-spec-version-absent.json",
+      "expected_status": "unsupported",
+      "expected_structural": "not-run",
+      "expected_diagnostics": [
+        [
+          "NOT_EXCHANGE_DOCUMENT",
+          ""
+        ]
+      ],
+      "rules": [
+        "REC-2"
+      ],
+      "note": "A root with no spec_version member is not an exchange document."
+    },
+    {
+      "id": "routing-spec-version-major-0",
+      "path": "records/routing-spec-version-major-0.json",
       "expected_status": "unsupported",
       "expected_structural": "not-run",
       "expected_diagnostics": [
@@ -938,10 +2226,10 @@
         ]
       ],
       "rules": [
-        "REC-4",
+        "REC-2",
         "UNS-1"
       ],
-      "note": "A supported type with no spec_version is unsupported."
+      "note": "A major version 0 is not supported."
     },
     {
       "id": "routing-spec-version-number",
@@ -955,10 +2243,10 @@
         ]
       ],
       "rules": [
-        "REC-4",
+        "REC-2",
         "UNS-1"
       ],
-      "note": "A numeric spec_version is unsupported."
+      "note": "A spec_version that is a number is not supported."
     },
     {
       "id": "routing-spec-version-unknown-draft",
@@ -972,10 +2260,27 @@
         ]
       ],
       "rules": [
-        "REC-4",
+        "REC-2",
         "UNS-1"
       ],
-      "note": "A draft label other than the current draft is unsupported."
+      "note": "A draft that this checker does not know is not supported; versions compare exactly."
+    },
+    {
+      "id": "routing-standalone-asset",
+      "path": "records/routing-standalone-asset.json",
+      "expected_status": "unsupported",
+      "expected_structural": "not-run",
+      "expected_diagnostics": [
+        [
+          "NOT_EXCHANGE_DOCUMENT",
+          "/type"
+        ]
+      ],
+      "rules": [
+        "REC-1",
+        "REC-2"
+      ],
+      "note": "A standalone asset record at the root is not an exchange document."
     },
     {
       "id": "routing-type-number",
@@ -984,16 +2289,14 @@
       "expected_structural": "not-run",
       "expected_diagnostics": [
         [
-          "TYPE_UNSUPPORTED",
+          "NOT_EXCHANGE_DOCUMENT",
           "/type"
         ]
       ],
       "rules": [
-        "REC-2",
-        "REC-4",
-        "UNS-1"
+        "REC-2"
       ],
-      "note": "A numeric type value is unsupported."
+      "note": "A root type that is a number is not an exchange document."
     },
     {
       "id": "routing-type-unknown",
@@ -1002,16 +2305,32 @@
       "expected_structural": "not-run",
       "expected_diagnostics": [
         [
-          "TYPE_UNSUPPORTED",
+          "NOT_EXCHANGE_DOCUMENT",
           "/type"
         ]
       ],
       "rules": [
-        "REC-2",
-        "REC-4",
-        "UNS-1"
+        "REC-2"
       ],
-      "note": "A type value outside the six record types is unsupported."
+      "note": "A root type other than package is not an exchange document."
+    },
+    {
+      "id": "routing-version-before-numbers",
+      "path": "records/routing-version-before-numbers.json",
+      "expected_status": "unsupported",
+      "expected_structural": "not-run",
+      "expected_diagnostics": [
+        [
+          "VERSION_UNSUPPORTED",
+          "/spec_version"
+        ]
+      ],
+      "rules": [
+        "REC-2",
+        "UNS-1",
+        "DOC-4"
+      ],
+      "note": "The version check runs before the number limits: an unsupported version is reported alone."
     },
     {
       "id": "sentinel-strings",
@@ -1020,27 +2339,445 @@
       "expected_structural": "valid",
       "expected_diagnostics": [
         [
-          "DEFINITION_UNAVAILABLE",
-          "/metadata/0"
+          "REFERENCE_UNRESOLVED",
+          "/assets/0/relationships/0/target"
         ]
       ],
       "rules": [
-        "MD-4",
+        "REL-3",
+        "PKG-6",
+        "SAFE-1",
         "DOC-3"
       ],
-      "note": "Sentinel strings in every text field never appear in diagnostic messages."
+      "note": "Every input string carries a sentinel. Output must never echo one."
     },
     {
-      "id": "standalone-namespace-undeclared-ok",
-      "path": "records/standalone-namespace-undeclared-ok.json",
+      "id": "sequence-frame-duplicate",
+      "path": "records/sequence-frame-duplicate.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "SEQUENCE_FRAME_DUPLICATE",
+          "/assets/0/file_groups/0/members/2/sequence_frame"
+        ]
+      ],
+      "rules": [
+        "GRP-12",
+        "DOC-3"
+      ],
+      "note": "Two members of one pair name image 1003."
+    },
+    {
+      "id": "sequence-frame-missing",
+      "path": "records/sequence-frame-missing.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "SEQUENCE_FRAME_MISSING",
+          "/assets/0/file_groups/0/members/1"
+        ]
+      ],
+      "rules": [
+        "GRP-12",
+        "DOC-3"
+      ],
+      "note": "A member shares a pair with sequence images and has no sequence_frame."
+    },
+    {
+      "id": "sequence-frame-on-compact",
+      "path": "records/sequence-frame-on-compact.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "SEQUENCE_FRAME_ON_COMPACT",
+          "/assets/0/file_groups/0/members/0/sequence_frame"
+        ]
+      ],
+      "rules": [
+        "GRP-12",
+        "DOC-3"
+      ],
+      "note": "An explicit sequence image names a compact sequence file."
+    },
+    {
+      "id": "sequence-frame-out-of-order",
+      "path": "records/sequence-frame-out-of-order.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "SEQUENCE_FRAME_OUT_OF_ORDER",
+          "/assets/0/file_groups/0/members/1/sequence_frame"
+        ]
+      ],
+      "rules": [
+        "GRP-12",
+        "DOC-3"
+      ],
+      "note": "Image 1001 follows image 1003."
+    },
+    {
+      "id": "sequence-frame-outside",
+      "path": "records/sequence-frame-outside.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "SEQUENCE_FRAME_OUTSIDE",
+          "/assets/0/files/0/locations/0/missing_frames/0"
+        ],
+        [
+          "SEQUENCE_FRAME_OUTSIDE",
+          "/assets/0/files/0/sequence/images/0/frame"
+        ]
+      ],
+      "rules": [
+        "FILE-8",
+        "DOC-3"
+      ],
+      "note": "Frame 1002 is not an expected number of 1001 to 1099 in steps of 2."
+    },
+    {
+      "id": "sequence-image-repeated",
+      "path": "records/sequence-image-repeated.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "SEQUENCE_IMAGE_REPEATED",
+          "/assets/0/files/0/sequence/images/1/frame"
+        ]
+      ],
+      "rules": [
+        "FILE-8",
+        "DOC-3"
+      ],
+      "note": "The sequence lists details for image 1001 twice."
+    },
+    {
+      "id": "sequence-ok-compact",
+      "path": "records/sequence-ok-compact.json",
       "expected_status": "complete",
       "expected_structural": "valid",
       "expected_diagnostics": [],
       "rules": [
-        "EXT-5",
+        "FILE-8",
+        "GRP-12",
         "DOC-3"
       ],
-      "note": "A standalone record is not checked for namespace declarations."
+      "note": "A compact sequence of images 1001 to 1100 with one missing image on one copy."
+    },
+    {
+      "id": "sequence-ok-explicit",
+      "path": "records/sequence-ok-explicit.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "GRP-12",
+        "GRP-4",
+        "DOC-3"
+      ],
+      "note": "Three explicit images with a gap at 1002."
+    },
+    {
+      "id": "sequence-ok-negative-step",
+      "path": "records/sequence-ok-negative-step.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "FILE-8",
+        "DOC-3"
+      ],
+      "note": "Images -10 to 10 in steps of 2."
+    },
+    {
+      "id": "sequence-pattern-invalid",
+      "path": "records/sequence-pattern-invalid.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "SEQUENCE_PATTERN_INVALID",
+          "/assets/0/files/0/locations/0/path"
+        ]
+      ],
+      "rules": [
+        "FILE-8",
+        "DOC-3"
+      ],
+      "note": "A sequence path with a printf pattern and no {frame} placeholder."
+    },
+    {
+      "id": "sequence-range-empty",
+      "path": "records/sequence-range-empty.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "SEQUENCE_RANGE_EMPTY",
+          "/assets/0/files/0/sequence/last_frame"
+        ]
+      ],
+      "rules": [
+        "FILE-8",
+        "DOC-3"
+      ],
+      "note": "The sequence ends at 1001, before 1010."
+    },
+    {
+      "id": "sequence-size-checksum",
+      "path": "records/sequence-size-checksum.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "false",
+        "path": "/assets/0/files/0"
+      },
+      "rules": [
+        "FILE-8"
+      ],
+      "note": "A compact sequence file with size_bytes and checksum."
+    },
+    {
+      "id": "sequence-step-mismatch",
+      "path": "records/sequence-step-mismatch.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "SEQUENCE_STEP_MISMATCH",
+          "/assets/0/files/0/sequence/step"
+        ]
+      ],
+      "rules": [
+        "FILE-8",
+        "DOC-3"
+      ],
+      "note": "1250 is not reached from 1001 in steps of 2."
+    },
+    {
+      "id": "storage-connection",
+      "path": "records/storage-connection.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "unevaluatedProperties",
+        "path": "/storage_locations/0"
+      },
+      "rules": [
+        "STO-1",
+        "STO-2",
+        "REC-7"
+      ],
+      "note": "A storage location with the removed connection key."
+    },
+    {
+      "id": "storage-ok-all-systems",
+      "path": "records/storage-ok-all-systems.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "STO-1",
+        "STO-3",
+        "DOC-3"
+      ],
+      "note": "One storage location of each system value."
+    },
+    {
+      "id": "storage-s3-root-prefix",
+      "path": "records/storage-s3-root-prefix.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "pattern",
+        "path": "/storage_locations/0/root"
+      },
+      "rules": [
+        "STO-3"
+      ],
+      "note": "An s3 root that holds a key prefix after the bucket name."
+    },
+    {
+      "id": "storage-system-unknown",
+      "path": "records/storage-system-unknown.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "enum",
+        "path": "/storage_locations/0/system"
+      },
+      "rules": [
+        "STO-3"
+      ],
+      "note": "A system value that is not in the list."
+    },
+    {
+      "id": "storage-tape-no-root",
+      "path": "records/storage-tape-no-root.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "required",
+        "path": "/storage_locations/0"
+      },
+      "rules": [
+        "STO-3"
+      ],
+      "note": "A tape storage location with no root barcode."
+    },
+    {
+      "id": "stream-duplicate",
+      "path": "records/stream-duplicate.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "STREAM_DUPLICATE",
+          "/assets/0/file_groups/0/members/1/stream_index"
+        ]
+      ],
+      "rules": [
+        "GRP-10",
+        "DOC-3"
+      ],
+      "note": "Two members select stream 1 of file f-1."
+    },
+    {
+      "id": "stream-facts-disagree",
+      "path": "records/stream-facts-disagree.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "STREAM_FACTS_DISAGREE",
+          "/assets/0/file_groups/1/members/0/language"
+        ]
+      ],
+      "rules": [
+        "GRP-11",
+        "DOC-3"
+      ],
+      "note": "Two groups describe stream 1 of file f-1 with different languages."
+    },
+    {
+      "id": "stream-index-negative",
+      "path": "records/stream-index-negative.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "minimum",
+        "path": "/assets/0/file_groups/0/members/0/stream_index"
+      },
+      "rules": [
+        "GRP-10"
+      ],
+      "note": "A stream_index below 0."
+    },
+    {
+      "id": "stream-type-disagree",
+      "path": "records/stream-type-disagree.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "STREAM_FACTS_DISAGREE",
+          "/assets/0/file_groups/1/members/0/track_type"
+        ]
+      ],
+      "rules": [
+        "GRP-11",
+        "DOC-3"
+      ],
+      "note": "Two groups give stream 0 of file f-1 different track types."
+    },
+    {
+      "id": "structural-access-enforcement",
+      "path": "records/structural-access-enforcement.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "additionalProperties",
+        "path": "/assets/0/access"
+      },
+      "rules": [
+        "ACC-1",
+        "ACC-2"
+      ],
+      "note": "access is a closed object with no enforcement field."
+    },
+    {
+      "id": "structural-access-unknown",
+      "path": "records/structural-access-unknown.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "enum",
+        "path": "/assets/0/access/status"
+      },
+      "rules": [
+        "ACC-1"
+      ],
+      "note": "The draft.2 access status unknown is removed. Absence means unknown."
+    },
+    {
+      "id": "structural-annotation-purpose-unknown",
+      "path": "records/structural-annotation-purpose-unknown.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "enum",
+        "path": "/assets/0/annotations/0/purpose"
+      },
+      "rules": [
+        "ANN-2"
+      ],
+      "note": "An annotation purpose outside the token list."
+    },
+    {
+      "id": "structural-annotation-visibility-bad",
+      "path": "records/structural-annotation-visibility-bad.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "enum",
+        "path": "/assets/0/annotations/0/visibility"
+      },
+      "rules": [
+        "ANN-4"
+      ],
+      "note": "A visibility value that is not public or private."
+    },
+    {
+      "id": "structural-asset-deleted-boolean",
+      "path": "records/structural-asset-deleted-boolean.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "type",
+        "path": "/assets/0/deleted"
+      },
+      "rules": [
+        "AST-1",
+        "DT-1"
+      ],
+      "note": "deleted is a date-time, not a flag."
     },
     {
       "id": "structural-asset-missing-title",
@@ -1048,10 +2785,14 @@
       "expected_status": "complete",
       "expected_structural": "invalid",
       "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "required",
+        "path": "/assets/0"
+      },
       "rules": [
         "AST-1"
       ],
-      "note": "An asset without a title is structurally invalid."
+      "note": "An asset with no title."
     },
     {
       "id": "structural-asset-unknown-key",
@@ -1059,10 +2800,62 @@
       "expected_status": "complete",
       "expected_structural": "invalid",
       "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "unevaluatedProperties",
+        "path": "/assets/0"
+      },
       "rules": [
         "REC-7"
       ],
-      "note": "An asset with an unknown top-level key is structurally invalid."
+      "note": "An asset with an unknown key."
+    },
+    {
+      "id": "structural-collection-members-parent",
+      "path": "records/structural-collection-members-parent.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "unevaluatedProperties",
+        "path": "/collections/0"
+      },
+      "rules": [
+        "COL-1",
+        "COL-3",
+        "REC-7"
+      ],
+      "note": "A collection lists members, and another names a parent. Both keys are removed."
+    },
+    {
+      "id": "structural-collection-storage-on-logical",
+      "path": "records/structural-collection-storage-on-logical.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "not",
+        "path": "/collections/0"
+      },
+      "rules": [
+        "COL-2"
+      ],
+      "note": "A logical collection with a storage object."
+    },
+    {
+      "id": "structural-collection-type-query",
+      "path": "records/structural-collection-type-query.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "enum",
+        "path": "/collections/0/collection_type"
+      },
+      "rules": [
+        "COL-1",
+        "COL-2"
+      ],
+      "note": "A collection type for a saved search."
     },
     {
       "id": "structural-date-time-space",
@@ -1070,11 +2863,15 @@
       "expected_status": "complete",
       "expected_structural": "invalid",
       "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "format",
+        "path": "/manifest/produced_at"
+      },
       "rules": [
         "DT-1",
         "DT-2"
       ],
-      "note": "A date-time with a space separator is structurally invalid."
+      "note": "A date-time with a space separator."
     },
     {
       "id": "structural-drop-frame-25",
@@ -1082,10 +2879,106 @@
       "expected_status": "complete",
       "expected_structural": "invalid",
       "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "enum",
+        "path": "/assets/0/timing/time_base/rate"
+      },
       "rules": [
         "TIME-6"
       ],
-      "note": "Drop frame at 25 frames per second is structurally invalid."
+      "note": "Drop frame at 25/1."
+    },
+    {
+      "id": "structural-file-role-unknown",
+      "path": "records/structural-file-role-unknown.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "enum",
+        "path": "/assets/0/files/0/role"
+      },
+      "rules": [
+        "FILE-5"
+      ],
+      "note": "A file role outside the token list."
+    },
+    {
+      "id": "structural-group-role-unknown",
+      "path": "records/structural-group-role-unknown.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "enum",
+        "path": "/assets/0/file_groups/0/role"
+      },
+      "rules": [
+        "GRP-2"
+      ],
+      "note": "A file role token used as a file group role."
+    },
+    {
+      "id": "structural-id-trailing-newline",
+      "path": "records/structural-id-trailing-newline.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "pattern",
+        "path": "/assets/0/id"
+      },
+      "rules": [
+        "REC-5"
+      ],
+      "note": "An id that ends in a line feed."
+    },
+    {
+      "id": "structural-id-whitespace",
+      "path": "records/structural-id-whitespace.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "pattern",
+        "path": "/collections/0/id"
+      },
+      "rules": [
+        "REC-5",
+        "ID-5"
+      ],
+      "note": "The collection id and the reference to it are one no-break space. The schema also rejects /assets/0/member_of/0/collection."
+    },
+    {
+      "id": "structural-integer-fraction",
+      "path": "records/structural-integer-fraction.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "type",
+        "path": "/assets/0/timing/duration_frames"
+      },
+      "rules": [
+        "DOC-2",
+        "TIME-10"
+      ],
+      "note": "duration_frames is 100.5, not an integer."
+    },
+    {
+      "id": "structural-manifest-completeness",
+      "path": "records/structural-manifest-completeness.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "additionalProperties",
+        "path": "/manifest"
+      },
+      "rules": [
+        "PKG-2"
+      ],
+      "note": "The removed manifest completeness object."
     },
     {
       "id": "structural-manifest-missing-counts",
@@ -1093,10 +2986,30 @@
       "expected_status": "complete",
       "expected_structural": "invalid",
       "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "required",
+        "path": "/manifest"
+      },
       "rules": [
         "PKG-2"
       ],
-      "note": "A package manifest without counts is structurally invalid."
+      "note": "A manifest with no counts."
+    },
+    {
+      "id": "structural-membership-object",
+      "path": "records/structural-membership-object.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "type",
+        "path": "/assets/0/member_of/0/collection"
+      },
+      "rules": [
+        "COL-3",
+        "ID-5"
+      ],
+      "note": "A membership entry names its collection with an object, not a string."
     },
     {
       "id": "structural-metadata-value-object",
@@ -1104,10 +3017,14 @@
       "expected_status": "complete",
       "expected_structural": "invalid",
       "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "anyOf",
+        "path": "/assets/0/metadata/0/value"
+      },
       "rules": [
         "MD-4"
       ],
-      "note": "A metadata value that is an object is structurally invalid."
+      "note": "A metadata value that is an object."
     },
     {
       "id": "structural-namespace-oasis",
@@ -1115,10 +3032,14 @@
       "expected_status": "complete",
       "expected_structural": "invalid",
       "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "not",
+        "path": "/assets/0/extensions"
+      },
       "rules": [
         "EXT-3"
       ],
-      "note": "The reserved namespace oasis as an extension key is structurally invalid."
+      "note": "An extension under the reserved token oasis."
     },
     {
       "id": "structural-pattern-invalid-regex",
@@ -1126,10 +3047,243 @@
       "expected_status": "complete",
       "expected_structural": "invalid",
       "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "format",
+        "path": "/metadata_definitions/0/constraints/pattern"
+      },
       "rules": [
         "MD-2"
       ],
-      "note": "A constraints pattern that is not an ECMA-262 expression is structurally invalid."
+      "note": "A Python named group, which ECMA-262 rejects."
+    },
+    {
+      "id": "structural-record-type-label",
+      "path": "records/structural-record-type-label.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "unevaluatedProperties",
+        "path": "/assets/0"
+      },
+      "rules": [
+        "REC-1",
+        "REC-7"
+      ],
+      "note": "A record inside a package carries type and spec_version."
+    },
+    {
+      "id": "structural-relationship-kind",
+      "path": "records/structural-relationship-kind.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "required",
+        "path": "/assets/1/relationships/0"
+      },
+      "rules": [
+        "REL-1",
+        "REC-7"
+      ],
+      "note": "A relationship with the draft.2 kind key instead of type."
+    },
+    {
+      "id": "time-bounds-frame-form-seconds-past-end",
+      "path": "records/time-bounds-frame-form-seconds-past-end.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "POSITION_OUT_OF_BOUNDS",
+          "/assets/0/annotations/0/start_seconds"
+        ]
+      ],
+      "rules": [
+        "TIME-9",
+        "DOC-3"
+      ],
+      "note": "A seconds point after 100 frames at 25/1, which is 4 seconds."
+    },
+    {
+      "id": "time-bounds-ok",
+      "path": "records/time-bounds-ok.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "TIME-9",
+        "DOC-3"
+      ],
+      "note": "Points and ranges up to the end boundary, in frames and in seconds, of a 100-frame timeline."
+    },
+    {
+      "id": "time-bounds-seconds-form-past-end",
+      "path": "records/time-bounds-seconds-form-past-end.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "POSITION_OUT_OF_BOUNDS",
+          "/assets/0/annotations/0/start_seconds"
+        ]
+      ],
+      "rules": [
+        "TIME-9",
+        "DOC-3"
+      ],
+      "note": "A seconds point after a 60-second length."
+    },
+    {
+      "id": "time-bounds-seconds-range-start-at-length",
+      "path": "records/time-bounds-seconds-range-start-at-length.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "POSITION_OUT_OF_BOUNDS",
+          "/assets/0/annotations/0/end_seconds"
+        ],
+        [
+          "POSITION_OUT_OF_BOUNDS",
+          "/assets/0/annotations/0/start_seconds"
+        ]
+      ],
+      "rules": [
+        "TIME-9",
+        "DOC-3"
+      ],
+      "note": "A seconds range that starts at a 60-second length. A range starts below the length, so both fields are out of bounds."
+    },
+    {
+      "id": "time-bounds-start-past-end",
+      "path": "records/time-bounds-start-past-end.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "POSITION_OUT_OF_BOUNDS",
+          "/assets/0/annotations/0/start_frame"
+        ]
+      ],
+      "rules": [
+        "TIME-9",
+        "DOC-3"
+      ],
+      "note": "A point one frame after the end boundary."
+    },
+    {
+      "id": "time-duration-frames-no-rate",
+      "path": "records/time-duration-frames-no-rate.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "required",
+        "path": "/assets/0/timing"
+      },
+      "rules": [
+        "TIME-5",
+        "TIME-11"
+      ],
+      "note": "duration_frames without time_base: the seconds form needs duration_seconds and has no frame fields."
+    },
+    {
+      "id": "time-duration-samples-disagree",
+      "path": "records/time-duration-samples-disagree.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "SAMPLE_DISAGREE",
+          "/assets/0/timing/duration_samples"
+        ]
+      ],
+      "rules": [
+        "TIME-13",
+        "DOC-3"
+      ],
+      "note": "95.5 seconds at 48000 is 4584000 samples, not 4584001."
+    },
+    {
+      "id": "time-duration-seconds-disagree",
+      "path": "records/time-duration-seconds-disagree.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "SECONDS_DISAGREE",
+          "/assets/0/timing/duration_seconds"
+        ]
+      ],
+      "rules": [
+        "TIME-7",
+        "DOC-3"
+      ],
+      "note": "750 frames at 25/1 is 30 seconds, not 31."
+    },
+    {
+      "id": "time-duration-seconds-without-frames",
+      "path": "records/time-duration-seconds-without-frames.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "dependentRequired",
+        "path": "/assets/0/timing"
+      },
+      "rules": [
+        "TIME-11"
+      ],
+      "note": "In the frame form, duration_seconds is allowed only with duration_frames."
+    },
+    {
+      "id": "time-end-seconds-disagree",
+      "path": "records/time-end-seconds-disagree.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "SECONDS_DISAGREE",
+          "/assets/0/annotations/0/end_seconds"
+        ]
+      ],
+      "rules": [
+        "TIME-7",
+        "DOC-3"
+      ],
+      "note": "end_frame 300 at 25/1 is 12 seconds, not 13."
+    },
+    {
+      "id": "time-end-seconds-without-end-frame",
+      "path": "records/time-end-seconds-without-end-frame.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "dependentRequired",
+        "path": "/assets/0/annotations/0"
+      },
+      "rules": [
+        "TIME-4"
+      ],
+      "note": "A marker with frames gives end_seconds without end_frame."
+    },
+    {
+      "id": "time-frame-field-seconds-form",
+      "path": "records/time-frame-field-seconds-form.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "not",
+        "path": "/assets/0/annotations/0"
+      },
+      "rules": [
+        "TIME-5",
+        "ANN-3"
+      ],
+      "note": "A frame field on an annotation of a seconds-form timeline."
     },
     {
       "id": "time-frame-out-of-bounds",
@@ -1138,32 +3292,42 @@
       "expected_structural": "valid",
       "expected_diagnostics": [
         [
-          "FRAME_OUT_OF_BOUNDS",
-          "/annotations/0/end_frame"
+          "POSITION_OUT_OF_BOUNDS",
+          "/assets/0/annotations/0/end_frame"
         ]
       ],
       "rules": [
         "TIME-9",
         "DOC-3"
       ],
-      "note": "An annotation ends past the asset duration."
+      "note": "A range ends one frame after the length of 750."
     },
     {
-      "id": "time-point-at-duration",
-      "path": "records/time-point-at-duration.json",
+      "id": "time-label-without-anchor",
+      "path": "records/time-label-without-anchor.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "not",
+        "path": "/assets/0/annotations/0"
+      },
+      "rules": [
+        "TIME-8"
+      ],
+      "note": "A marker label on a timeline with no source_timecode."
+    },
+    {
+      "id": "time-point-at-duration-ok",
+      "path": "records/time-point-at-duration-ok.json",
       "expected_status": "complete",
       "expected_structural": "valid",
-      "expected_diagnostics": [
-        [
-          "FRAME_OUT_OF_BOUNDS",
-          "/annotations/0/start_frame"
-        ]
-      ],
+      "expected_diagnostics": [],
       "rules": [
         "TIME-9",
         "DOC-3"
       ],
-      "note": "A point annotation at the duration frame lies outside the asset."
+      "note": "A point may sit at the end boundary, frame 750 of 750."
     },
     {
       "id": "time-range-end-equals-duration-ok",
@@ -1175,7 +3339,21 @@
         "TIME-9",
         "DOC-3"
       ],
-      "note": "A range that ends exactly at the duration is inside the asset."
+      "note": "A range may end at the length."
+    },
+    {
+      "id": "time-range-forms-ok",
+      "path": "records/time-range-forms-ok.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "TIME-3",
+        "TIME-4",
+        "TIME-7",
+        "DOC-3"
+      ],
+      "note": "A range in seconds only, and a frame range that restates its start in seconds."
     },
     {
       "id": "time-range-not-increasing",
@@ -1185,14 +3363,14 @@
       "expected_diagnostics": [
         [
           "RANGE_NOT_INCREASING",
-          "/annotations/0/end_frame"
+          "/assets/0/annotations/0/end_frame"
         ]
       ],
       "rules": [
         "TIME-4",
         "DOC-3"
       ],
-      "note": "An annotation range ends before it starts."
+      "note": "A range whose end equals its start."
     },
     {
       "id": "time-rate-decimal-spelling-ok",
@@ -1205,7 +3383,7 @@
         "TIME-2",
         "DOC-3"
       ],
-      "note": "A rate spelled with decimal notation compares by exact value."
+      "note": "Rate 25.0/1.0 is the integer rate 25/1 written with a decimal point."
     },
     {
       "id": "time-rate-not-lowest-terms",
@@ -1215,14 +3393,146 @@
       "expected_diagnostics": [
         [
           "RATE_NOT_LOWEST_TERMS",
-          "/timing/time_base/rate"
+          "/assets/0/timing/time_base/rate"
         ]
       ],
       "rules": [
         "TIME-2",
         "DOC-3"
       ],
-      "note": "A rate of 50/2 is not in lowest terms."
+      "note": "Rate 50/2 is not in lowest terms."
+    },
+    {
+      "id": "time-sample-disagree",
+      "path": "records/time-sample-disagree.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "SAMPLE_DISAGREE",
+          "/assets/0/annotations/0/start_sample"
+        ]
+      ],
+      "rules": [
+        "TIME-13",
+        "DOC-3"
+      ],
+      "note": "2.5 seconds at 48000 is sample 120000, not 120024."
+    },
+    {
+      "id": "time-sample-out-of-bounds",
+      "path": "records/time-sample-out-of-bounds.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "POSITION_OUT_OF_BOUNDS",
+          "/assets/0/annotations/0/end_sample"
+        ],
+        [
+          "POSITION_OUT_OF_BOUNDS",
+          "/assets/0/annotations/0/end_seconds"
+        ]
+      ],
+      "rules": [
+        "TIME-9",
+        "TIME-13",
+        "DOC-3"
+      ],
+      "note": "A range that ends after 95.5 seconds and after duration_samples."
+    },
+    {
+      "id": "time-sample-point-at-length",
+      "path": "records/time-sample-point-at-length.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "TIME-9",
+        "TIME-13",
+        "DOC-3"
+      ],
+      "note": "A point may sit at the end boundary: start_sample equals duration_samples."
+    },
+    {
+      "id": "time-sample-range-not-increasing",
+      "path": "records/time-sample-range-not-increasing.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "RANGE_NOT_INCREASING",
+          "/assets/0/annotations/0/end_sample"
+        ]
+      ],
+      "rules": [
+        "TIME-13",
+        "DOC-3"
+      ],
+      "note": "The seconds increase but both restate sample 120000, so start_sample is not less than end_sample."
+    },
+    {
+      "id": "time-sample-range-start-at-length",
+      "path": "records/time-sample-range-start-at-length.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "POSITION_OUT_OF_BOUNDS",
+          "/assets/0/annotations/0/start_sample"
+        ]
+      ],
+      "rules": [
+        "TIME-9",
+        "TIME-13",
+        "DOC-3"
+      ],
+      "note": "A range with no end_sample whose start_sample equals duration_samples. 0.96 seconds at 10 is sample 10."
+    },
+    {
+      "id": "time-sample-rate-undeclared",
+      "path": "records/time-sample-rate-undeclared.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "SAMPLE_RATE_UNDECLARED",
+          "/assets/0/annotations/0/start_sample"
+        ]
+      ],
+      "rules": [
+        "TIME-13",
+        "DOC-3"
+      ],
+      "note": "A sample position on a timeline with no sample_rate."
+    },
+    {
+      "id": "time-sample-without-seconds",
+      "path": "records/time-sample-without-seconds.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "dependentRequired",
+        "path": "/assets/0/annotations/0"
+      },
+      "rules": [
+        "TIME-13"
+      ],
+      "note": "start_sample without start_seconds."
+    },
+    {
+      "id": "time-samples-ok",
+      "path": "records/time-samples-ok.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "TIME-13",
+        "TIME-9",
+        "DOC-3"
+      ],
+      "note": "Sample positions that restate seconds at sample rate 48000."
     },
     {
       "id": "time-seconds-disagree",
@@ -1232,14 +3542,72 @@
       "expected_diagnostics": [
         [
           "SECONDS_DISAGREE",
-          "/annotations/0/start_seconds"
+          "/assets/0/annotations/0/start_seconds"
         ]
       ],
       "rules": [
         "TIME-7",
         "DOC-3"
       ],
-      "note": "A start_seconds value names a different frame than start_frame."
+      "note": "Frame 25 at 25/1 is 1 second, not 2."
+    },
+    {
+      "id": "time-seconds-form-base-without-label",
+      "path": "records/time-seconds-form-base-without-label.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "dependentRequired",
+        "path": "/assets/0/timing"
+      },
+      "rules": [
+        "TIME-14"
+      ],
+      "note": "A timecode_base without source_timecode."
+    },
+    {
+      "id": "time-seconds-form-label-without-base",
+      "path": "records/time-seconds-form-label-without-base.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "dependentRequired",
+        "path": "/assets/0/timing"
+      },
+      "rules": [
+        "TIME-14"
+      ],
+      "note": "A seconds-form source_timecode without timecode_base."
+    },
+    {
+      "id": "time-seconds-form-ok",
+      "path": "records/time-seconds-form-ok.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "TIME-3",
+        "TIME-4",
+        "TIME-9",
+        "TIME-11",
+        "DOC-3"
+      ],
+      "note": "A seconds-form timeline with a point and a range in seconds."
+    },
+    {
+      "id": "time-seconds-form-timecode-ok",
+      "path": "records/time-seconds-form-timecode-ok.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "TIME-8",
+        "TIME-14",
+        "DOC-3"
+      ],
+      "note": "A seconds-form timeline with source_timecode at its timecode_base."
     },
     {
       "id": "time-seconds-tie-toward-zero",
@@ -1252,44 +3620,37 @@
         "TIME-7",
         "DOC-3"
       ],
-      "note": "A seconds value exactly between two frames resolves toward zero."
+      "note": "0.02 and 0.06 seconds fall exactly halfway between frames and round toward zero."
     },
     {
-      "id": "time-standalone-annotation-timeline-unavailable",
-      "path": "records/time-standalone-annotation-timeline-unavailable.json",
+      "id": "time-subclip-seconds-range-ok",
+      "path": "records/time-subclip-seconds-range-ok.json",
       "expected_status": "complete",
       "expected_structural": "valid",
-      "expected_diagnostics": [
-        [
-          "TIMELINE_UNAVAILABLE",
-          ""
-        ]
-      ],
+      "expected_diagnostics": [],
       "rules": [
-        "REC-2",
-        "TIME-12",
-        "ANN-3",
-        "DOC-3"
-      ],
-      "note": "A standalone annotation with frame fields cannot check timing agreement."
-    },
-    {
-      "id": "time-standalone-relationship-range",
-      "path": "records/time-standalone-relationship-range.json",
-      "expected_status": "complete",
-      "expected_structural": "valid",
-      "expected_diagnostics": [
-        [
-          "TIMELINE_UNAVAILABLE",
-          "/relationships/0/range"
-        ]
-      ],
-      "rules": [
-        "TIME-5",
+        "REL-1",
+        "REL-4",
         "TIME-12",
         "DOC-3"
       ],
-      "note": "A standalone relationship range has no target timeline in the document."
+      "note": "A seconds range on a seconds-form target, with a 10-second child."
+    },
+    {
+      "id": "time-timecode-base-rate",
+      "path": "records/time-timecode-base-rate.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "enum",
+        "path": "/assets/0/timing/timecode_base/rate"
+      },
+      "rules": [
+        "TIME-8",
+        "TIME-14"
+      ],
+      "note": "A timecode_base rate that is not in the label rate table."
     },
     {
       "id": "time-timecode-disagree",
@@ -1299,7 +3660,7 @@
       "expected_diagnostics": [
         [
           "TIMECODE_DISAGREE",
-          "/annotations/0/start_timecode"
+          "/assets/0/annotations/0/start_timecode"
         ]
       ],
       "rules": [
@@ -1307,7 +3668,7 @@
         "TIME-8",
         "DOC-3"
       ],
-      "note": "A start_timecode label differs from the label derived from start_frame."
+      "note": "Frame 25 from anchor 10:00:00:00 is labeled 10:00:01:00."
     },
     {
       "id": "time-timecode-drop-frame-minute-boundary",
@@ -1319,7 +3680,68 @@
         "TIME-8",
         "DOC-3"
       ],
-      "note": "A drop-frame label across a minute boundary skips frame labels 00 and 01."
+      "note": "Drop frame skips labels 00 and 01 at minute 01."
+    },
+    {
+      "id": "time-timecode-dropped-label",
+      "path": "records/time-timecode-dropped-label.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "pattern",
+        "path": "/assets/0/timing/source_timecode"
+      },
+      "rules": [
+        "TIME-8"
+      ],
+      "note": "A drop-frame label that names a skipped frame."
+    },
+    {
+      "id": "time-timecode-frames-past-rate",
+      "path": "records/time-timecode-frames-past-rate.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "pattern",
+        "path": "/assets/0/timing/source_timecode"
+      },
+      "rules": [
+        "TIME-8"
+      ],
+      "note": "Label frame 25 at 25/1; frames run 00 to 24."
+    },
+    {
+      "id": "time-timecode-newline-frame-form",
+      "path": "records/time-timecode-newline-frame-form.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "maxLength",
+        "path": "/assets/0/timing/source_timecode"
+      },
+      "rules": [
+        "TIME-8"
+      ],
+      "note": "A frame-form source_timecode with a final line feed."
+    },
+    {
+      "id": "time-timecode-newline-seconds-form",
+      "path": "records/time-timecode-newline-seconds-form.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "maxLength",
+        "path": "/assets/0/timing/source_timecode"
+      },
+      "rules": [
+        "TIME-8",
+        "TIME-14"
+      ],
+      "note": "A seconds-form source_timecode with a final line feed."
     },
     {
       "id": "time-timecode-rollover",
@@ -1331,7 +3753,325 @@
         "TIME-8",
         "DOC-3"
       ],
-      "note": "A derived label past 24 hours wraps modulo 24 hours."
+      "note": "Labels roll over at 24 hours."
+    },
+    {
+      "id": "time-zero-length-ok",
+      "path": "records/time-zero-length-ok.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "TIME-9",
+        "ANN-5",
+        "DOC-3"
+      ],
+      "note": "A point at frame 0 of a zero-length timeline."
+    },
+    {
+      "id": "time-zero-length-range",
+      "path": "records/time-zero-length-range.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "POSITION_OUT_OF_BOUNDS",
+          "/assets/0/annotations/0/end_frame"
+        ],
+        [
+          "POSITION_OUT_OF_BOUNDS",
+          "/assets/0/annotations/0/start_frame"
+        ]
+      ],
+      "rules": [
+        "TIME-9",
+        "DOC-3"
+      ],
+      "note": "A one-frame range on a zero-length timeline. A range starts below the length, so both fields are out of bounds."
+    },
+    {
+      "id": "track-parts-mixed",
+      "path": "records/track-parts-mixed.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "TRACK_PARTS_MIXED",
+          "/assets/0/file_groups/0/members/1/segment_index"
+        ]
+      ],
+      "rules": [
+        "GRP-12",
+        "GRP-6",
+        "DOC-3"
+      ],
+      "note": "The first member sets the pair to sequence images. The second carries segment_index."
+    },
+    {
+      "id": "version-asset-timing-with-versions",
+      "path": "records/version-asset-timing-with-versions.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "false",
+        "path": "/assets/0"
+      },
+      "rules": [
+        "VER-4"
+      ],
+      "note": "Asset-level timing on an asset with versions."
+    },
+    {
+      "id": "version-current-without-versions",
+      "path": "records/version-current-without-versions.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "false",
+        "path": "/assets/0"
+      },
+      "rules": [
+        "VER-4",
+        "VER-6"
+      ],
+      "note": "current_version on an asset with no versions."
+    },
+    {
+      "id": "version-definition-shared-and-versioned",
+      "path": "records/version-definition-shared-and-versioned.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "DEFINITION_SHARED_AND_VERSIONED",
+          "/assets/0/unassigned/metadata/0/definition"
+        ],
+        [
+          "DEFINITION_SHARED_AND_VERSIONED",
+          "/assets/0/versions/0/metadata/0/definition"
+        ],
+        [
+          "DEFINITION_SHARED_AND_VERSIONED",
+          "/assets/0/versions/1/metadata/0/definition"
+        ]
+      ],
+      "rules": [
+        "VER-7",
+        "DOC-3"
+      ],
+      "note": "Definition md-a is used at the asset level and in each version and unassigned."
+    },
+    {
+      "id": "version-field-on-file",
+      "path": "records/version-field-on-file.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "additionalProperties",
+        "path": "/assets/0/files/0"
+      },
+      "rules": [
+        "VER-4",
+        "REC-7"
+      ],
+      "note": "A file with a version field."
+    },
+    {
+      "id": "version-file-id-across-versions",
+      "path": "records/version-file-id-across-versions.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "NESTED_ID_DUPLICATE",
+          "/assets/0/versions/1/files/0/id"
+        ]
+      ],
+      "rules": [
+        "ID-4",
+        "DOC-3"
+      ],
+      "note": "File id f-1 appears in two versions of one asset."
+    },
+    {
+      "id": "version-frame-field-seconds-form",
+      "path": "records/version-frame-field-seconds-form.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "not",
+        "path": "/assets/0/versions/1/annotations/0"
+      },
+      "rules": [
+        "TIME-5",
+        "ANN-3",
+        "VER-4"
+      ],
+      "note": "A frame field on an annotation of a seconds-form version."
+    },
+    {
+      "id": "version-group-file-other-holder",
+      "path": "records/version-group-file-other-holder.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "FILE_REFERENCE_UNRESOLVED",
+          "/assets/0/versions/1/file_groups/0/members/0/file"
+        ]
+      ],
+      "rules": [
+        "GRP-4",
+        "VER-4",
+        "DOC-3"
+      ],
+      "note": "A group in version v-2 names a file of version v-1."
+    },
+    {
+      "id": "version-listed-twice",
+      "path": "records/version-listed-twice.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "NESTED_ID_DUPLICATE",
+          "/assets/0/versions/2/id"
+        ]
+      ],
+      "rules": [
+        "ID-4",
+        "VER-2",
+        "DOC-3"
+      ],
+      "note": "Version v-1 appears twice."
+    },
+    {
+      "id": "version-ok-absent-list",
+      "path": "records/version-ok-absent-list.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "VER-1",
+        "VER-4",
+        "DOC-3"
+      ],
+      "note": "An asset with no versions list."
+    },
+    {
+      "id": "version-ok-current-not-greatest",
+      "path": "records/version-ok-current-not-greatest.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "VER-2",
+        "VER-6",
+        "DOC-3"
+      ],
+      "note": "The current version need not have the greatest ordinal. Ordinals need not be consecutive."
+    },
+    {
+      "id": "version-ok-definition-levels",
+      "path": "records/version-ok-definition-levels.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "VER-7",
+        "MD-5",
+        "DOC-3"
+      ],
+      "note": "md-a at the asset level only, and md-b in versions and unassigned."
+    },
+    {
+      "id": "version-ok-empty-list",
+      "path": "records/version-ok-empty-list.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "VER-1",
+        "VER-4",
+        "DOC-3"
+      ],
+      "note": "An empty versions list is the implied original version, so the asset level has a timeline."
+    },
+    {
+      "id": "version-ok-model",
+      "path": "records/version-ok-model.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "VER-1",
+        "VER-4",
+        "VER-5",
+        "VER-6",
+        "VER-7",
+        "ID-4",
+        "DOC-3"
+      ],
+      "note": "An asset with two versions, a current version, unassigned information, and asset-level facts."
+    },
+    {
+      "id": "version-ok-one-version-unassigned",
+      "path": "records/version-ok-one-version-unassigned.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "VER-5",
+        "GRP-4",
+        "DOC-3"
+      ],
+      "note": "An asset with one version and unassigned information."
+    },
+    {
+      "id": "version-ok-renditions",
+      "path": "records/version-ok-renditions.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "GRP-2",
+        "GRP-8",
+        "VER-4",
+        "DOC-3"
+      ],
+      "note": "Two primary renditions and a preview in one version."
+    },
+    {
+      "id": "version-ok-shared-file",
+      "path": "records/version-ok-shared-file.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "VER-4",
+        "GRP-4",
+        "DOC-3"
+      ],
+      "note": "A companion file that the source holds for the whole asset."
+    },
+    {
+      "id": "version-ok-subclip-in-version",
+      "path": "records/version-ok-subclip-in-version.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "REL-2",
+        "REL-4",
+        "REL-6",
+        "VER-4",
+        "DOC-3"
+      ],
+      "note": "A subclip_of in a version names the target version."
     },
     {
       "id": "version-ordinal-duplicate",
@@ -1341,14 +4081,14 @@
       "expected_diagnostics": [
         [
           "ORDINAL_DUPLICATE",
-          "/versions/1/ordinal"
+          "/assets/0/versions/1/ordinal"
         ]
       ],
       "rules": [
         "VER-2",
         "DOC-3"
       ],
-      "note": "Two versions share one ordinal."
+      "note": "Two versions use ordinal 0."
     },
     {
       "id": "version-reference-unresolved",
@@ -1358,31 +4098,213 @@
       "expected_diagnostics": [
         [
           "VERSION_REFERENCE_UNRESOLVED",
-          "/files/0/version"
+          "/assets/0/current_version"
         ]
       ],
       "rules": [
-        "VER-3",
+        "VER-6",
         "DOC-3"
       ],
-      "note": "A file names a version that the asset does not have."
+      "note": "current_version names v-3, which the asset does not hold."
     },
     {
-      "id": "version-without-versions",
-      "path": "records/version-without-versions.json",
+      "id": "version-shared-group-part-start",
+      "path": "records/version-shared-group-part-start.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "not",
+        "path": "/assets/0/file_groups/0/members/0"
+      },
+      "rules": [
+        "VER-4",
+        "GRP-7"
+      ],
+      "note": "An asset-level member with a part start on an asset with versions."
+    },
+    {
+      "id": "version-subclip-at-asset-level",
+      "path": "records/version-subclip-at-asset-level.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "not",
+        "path": "/assets/1/relationships/0"
+      },
+      "rules": [
+        "VER-4",
+        "REL-2"
+      ],
+      "note": "A subclip_of at the asset level of an asset with versions."
+    },
+    {
+      "id": "version-target-implied",
+      "path": "records/version-target-implied.json",
       "expected_status": "complete",
       "expected_structural": "valid",
       "expected_diagnostics": [
         [
-          "VERSION_WITHOUT_VERSIONS",
-          "/file_groups/0/version"
+          "VERSION_REFERENCE_UNRESOLVED",
+          "/assets/1/relationships/0/target_version"
         ]
       ],
       "rules": [
-        "VER-3",
+        "REL-6",
         "DOC-3"
       ],
-      "note": "A file group names a version on an asset with no versions."
+      "note": "target_version on a target with no versions."
+    },
+    {
+      "id": "version-target-range-out-of-bounds",
+      "path": "records/version-target-range-out-of-bounds.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "POSITION_OUT_OF_BOUNDS",
+          "/assets/1/relationships/0/range/end_seconds"
+        ]
+      ],
+      "rules": [
+        "REL-6",
+        "TIME-9",
+        "TIME-12",
+        "DOC-3"
+      ],
+      "note": "The range ends at 400 seconds. Version v-1 is 360 seconds long. Version v-2 is longer but is not named."
+    },
+    {
+      "id": "version-target-required",
+      "path": "records/version-target-required.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "TARGET_VERSION_REQUIRED",
+          "/assets/1/relationships/0"
+        ]
+      ],
+      "rules": [
+        "REL-6",
+        "DOC-3"
+      ],
+      "note": "A range on a target with versions and no target_version."
+    },
+    {
+      "id": "version-timing-samples-disagree",
+      "path": "records/version-timing-samples-disagree.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "SAMPLE_DISAGREE",
+          "/assets/0/versions/0/timing/duration_samples"
+        ]
+      ],
+      "rules": [
+        "TIME-13",
+        "DOC-3"
+      ],
+      "note": "10 seconds at 48000 is 480000 samples, not 480001."
+    },
+    {
+      "id": "version-timing-seconds-disagree",
+      "path": "records/version-timing-seconds-disagree.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "SECONDS_DISAGREE",
+          "/assets/0/versions/0/timing/duration_seconds"
+        ]
+      ],
+      "rules": [
+        "TIME-7",
+        "DOC-3"
+      ],
+      "note": "25 frames at 25/1 is 1 second, not 2."
+    },
+    {
+      "id": "version-unassigned-group-file-version",
+      "path": "records/version-unassigned-group-file-version.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "FILE_REFERENCE_UNRESOLVED",
+          "/assets/0/unassigned/file_groups/0/members/0/file"
+        ]
+      ],
+      "rules": [
+        "GRP-4",
+        "VER-5",
+        "DOC-3"
+      ],
+      "note": "An unassigned group names a file of version v-1."
+    },
+    {
+      "id": "version-unassigned-part-start",
+      "path": "records/version-unassigned-part-start.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "not",
+        "path": "/assets/0/unassigned/file_groups/0/members/1"
+      },
+      "rules": [
+        "VER-5",
+        "GRP-7"
+      ],
+      "note": "An unassigned member with a part start."
+    },
+    {
+      "id": "version-unassigned-position",
+      "path": "records/version-unassigned-position.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "not",
+        "path": "/assets/0/unassigned/annotations/0"
+      },
+      "rules": [
+        "VER-5"
+      ],
+      "note": "An unassigned annotation with a position."
+    },
+    {
+      "id": "version-unassigned-without-versions",
+      "path": "records/version-unassigned-without-versions.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "false",
+        "path": "/assets/0"
+      },
+      "rules": [
+        "VER-4",
+        "VER-5"
+      ],
+      "note": "unassigned on an asset with no versions."
+    },
+    {
+      "id": "width-on-audio",
+      "path": "records/width-on-audio.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "false",
+        "path": "/assets/0/file_groups/0/members/0"
+      },
+      "rules": [
+        "GRP-11"
+      ],
+      "note": "width on an audio member."
     }
   ]
 }

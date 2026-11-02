@@ -1,6 +1,6 @@
 {
   "type": "package",
-  "spec_version": "2.0.0-draft.2",
+  "spec_version": "2.0.0-draft.3",
   "id": "pkg-0001",
   "manifest": {
     "producer": {
@@ -14,36 +14,28 @@
       "collections": 2,
       "assets": 0
     },
-    "completeness": {
-      "storage_locations": "complete",
-      "metadata_definitions": "complete",
-      "collections": "complete",
-      "assets": "complete"
-    },
     "namespaces": []
   },
   "collections": [
     {
-      "type": "collection",
-      "spec_version": "2.0.0-draft.2",
       "id": "col-01",
-      "title": "Example Project",
-      "collection_kind": "logical",
-      "access": {
-        "status": "none"
-      },
-      "parent": "col-02"
+      "title": "Example Collection",
+      "collection_type": "logical",
+      "member_of": [
+        {
+          "collection": "col-02"
+        }
+      ]
     },
     {
-      "type": "collection",
-      "spec_version": "2.0.0-draft.2",
       "id": "col-02",
-      "title": "Example Project",
-      "collection_kind": "logical",
-      "access": {
-        "status": "none"
-      },
-      "parent": "col-01"
+      "title": "Example Collection",
+      "collection_type": "logical",
+      "member_of": [
+        {
+          "collection": "col-01"
+        }
+      ]
     }
   ]
 }

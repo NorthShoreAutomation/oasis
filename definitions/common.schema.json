@@ -2,32 +2,21 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://www.northshoreautomation.com/schemas/oasis/2/common.schema.json",
   "title": "OASIS 2.0 shared definitions",
-  "description": "Shared definitions for every OASIS 2.0.0-draft.2 record schema. This file is not a document root. Each entity has one definition here or in its record schema.",
+  "description": "Shared definitions for the OASIS 2.0.0-draft.3 schemas. This file is not a document root. Each entity has one definition here or in its record schema.",
   "$defs": {
-    "record_type": {
-      "description": "The record type token. Read before any schema is chosen.",
-      "enum": [
-        "package",
-        "asset",
-        "collection",
-        "storage_location",
-        "metadata_definition",
-        "annotation"
-      ]
-    },
     "spec_version": {
       "description": "The specification version of this draft.",
-      "const": "2.0.0-draft.2"
+      "const": "2.0.0-draft.3"
     },
     "id": {
-      "description": "An identifier. Nonempty, at most 256 characters, no leading or trailing whitespace.",
+      "description": "An identifier: 1 to 256 code points. The first and last code points are not whitespace, as REC-5 defines it.",
       "type": "string",
       "minLength": 1,
       "maxLength": 256,
-      "pattern": "^\\S([\\s\\S]*\\S)?$"
+      "pattern": "^[^\t\n\u000b\f\r \u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff](?:[\\s\\S]*[^\t\n\u000b\f\r \u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff])?$"
     },
     "reference": {
-      "description": "A string naming the id of a target of a known kind. Resolved only in package context.",
+      "description": "A string naming the id of a target of a known kind. The rule for each field sets its target and the scope where it resolves (PKG-6).",
       "$ref": "#/$defs/id"
     },
     "nonempty_string": {
@@ -89,15 +78,9 @@
       "additionalProperties": false
     },
     "record_base": {
-      "description": "Fields shared by every record. Each record schema adds its own type constant and closes the object.",
+      "description": "Fields shared by every record: id, source, and extensions. Each record schema closes the object.",
       "type": "object",
       "properties": {
-        "type": {
-          "$ref": "#/$defs/record_type"
-        },
-        "spec_version": {
-          "$ref": "#/$defs/spec_version"
-        },
         "id": {
           "$ref": "#/$defs/id"
         },
@@ -109,8 +92,6 @@
         }
       },
       "required": [
-        "type",
-        "spec_version",
         "id"
       ]
     },
@@ -121,8 +102,7 @@
         "status": {
           "enum": [
             "none",
-            "restricted",
-            "unknown"
+            "restricted"
           ]
         }
       },
@@ -196,53 +176,71 @@
       "minimum": 0
     },
     "seconds": {
-      "description": "Derived elapsed seconds from frame 0. A number, 0 or more.",
+      "description": "Elapsed seconds from the start of the timeline. A number, 0 or more.",
       "type": "number",
       "minimum": 0
     },
     "timecode_label": {
-      "description": "A timecode label HH:MM:SS:FF or HH:MM:SS;FF. Rate specific limits are applied by the asset schema.",
+      "description": "A timecode label HH:MM:SS:FF or HH:MM:SS;FF. Rate specific limits are applied by timeline_rules on each timeline holder.",
       "type": "string",
+      "minLength": 11,
+      "maxLength": 11,
       "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9][:;][0-5][0-9]$"
     },
     "timecode_label_24": {
       "description": "Non-drop label at 24/1 or 24000/1001.",
       "type": "string",
+      "minLength": 11,
+      "maxLength": 11,
       "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]:([01][0-9]|2[0-3])$"
     },
     "timecode_label_25": {
       "description": "Non-drop label at 25/1.",
       "type": "string",
+      "minLength": 11,
+      "maxLength": 11,
       "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]:([01][0-9]|2[0-4])$"
     },
     "timecode_label_30": {
       "description": "Non-drop label at 30/1 or 30000/1001.",
       "type": "string",
+      "minLength": 11,
+      "maxLength": 11,
       "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]:[0-2][0-9]$"
     },
     "timecode_label_30_drop": {
       "description": "Drop-frame label at 30000/1001. Labels 00 and 01 are skipped at the start of each minute except every tenth minute.",
       "type": "string",
+      "minLength": 11,
+      "maxLength": 11,
       "pattern": "^(?![0-9]{2}:[0-5][1-9]:00;0[01]$)([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9];[0-2][0-9]$"
     },
     "timecode_label_48": {
       "description": "Non-drop label at 48/1.",
       "type": "string",
+      "minLength": 11,
+      "maxLength": 11,
       "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]:([0-3][0-9]|4[0-7])$"
     },
     "timecode_label_50": {
       "description": "Non-drop label at 50/1.",
       "type": "string",
+      "minLength": 11,
+      "maxLength": 11,
       "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]:[0-4][0-9]$"
     },
     "timecode_label_60": {
       "description": "Non-drop label at 60/1 or 60000/1001.",
       "type": "string",
+      "minLength": 11,
+      "maxLength": 11,
       "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]:[0-5][0-9]$"
     },
     "timecode_label_60_drop": {
       "description": "Drop-frame label at 60000/1001. Labels 00 to 03 are skipped at the start of each minute except every tenth minute.",
       "type": "string",
+      "minLength": 11,
+      "maxLength": 11,
       "pattern": "^(?![0-9]{2}:[0-5][1-9]:00;0[0-3]$)([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9];[0-5][0-9]$"
     },
     "label_rate": {
@@ -286,24 +284,87 @@
         }
       ]
     },
+    "timecode_base": {
+      "description": "The timecode rate of a seconds-form source_timecode. Its rate is a label rate.",
+      "allOf": [
+        {
+          "$ref": "#/$defs/time_base"
+        },
+        {
+          "properties": {
+            "rate": {
+              "$ref": "#/$defs/label_rate"
+            }
+          }
+        }
+      ]
+    },
     "timing": {
-      "description": "The asset timeline: time base, optional source timecode anchor of frame 0, optional duration.",
+      "description": "The timeline of an asset or version. Frame form: a time base, an optional duration in frames, and an optional source timecode of frame 0. Seconds form: no time base, a duration in seconds, and an optional source timecode with its timecode base.",
       "type": "object",
       "properties": {
         "time_base": {
           "$ref": "#/$defs/time_base"
         },
+        "duration_frames": {
+          "$ref": "#/$defs/frame"
+        },
+        "duration_seconds": {
+          "$ref": "#/$defs/seconds"
+        },
         "source_timecode": {
           "$ref": "#/$defs/timecode_label"
         },
-        "duration_frames": {
-          "$ref": "#/$defs/frame"
+        "timecode_base": {
+          "$ref": "#/$defs/timecode_base"
+        },
+        "sample_rate": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "duration_samples": {
+          "type": "integer",
+          "minimum": 0
         }
       },
-      "required": [
-        "time_base"
-      ],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "dependentRequired": {
+        "duration_samples": [
+          "duration_seconds",
+          "sample_rate"
+        ]
+      },
+      "if": {
+        "required": [
+          "time_base"
+        ]
+      },
+      "then": {
+        "properties": {
+          "timecode_base": false
+        },
+        "dependentRequired": {
+          "duration_seconds": [
+            "duration_frames"
+          ]
+        }
+      },
+      "else": {
+        "required": [
+          "duration_seconds"
+        ],
+        "properties": {
+          "duration_frames": false
+        },
+        "dependentRequired": {
+          "source_timecode": [
+            "timecode_base"
+          ],
+          "timecode_base": [
+            "source_timecode"
+          ]
+        }
+      }
     },
     "checksum": {
       "description": "A declared digest of a file. Lowercase hexadecimal of the length the algorithm produces.",
@@ -417,17 +478,17 @@
       ]
     },
     "file": {
-      "description": "One file of an asset in one storage location.",
+      "description": "One logical file: its content stated once, with the identical stored copies that the source reports. Absent or empty locations: no known copy.",
       "type": "object",
       "properties": {
         "id": {
           "$ref": "#/$defs/id"
         },
-        "storage_location": {
-          "$ref": "#/$defs/reference"
-        },
-        "path": {
-          "$ref": "#/$defs/nonempty_string"
+        "locations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/file_location"
+          }
         },
         "size_bytes": {
           "type": "integer",
@@ -439,17 +500,11 @@
         "media_type": {
           "$ref": "#/$defs/media_type"
         },
-        "version": {
-          "$ref": "#/$defs/reference"
-        },
         "created": {
           "$ref": "#/$defs/date_time"
         },
         "modified": {
           "$ref": "#/$defs/date_time"
-        },
-        "status": {
-          "type": "string"
         },
         "role": {
           "enum": [
@@ -464,36 +519,151 @@
         "label": {
           "type": "string"
         },
+        "reel_name": {
+          "$ref": "#/$defs/nonempty_string"
+        },
+        "duration_seconds": {
+          "$ref": "#/$defs/seconds"
+        },
+        "bit_rate": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sequence": {
+          "$ref": "#/$defs/image_sequence"
+        },
         "extensions": {
           "$ref": "#/$defs/extensions"
         }
       },
       "required": [
-        "id",
+        "id"
+      ],
+      "additionalProperties": false,
+      "if": {
+        "required": [
+          "sequence"
+        ]
+      },
+      "then": {
+        "properties": {
+          "size_bytes": false,
+          "checksum": false
+        }
+      },
+      "else": {
+        "properties": {
+          "locations": {
+            "items": {
+              "properties": {
+                "missing_frames": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "file_location": {
+      "description": "One stored copy of a file.",
+      "type": "object",
+      "properties": {
+        "storage_location": {
+          "$ref": "#/$defs/reference"
+        },
+        "path": {
+          "$ref": "#/$defs/nonempty_string"
+        },
+        "availability": {
+          "enum": [
+            "online",
+            "nearline",
+            "offline"
+          ]
+        },
+        "missing_frames": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          },
+          "uniqueItems": true
+        },
+        "extensions": {
+          "$ref": "#/$defs/extensions"
+        }
+      },
+      "required": [
         "storage_location",
         "path"
       ],
       "additionalProperties": false
     },
-    "sequence_range": {
-      "description": "Image-sequence numbering in file names. Inclusive start, exclusive end. Not a timeline.",
+    "image_sequence": {
+      "description": "A compact image sequence: one numbered name pattern. Frame numbers name images, not timeline positions.",
       "type": "object",
       "properties": {
-        "start": {
+        "first_frame": {
           "type": "integer"
         },
-        "end": {
+        "last_frame": {
           "type": "integer"
+        },
+        "step": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "padding": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "images": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/sequence_image"
+          }
         }
       },
       "required": [
-        "start",
-        "end"
+        "first_frame",
+        "last_frame",
+        "step",
+        "padding"
+      ],
+      "additionalProperties": false
+    },
+    "sequence_image": {
+      "description": "The size or checksum of one image of a compact sequence.",
+      "type": "object",
+      "properties": {
+        "frame": {
+          "type": "integer"
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "checksum": {
+          "$ref": "#/$defs/checksum"
+        }
+      },
+      "required": [
+        "frame"
+      ],
+      "anyOf": [
+        {
+          "required": [
+            "size_bytes"
+          ]
+        },
+        {
+          "required": [
+            "checksum"
+          ]
+        }
       ],
       "additionalProperties": false
     },
     "member": {
-      "description": "One file's place in a file group.",
+      "description": "One track of a file group: a file, and the stream inside it when known.",
       "type": "object",
       "properties": {
         "file": {
@@ -512,17 +682,85 @@
           "type": "integer",
           "minimum": 0
         },
+        "stream_index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "segment_index": {
+          "description": "Order of this file within one recording that is split across several files. Numbering belongs to the original recording and starts at 0. Order only; a part start gives placement.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "start_frame": {
+          "$ref": "#/$defs/frame"
+        },
+        "start_seconds": {
+          "$ref": "#/$defs/seconds"
+        },
+        "sequence_frame": {
+          "type": "integer"
+        },
+        "label": {
+          "type": "string"
+        },
+        "language": {
+          "$ref": "#/$defs/track_language"
+        },
+        "codec": {
+          "$ref": "#/$defs/nonempty_string"
+        },
+        "bit_rate": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "duration_seconds": {
+          "$ref": "#/$defs/seconds"
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "display_aspect_ratio": {
+          "$ref": "#/$defs/ratio"
+        },
+        "bit_depth": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "frame_rate": {
+          "$ref": "#/$defs/rate"
+        },
+        "capture_frame_rate": {
+          "$ref": "#/$defs/rate"
+        },
+        "frame_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "scan_type": {
+          "enum": [
+            "progressive",
+            "interlaced"
+          ]
+        },
+        "sample_rate": {
+          "type": "integer",
+          "minimum": 1
+        },
         "channel_count": {
           "type": "integer",
           "minimum": 1
         },
-        "sequence_range": {
-          "$ref": "#/$defs/sequence_range"
-        },
-        "segment_index": {
-          "description": "Order of this file within one recording that is split across several files. Sequence order only.",
-          "type": "integer",
-          "minimum": 0
+        "channel_layout": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/channel_name"
+          }
         },
         "extensions": {
           "$ref": "#/$defs/extensions"
@@ -533,7 +771,163 @@
         "track_type",
         "track_index"
       ],
+      "additionalProperties": false,
+      "dependentRequired": {
+        "start_frame": [
+          "segment_index"
+        ],
+        "start_seconds": [
+          "segment_index"
+        ]
+      },
+      "not": {
+        "required": [
+          "segment_index",
+          "sequence_frame"
+        ]
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "track_type": {
+                "const": "audio"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "sample_rate": false,
+              "channel_count": false,
+              "channel_layout": false
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "track_type": {
+                "enum": [
+                  "video",
+                  "image"
+                ]
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "width": false,
+              "height": false,
+              "display_aspect_ratio": false
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "track_type": {
+                "const": "video"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "frame_rate": false,
+              "capture_frame_rate": false,
+              "frame_count": false,
+              "scan_type": false
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "track_type": {
+                "enum": [
+                  "video",
+                  "image",
+                  "audio"
+                ]
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "bit_depth": false
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "track_type": {
+                "const": "image"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "sequence_frame": false
+            }
+          }
+        }
+      ]
+    },
+    "ratio": {
+      "description": "A ratio of two positive integers, such as 16 to 9.",
+      "type": "object",
+      "properties": {
+        "numerator": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "denominator": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "numerator",
+        "denominator"
+      ],
       "additionalProperties": false
+    },
+    "track_language": {
+      "description": "A BCP 47 tag of a track. The tag und, in any letter case, is not allowed: absence states an unknown language.",
+      "allOf": [
+        {
+          "$ref": "#/$defs/language_tag"
+        },
+        {
+          "not": {
+            "pattern": "^[Uu][Nn][Dd]$"
+          }
+        }
+      ]
+    },
+    "channel_name": {
+      "enum": [
+        "mono",
+        "left",
+        "right",
+        "center",
+        "lfe",
+        "left_surround",
+        "right_surround",
+        "left_side_surround",
+        "right_side_surround",
+        "left_rear_surround",
+        "right_rear_surround",
+        "left_center",
+        "right_center",
+        "center_surround",
+        "left_total",
+        "right_total",
+        "left_top_front",
+        "right_top_front",
+        "left_top_rear",
+        "right_top_rear"
+      ]
     },
     "file_group": {
       "description": "An explicit set of files that belong together for one purpose.",
@@ -554,12 +948,6 @@
         "label": {
           "type": "string"
         },
-        "complete": {
-          "type": "boolean"
-        },
-        "version": {
-          "$ref": "#/$defs/reference"
-        },
         "members": {
           "type": "array",
           "minItems": 1,
@@ -574,14 +962,18 @@
       "required": [
         "id",
         "role",
-        "complete",
         "members"
       ],
       "additionalProperties": false
     },
     "version": {
-      "description": "One state of an asset. The greatest ordinal is current.",
+      "description": "One version of an asset and the information that belongs to it.",
       "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/$defs/timeline_rules"
+        }
+      ],
       "properties": {
         "id": {
           "$ref": "#/$defs/id"
@@ -599,6 +991,36 @@
         "modified": {
           "$ref": "#/$defs/date_time"
         },
+        "timing": {
+          "$ref": "#/$defs/timing"
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/file"
+          }
+        },
+        "file_groups": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/file_group"
+          }
+        },
+        "metadata": {
+          "$ref": "#/$defs/metadata"
+        },
+        "annotations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/embedded_annotation"
+          }
+        },
+        "relationships": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/relationship"
+          }
+        },
         "extensions": {
           "$ref": "#/$defs/extensions"
         }
@@ -609,8 +1031,1187 @@
       ],
       "additionalProperties": false
     },
-    "frame_range": {
-      "description": "A frame range on the target asset's timeline. Inclusive start, exclusive end.",
+    "timeline_rules": {
+      "description": "Timeline rules that need the timing of an asset or version: frame fields need a time base, labels need a source timecode at a label rate, and label syntax follows the rate and drop-frame flag of the time base, or of the timecode base in the seconds form.",
+      "allOf": [
+        {
+          "if": {
+            "not": {
+              "required": [
+                "timing"
+              ],
+              "properties": {
+                "timing": {
+                  "required": [
+                    "time_base"
+                  ]
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "annotations": {
+                "items": {
+                  "not": {
+                    "anyOf": [
+                      {
+                        "required": [
+                          "start_frame"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "end_frame"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "not": {
+              "required": [
+                "timing"
+              ],
+              "properties": {
+                "timing": {
+                  "required": [
+                    "source_timecode"
+                  ]
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "annotations": {
+                "items": {
+                  "not": {
+                    "anyOf": [
+                      {
+                        "required": [
+                          "start_timecode"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "end_timecode"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "timing"
+            ],
+            "properties": {
+              "timing": {
+                "required": [
+                  "time_base"
+                ],
+                "properties": {
+                  "time_base": {
+                    "properties": {
+                      "rate": {
+                        "not": {
+                          "$ref": "#/$defs/label_rate"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "timing": {
+                "not": {
+                  "required": [
+                    "source_timecode"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "timing"
+            ],
+            "properties": {
+              "timing": {
+                "required": [
+                  "time_base"
+                ],
+                "properties": {
+                  "time_base": {
+                    "const": {
+                      "rate": {
+                        "numerator": 24,
+                        "denominator": 1
+                      },
+                      "drop_frame": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "timing": {
+                "properties": {
+                  "source_timecode": {
+                    "$ref": "#/$defs/timecode_label_24"
+                  }
+                }
+              },
+              "annotations": {
+                "items": {
+                  "properties": {
+                    "start_timecode": {
+                      "$ref": "#/$defs/timecode_label_24"
+                    },
+                    "end_timecode": {
+                      "$ref": "#/$defs/timecode_label_24"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "timing"
+            ],
+            "properties": {
+              "timing": {
+                "required": [
+                  "time_base"
+                ],
+                "properties": {
+                  "time_base": {
+                    "const": {
+                      "rate": {
+                        "numerator": 24000,
+                        "denominator": 1001
+                      },
+                      "drop_frame": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "timing": {
+                "properties": {
+                  "source_timecode": {
+                    "$ref": "#/$defs/timecode_label_24"
+                  }
+                }
+              },
+              "annotations": {
+                "items": {
+                  "properties": {
+                    "start_timecode": {
+                      "$ref": "#/$defs/timecode_label_24"
+                    },
+                    "end_timecode": {
+                      "$ref": "#/$defs/timecode_label_24"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "timing"
+            ],
+            "properties": {
+              "timing": {
+                "required": [
+                  "time_base"
+                ],
+                "properties": {
+                  "time_base": {
+                    "const": {
+                      "rate": {
+                        "numerator": 25,
+                        "denominator": 1
+                      },
+                      "drop_frame": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "timing": {
+                "properties": {
+                  "source_timecode": {
+                    "$ref": "#/$defs/timecode_label_25"
+                  }
+                }
+              },
+              "annotations": {
+                "items": {
+                  "properties": {
+                    "start_timecode": {
+                      "$ref": "#/$defs/timecode_label_25"
+                    },
+                    "end_timecode": {
+                      "$ref": "#/$defs/timecode_label_25"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "timing"
+            ],
+            "properties": {
+              "timing": {
+                "required": [
+                  "time_base"
+                ],
+                "properties": {
+                  "time_base": {
+                    "const": {
+                      "rate": {
+                        "numerator": 30,
+                        "denominator": 1
+                      },
+                      "drop_frame": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "timing": {
+                "properties": {
+                  "source_timecode": {
+                    "$ref": "#/$defs/timecode_label_30"
+                  }
+                }
+              },
+              "annotations": {
+                "items": {
+                  "properties": {
+                    "start_timecode": {
+                      "$ref": "#/$defs/timecode_label_30"
+                    },
+                    "end_timecode": {
+                      "$ref": "#/$defs/timecode_label_30"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "timing"
+            ],
+            "properties": {
+              "timing": {
+                "required": [
+                  "time_base"
+                ],
+                "properties": {
+                  "time_base": {
+                    "const": {
+                      "rate": {
+                        "numerator": 30000,
+                        "denominator": 1001
+                      },
+                      "drop_frame": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "timing": {
+                "properties": {
+                  "source_timecode": {
+                    "$ref": "#/$defs/timecode_label_30"
+                  }
+                }
+              },
+              "annotations": {
+                "items": {
+                  "properties": {
+                    "start_timecode": {
+                      "$ref": "#/$defs/timecode_label_30"
+                    },
+                    "end_timecode": {
+                      "$ref": "#/$defs/timecode_label_30"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "timing"
+            ],
+            "properties": {
+              "timing": {
+                "required": [
+                  "time_base"
+                ],
+                "properties": {
+                  "time_base": {
+                    "const": {
+                      "rate": {
+                        "numerator": 30000,
+                        "denominator": 1001
+                      },
+                      "drop_frame": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "timing": {
+                "properties": {
+                  "source_timecode": {
+                    "$ref": "#/$defs/timecode_label_30_drop"
+                  }
+                }
+              },
+              "annotations": {
+                "items": {
+                  "properties": {
+                    "start_timecode": {
+                      "$ref": "#/$defs/timecode_label_30_drop"
+                    },
+                    "end_timecode": {
+                      "$ref": "#/$defs/timecode_label_30_drop"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "timing"
+            ],
+            "properties": {
+              "timing": {
+                "required": [
+                  "time_base"
+                ],
+                "properties": {
+                  "time_base": {
+                    "const": {
+                      "rate": {
+                        "numerator": 48,
+                        "denominator": 1
+                      },
+                      "drop_frame": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "timing": {
+                "properties": {
+                  "source_timecode": {
+                    "$ref": "#/$defs/timecode_label_48"
+                  }
+                }
+              },
+              "annotations": {
+                "items": {
+                  "properties": {
+                    "start_timecode": {
+                      "$ref": "#/$defs/timecode_label_48"
+                    },
+                    "end_timecode": {
+                      "$ref": "#/$defs/timecode_label_48"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "timing"
+            ],
+            "properties": {
+              "timing": {
+                "required": [
+                  "time_base"
+                ],
+                "properties": {
+                  "time_base": {
+                    "const": {
+                      "rate": {
+                        "numerator": 50,
+                        "denominator": 1
+                      },
+                      "drop_frame": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "timing": {
+                "properties": {
+                  "source_timecode": {
+                    "$ref": "#/$defs/timecode_label_50"
+                  }
+                }
+              },
+              "annotations": {
+                "items": {
+                  "properties": {
+                    "start_timecode": {
+                      "$ref": "#/$defs/timecode_label_50"
+                    },
+                    "end_timecode": {
+                      "$ref": "#/$defs/timecode_label_50"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "timing"
+            ],
+            "properties": {
+              "timing": {
+                "required": [
+                  "time_base"
+                ],
+                "properties": {
+                  "time_base": {
+                    "const": {
+                      "rate": {
+                        "numerator": 60,
+                        "denominator": 1
+                      },
+                      "drop_frame": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "timing": {
+                "properties": {
+                  "source_timecode": {
+                    "$ref": "#/$defs/timecode_label_60"
+                  }
+                }
+              },
+              "annotations": {
+                "items": {
+                  "properties": {
+                    "start_timecode": {
+                      "$ref": "#/$defs/timecode_label_60"
+                    },
+                    "end_timecode": {
+                      "$ref": "#/$defs/timecode_label_60"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "timing"
+            ],
+            "properties": {
+              "timing": {
+                "required": [
+                  "time_base"
+                ],
+                "properties": {
+                  "time_base": {
+                    "const": {
+                      "rate": {
+                        "numerator": 60000,
+                        "denominator": 1001
+                      },
+                      "drop_frame": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "timing": {
+                "properties": {
+                  "source_timecode": {
+                    "$ref": "#/$defs/timecode_label_60"
+                  }
+                }
+              },
+              "annotations": {
+                "items": {
+                  "properties": {
+                    "start_timecode": {
+                      "$ref": "#/$defs/timecode_label_60"
+                    },
+                    "end_timecode": {
+                      "$ref": "#/$defs/timecode_label_60"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "timing"
+            ],
+            "properties": {
+              "timing": {
+                "required": [
+                  "time_base"
+                ],
+                "properties": {
+                  "time_base": {
+                    "const": {
+                      "rate": {
+                        "numerator": 60000,
+                        "denominator": 1001
+                      },
+                      "drop_frame": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "timing": {
+                "properties": {
+                  "source_timecode": {
+                    "$ref": "#/$defs/timecode_label_60_drop"
+                  }
+                }
+              },
+              "annotations": {
+                "items": {
+                  "properties": {
+                    "start_timecode": {
+                      "$ref": "#/$defs/timecode_label_60_drop"
+                    },
+                    "end_timecode": {
+                      "$ref": "#/$defs/timecode_label_60_drop"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "timing"
+            ],
+            "properties": {
+              "timing": {
+                "required": [
+                  "timecode_base"
+                ],
+                "properties": {
+                  "timecode_base": {
+                    "const": {
+                      "rate": {
+                        "numerator": 24,
+                        "denominator": 1
+                      },
+                      "drop_frame": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "timing": {
+                "properties": {
+                  "source_timecode": {
+                    "$ref": "#/$defs/timecode_label_24"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "timing"
+            ],
+            "properties": {
+              "timing": {
+                "required": [
+                  "timecode_base"
+                ],
+                "properties": {
+                  "timecode_base": {
+                    "const": {
+                      "rate": {
+                        "numerator": 24000,
+                        "denominator": 1001
+                      },
+                      "drop_frame": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "timing": {
+                "properties": {
+                  "source_timecode": {
+                    "$ref": "#/$defs/timecode_label_24"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "timing"
+            ],
+            "properties": {
+              "timing": {
+                "required": [
+                  "timecode_base"
+                ],
+                "properties": {
+                  "timecode_base": {
+                    "const": {
+                      "rate": {
+                        "numerator": 25,
+                        "denominator": 1
+                      },
+                      "drop_frame": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "timing": {
+                "properties": {
+                  "source_timecode": {
+                    "$ref": "#/$defs/timecode_label_25"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "timing"
+            ],
+            "properties": {
+              "timing": {
+                "required": [
+                  "timecode_base"
+                ],
+                "properties": {
+                  "timecode_base": {
+                    "const": {
+                      "rate": {
+                        "numerator": 30,
+                        "denominator": 1
+                      },
+                      "drop_frame": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "timing": {
+                "properties": {
+                  "source_timecode": {
+                    "$ref": "#/$defs/timecode_label_30"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "timing"
+            ],
+            "properties": {
+              "timing": {
+                "required": [
+                  "timecode_base"
+                ],
+                "properties": {
+                  "timecode_base": {
+                    "const": {
+                      "rate": {
+                        "numerator": 30000,
+                        "denominator": 1001
+                      },
+                      "drop_frame": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "timing": {
+                "properties": {
+                  "source_timecode": {
+                    "$ref": "#/$defs/timecode_label_30"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "timing"
+            ],
+            "properties": {
+              "timing": {
+                "required": [
+                  "timecode_base"
+                ],
+                "properties": {
+                  "timecode_base": {
+                    "const": {
+                      "rate": {
+                        "numerator": 30000,
+                        "denominator": 1001
+                      },
+                      "drop_frame": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "timing": {
+                "properties": {
+                  "source_timecode": {
+                    "$ref": "#/$defs/timecode_label_30_drop"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "timing"
+            ],
+            "properties": {
+              "timing": {
+                "required": [
+                  "timecode_base"
+                ],
+                "properties": {
+                  "timecode_base": {
+                    "const": {
+                      "rate": {
+                        "numerator": 48,
+                        "denominator": 1
+                      },
+                      "drop_frame": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "timing": {
+                "properties": {
+                  "source_timecode": {
+                    "$ref": "#/$defs/timecode_label_48"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "timing"
+            ],
+            "properties": {
+              "timing": {
+                "required": [
+                  "timecode_base"
+                ],
+                "properties": {
+                  "timecode_base": {
+                    "const": {
+                      "rate": {
+                        "numerator": 50,
+                        "denominator": 1
+                      },
+                      "drop_frame": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "timing": {
+                "properties": {
+                  "source_timecode": {
+                    "$ref": "#/$defs/timecode_label_50"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "timing"
+            ],
+            "properties": {
+              "timing": {
+                "required": [
+                  "timecode_base"
+                ],
+                "properties": {
+                  "timecode_base": {
+                    "const": {
+                      "rate": {
+                        "numerator": 60,
+                        "denominator": 1
+                      },
+                      "drop_frame": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "timing": {
+                "properties": {
+                  "source_timecode": {
+                    "$ref": "#/$defs/timecode_label_60"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "timing"
+            ],
+            "properties": {
+              "timing": {
+                "required": [
+                  "timecode_base"
+                ],
+                "properties": {
+                  "timecode_base": {
+                    "const": {
+                      "rate": {
+                        "numerator": 60000,
+                        "denominator": 1001
+                      },
+                      "drop_frame": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "timing": {
+                "properties": {
+                  "source_timecode": {
+                    "$ref": "#/$defs/timecode_label_60"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "timing"
+            ],
+            "properties": {
+              "timing": {
+                "required": [
+                  "timecode_base"
+                ],
+                "properties": {
+                  "timecode_base": {
+                    "const": {
+                      "rate": {
+                        "numerator": 60000,
+                        "denominator": 1001
+                      },
+                      "drop_frame": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "timing": {
+                "properties": {
+                  "source_timecode": {
+                    "$ref": "#/$defs/timecode_label_60_drop"
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "unassigned": {
+      "description": "Information of an asset with versions whose version the source does not state. It has no timeline.",
+      "type": "object",
+      "properties": {
+        "files": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/file"
+          }
+        },
+        "file_groups": {
+          "type": "array",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/file_group"
+              },
+              {
+                "$ref": "#/$defs/without_part_starts"
+              }
+            ]
+          }
+        },
+        "metadata": {
+          "$ref": "#/$defs/metadata"
+        },
+        "annotations": {
+          "type": "array",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/embedded_annotation"
+              },
+              {
+                "$ref": "#/$defs/without_position"
+              }
+            ]
+          }
+        },
+        "relationships": {
+          "type": "array",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/relationship"
+              },
+              {
+                "$ref": "#/$defs/not_subclip"
+              }
+            ]
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "without_position": {
+      "description": "An annotation with no position field.",
+      "not": {
+        "anyOf": [
+          {
+            "required": [
+              "start_frame"
+            ]
+          },
+          {
+            "required": [
+              "end_frame"
+            ]
+          },
+          {
+            "required": [
+              "start_seconds"
+            ]
+          },
+          {
+            "required": [
+              "end_seconds"
+            ]
+          },
+          {
+            "required": [
+              "start_timecode"
+            ]
+          },
+          {
+            "required": [
+              "end_timecode"
+            ]
+          },
+          {
+            "required": [
+              "start_sample"
+            ]
+          },
+          {
+            "required": [
+              "end_sample"
+            ]
+          }
+        ]
+      }
+    },
+    "without_part_starts": {
+      "description": "A file group whose members carry no part start.",
+      "properties": {
+        "members": {
+          "items": {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "start_frame"
+                  ]
+                },
+                {
+                  "required": [
+                    "start_seconds"
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "not_subclip": {
+      "description": "A relationship whose type is not subclip_of.",
+      "not": {
+        "required": [
+          "type"
+        ],
+        "properties": {
+          "type": {
+            "const": "subclip_of"
+          }
+        }
+      }
+    },
+    "time_range": {
+      "description": "A range on the target timeline, in frames, seconds, or both. Inclusive start, exclusive end.",
       "type": "object",
       "properties": {
         "start_frame": {
@@ -618,19 +2219,43 @@
         },
         "end_frame": {
           "$ref": "#/$defs/frame"
+        },
+        "start_seconds": {
+          "$ref": "#/$defs/seconds"
+        },
+        "end_seconds": {
+          "$ref": "#/$defs/seconds"
         }
       },
-      "required": [
-        "start_frame",
-        "end_frame"
-      ],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "dependentRequired": {
+        "start_frame": [
+          "end_frame"
+        ],
+        "end_frame": [
+          "start_frame"
+        ]
+      },
+      "anyOf": [
+        {
+          "required": [
+            "start_frame",
+            "end_frame"
+          ]
+        },
+        {
+          "required": [
+            "start_seconds",
+            "end_seconds"
+          ]
+        }
+      ]
     },
     "relationship": {
       "description": "A typed link from this asset to a target asset. A subclip requires a range.",
       "type": "object",
       "properties": {
-        "kind": {
+        "type": {
           "enum": [
             "derived_from",
             "subclip_of",
@@ -641,7 +2266,10 @@
           "$ref": "#/$defs/reference"
         },
         "range": {
-          "$ref": "#/$defs/frame_range"
+          "$ref": "#/$defs/time_range"
+        },
+        "target_version": {
+          "$ref": "#/$defs/reference"
         },
         "description": {
           "type": "string"
@@ -651,13 +2279,13 @@
         }
       },
       "required": [
-        "kind",
+        "type",
         "target"
       ],
       "additionalProperties": false,
       "if": {
         "properties": {
-          "kind": {
+          "type": {
             "const": "subclip_of"
           }
         }
@@ -718,7 +2346,7 @@
       "additionalProperties": false
     },
     "metadata": {
-      "description": "Metadata values on an asset, collection, or annotation.",
+      "description": "Metadata values on an asset, a version, an unassigned area, a collection, or an annotation.",
       "type": "array",
       "items": {
         "$ref": "#/$defs/metadata_value"
@@ -785,44 +2413,34 @@
       ],
       "additionalProperties": false
     },
-    "collection_members": {
-      "description": "Membership owned by the collection record.",
+    "membership": {
+      "description": "One membership of this record in a collection.",
       "type": "object",
       "properties": {
-        "complete": {
-          "type": "boolean"
+        "collection": {
+          "$ref": "#/$defs/reference"
         },
-        "assets": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/reference"
-          }
+        "position": {
+          "type": "integer"
+        },
+        "extensions": {
+          "$ref": "#/$defs/extensions"
         }
       },
       "required": [
-        "complete",
-        "assets"
+        "collection"
       ],
       "additionalProperties": false
     },
-    "connection": {
-      "description": "Non-secret connection facts: a required method token and an optional opaque credential reference.",
-      "type": "object",
-      "properties": {
-        "method": {
-          "$ref": "#/$defs/token"
-        },
-        "credential_reference": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "method"
-      ],
-      "additionalProperties": false
+    "member_of": {
+      "description": "The collections this record belongs to. Membership is recorded on the member only.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/membership"
+      }
     },
     "annotation_fields": {
-      "description": "Fields shared by embedded and standalone annotations. Not closed on its own.",
+      "description": "Fields of an annotation. Not closed on its own.",
       "type": "object",
       "properties": {
         "purpose": {
@@ -847,6 +2465,12 @@
         },
         "author": {
           "type": "string"
+        },
+        "visibility": {
+          "enum": [
+            "public",
+            "private"
+          ]
         },
         "language": {
           "$ref": "#/$defs/language_tag"
@@ -875,8 +2499,13 @@
         "end_timecode": {
           "$ref": "#/$defs/timecode_label"
         },
-        "version": {
-          "$ref": "#/$defs/reference"
+        "start_sample": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "end_sample": {
+          "type": "integer",
+          "minimum": 0
         },
         "metadata": {
           "$ref": "#/$defs/metadata"
@@ -892,22 +2521,41 @@
         "end_frame": [
           "start_frame"
         ],
-        "start_seconds": [
-          "start_frame"
-        ],
-        "end_seconds": [
-          "end_frame"
-        ],
         "start_timecode": [
           "start_frame"
         ],
         "end_timecode": [
           "end_frame"
+        ],
+        "start_sample": [
+          "start_seconds"
+        ],
+        "end_sample": [
+          "end_seconds"
         ]
+      },
+      "if": {
+        "required": [
+          "start_frame"
+        ]
+      },
+      "then": {
+        "dependentRequired": {
+          "end_seconds": [
+            "end_frame"
+          ]
+        }
+      },
+      "else": {
+        "dependentRequired": {
+          "end_seconds": [
+            "start_seconds"
+          ]
+        }
       }
     },
     "embedded_annotation": {
-      "description": "An annotation inside an asset. It has no asset, type, or spec_version field. It may carry source provenance.",
+      "description": "An annotation inside an asset, a version, or an unassigned area. It has no asset, type, or spec_version field. It may carry source provenance.",
       "$ref": "#/$defs/annotation_fields",
       "properties": {
         "id": {
@@ -939,7 +2587,7 @@
       ],
       "additionalProperties": false
     },
-    "registry_counts": {
+    "record_list_counts": {
       "description": "Declared record count per package array.",
       "type": "object",
       "properties": {
@@ -958,43 +2606,6 @@
         "assets": {
           "type": "integer",
           "minimum": 0
-        }
-      },
-      "required": [
-        "storage_locations",
-        "metadata_definitions",
-        "collections",
-        "assets"
-      ],
-      "additionalProperties": false
-    },
-    "registry_completeness": {
-      "description": "Whether each package array is the producer's whole set for that kind.",
-      "type": "object",
-      "properties": {
-        "storage_locations": {
-          "enum": [
-            "complete",
-            "partial"
-          ]
-        },
-        "metadata_definitions": {
-          "enum": [
-            "complete",
-            "partial"
-          ]
-        },
-        "collections": {
-          "enum": [
-            "complete",
-            "partial"
-          ]
-        },
-        "assets": {
-          "enum": [
-            "complete",
-            "partial"
-          ]
         }
       },
       "required": [
@@ -1031,7 +2642,7 @@
       "additionalProperties": false
     },
     "manifest": {
-      "description": "Who produced the package, when, declared counts and completeness, and the extension namespaces used.",
+      "description": "Who produced the package, when, declared counts, and the extension namespaces used.",
       "type": "object",
       "properties": {
         "producer": {
@@ -1041,10 +2652,7 @@
           "$ref": "#/$defs/date_time"
         },
         "counts": {
-          "$ref": "#/$defs/registry_counts"
-        },
-        "completeness": {
-          "$ref": "#/$defs/registry_completeness"
+          "$ref": "#/$defs/record_list_counts"
         },
         "namespaces": {
           "type": "array",
@@ -1060,7 +2668,6 @@
         "producer",
         "produced_at",
         "counts",
-        "completeness",
         "namespaces"
       ],
       "additionalProperties": false

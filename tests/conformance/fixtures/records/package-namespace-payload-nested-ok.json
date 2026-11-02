@@ -1,6 +1,6 @@
 {
   "type": "package",
-  "spec_version": "2.0.0-draft.2",
+  "spec_version": "2.0.0-draft.3",
   "id": "pkg-0001",
   "manifest": {
     "producer": {
@@ -14,28 +14,17 @@
       "collections": 0,
       "assets": 1
     },
-    "completeness": {
-      "storage_locations": "complete",
-      "metadata_definitions": "complete",
-      "collections": "complete",
-      "assets": "complete"
-    },
     "namespaces": [
       {
         "token": "vendor_a",
-        "owner": "Vendor A"
+        "owner": "Example Vendor A"
       }
     ]
   },
   "assets": [
     {
-      "type": "asset",
-      "spec_version": "2.0.0-draft.2",
       "id": "a-0001",
       "title": "Example Clip",
-      "access": {
-        "status": "none"
-      },
       "extensions": {
         "vendor_a": {
           "extensions": {
