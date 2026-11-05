@@ -1,0 +1,2 @@
+{"id":"sl-01","name":"Example Shared Volume","system":"network_share","root":"server_a:/export/example_volume/","status":"online"}
+{"id":"sl-02","name":"Example Object Store","system":"s3","root":"example-bucket"}

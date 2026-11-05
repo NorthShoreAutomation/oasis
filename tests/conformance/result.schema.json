@@ -12,7 +12,7 @@
           "const": "oasis-python-reference-harness"
         },
         "version": {
-          "const": "2.0.0-draft.3"
+          "const": "2.0.0-draft.4"
         },
         "dependencies": {
           "type": "array",
@@ -33,6 +33,12 @@
       "type": [
         "string",
         "null"
+      ]
+    },
+    "form": {
+      "enum": [
+        "single-document",
+        "multi-file"
       ]
     },
     "input_sha256": {
@@ -65,7 +71,7 @@
     },
     "spec_version": {
       "enum": [
-        "2.0.0-draft.3",
+        "2.0.0-draft.4",
         null
       ]
     },
@@ -113,6 +119,7 @@
   "required": [
     "harness",
     "file",
+    "form",
     "input_sha256",
     "bundle_manifest_sha256",
     "type",
@@ -246,10 +253,25 @@
             "DEFINITION_REPEATED",
             "DEFINITION_SHARED_AND_VERSIONED",
             "FILE_REFERENCE_UNRESOLVED",
+            "FILE_UNLISTED",
             "ID_DUPLICATE",
             "INPUT_INVALID",
             "LOCATION_DUPLICATE",
+            "MANIFEST_FILE_NAME",
             "MEMBERSHIP_DUPLICATE",
+            "MEMBERS_SMALL",
+            "MEMBER_CHECKSUM_MISMATCH",
+            "MEMBER_COMPRESSION_MISMATCH",
+            "MEMBER_COUNT_MISMATCH",
+            "MEMBER_EMPTY_UNEXPECTED",
+            "MEMBER_LINE_INVALID",
+            "MEMBER_MISSING",
+            "MEMBER_NOT_REGULAR",
+            "MEMBER_PATH_CASE_COLLISION",
+            "MEMBER_PATH_DUPLICATE",
+            "MEMBER_SIZE_MISMATCH",
+            "MEMBER_TYPE_MISMATCH",
+            "MEMBER_UNLISTED",
             "NAMESPACE_DECLARED_TWICE",
             "NAMESPACE_UNDECLARED",
             "NESTED_ID_DUPLICATE",
@@ -312,6 +334,16 @@
         "message": {
           "type": "string",
           "minLength": 1
+        },
+        "member": {
+          "$ref": "#/$defs/member"
+        },
+        "line": {
+          "$ref": "#/$defs/line"
+        },
+        "unlisted_path": {
+          "type": "string",
+          "minLength": 1
         }
       },
       "required": [
@@ -332,6 +364,12 @@
         "keyword": {
           "type": "string",
           "minLength": 1
+        },
+        "member": {
+          "$ref": "#/$defs/member"
+        },
+        "line": {
+          "$ref": "#/$defs/line"
         }
       },
       "required": [
@@ -339,6 +377,14 @@
         "keyword"
       ],
       "additionalProperties": false
+    },
+    "member": {
+      "type": "string",
+      "pattern": "^/manifest/members/(0|[1-9][0-9]*)$"
+    },
+    "line": {
+      "type": "integer",
+      "minimum": 1
     }
   }
 }

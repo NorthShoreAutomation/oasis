@@ -12,7 +12,7 @@ from tests.conformance.types import Diagnostic, Routing
 REPO = Path(__file__).resolve().parents[2]
 RECORDS = Path(__file__).resolve().parent / "fixtures" / "records"
 
-DRAFT3 = "2.0.0-draft.3"
+DRAFT4 = "2.0.0-draft.4"
 NOT_DOCUMENT = ("NOT_EXCHANGE_DOCUMENT", "")
 NOT_DOCUMENT_AT_TYPE = ("NOT_EXCHANGE_DOCUMENT", "/type")
 VERSION_BAD = ("VERSION_UNSUPPORTED", "/spec_version")
@@ -28,11 +28,11 @@ CASES = {
     "routing-spec-version-unknown-draft": ("unsupported", None, None, [VERSION_BAD]),
     "routing-previous-draft": ("unsupported", None, None, [VERSION_BAD]),
     "routing-version-before-numbers": ("unsupported", None, None, [VERSION_BAD]),
-    "routing-no-type": ("unsupported", None, DRAFT3, [NOT_DOCUMENT]),
-    "routing-type-unknown": ("unsupported", None, DRAFT3, [NOT_DOCUMENT_AT_TYPE]),
-    "routing-type-number": ("unsupported", None, DRAFT3, [NOT_DOCUMENT_AT_TYPE]),
-    "routing-standalone-asset": ("unsupported", None, DRAFT3, [NOT_DOCUMENT_AT_TYPE]),
-    "routing-ok-minimal-package": ("selected", "package", DRAFT3, []),
+    "routing-no-type": ("unsupported", None, DRAFT4, [NOT_DOCUMENT]),
+    "routing-type-unknown": ("unsupported", None, DRAFT4, [NOT_DOCUMENT_AT_TYPE]),
+    "routing-type-number": ("unsupported", None, DRAFT4, [NOT_DOCUMENT_AT_TYPE]),
+    "routing-standalone-asset": ("unsupported", None, DRAFT4, [NOT_DOCUMENT_AT_TYPE]),
+    "routing-ok-minimal-package": ("selected", "package", DRAFT4, []),
 }
 
 
@@ -92,15 +92,20 @@ class RoutingFixtureTests(unittest.TestCase):
         self.assertEqual([(d.code, d.path) for d in route("package").diagnostics], [NOT_DOCUMENT])
 
     def test_version_compare_is_exact(self):
-        for version in ("2.0.0-DRAFT.3", " 2.0.0-draft.3", "2.0.0-draft.3 ", "2.0.0-draft.03", "2.0.0"):
+        for version in ("2.0.0-DRAFT.4", " 2.0.0-draft.4", "2.0.0-draft.4 ", "2.0.0-draft.04", "2.0.0"):
             with self.subTest(version=version):
                 r = route({"spec_version": version, "type": "package"})
                 self.assertEqual([(d.code, d.path) for d in r.diagnostics], [VERSION_BAD])
                 self.assertIsNone(r.spec_version)
 
+    def test_draft3_is_unsupported_and_draft4_routes(self):
+        self.assertEqual(route({"type": "package", "spec_version": "2.0.0-draft.3"}).status, "unsupported")
+        routed = route({"type": "package", "spec_version": "2.0.0-draft.4"})
+        self.assertEqual((routed.status, routed.kind, routed.spec_version), ("selected", "package", "2.0.0-draft.4"))
+
     def test_constants(self):
         self.assertEqual(KINDS, ("package",))
-        self.assertEqual(SUPPORTED_VERSIONS, {DRAFT3: ("package",)})
+        self.assertEqual(SUPPORTED_VERSIONS, {DRAFT4: ("package",)})
 
 
 class RoutingIsolationTests(unittest.TestCase):

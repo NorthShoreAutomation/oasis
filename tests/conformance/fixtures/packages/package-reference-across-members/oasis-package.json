@@ -1,0 +1,35 @@
+{
+  "type": "package",
+  "spec_version": "2.0.0-draft.4",
+  "id": "pkg-0001",
+  "manifest": {
+    "producer": {
+      "name": "example-exporter",
+      "version": "0.1.0"
+    },
+    "produced_at": "2026-10-05T09:00:00Z",
+    "counts": {
+      "storage_locations": 0,
+      "metadata_definitions": 0,
+      "collections": 0,
+      "assets": 2
+    },
+    "namespaces": [],
+    "members": [
+      {
+        "path": "assets/part-00001.jsonl",
+        "record_type": "assets",
+        "count": 1,
+        "size_bytes": 99,
+        "sha256": "6127862b3f2617b0d98886bbf0005f49d885f3e1fcd16ff16c02d392b4a8ce79"
+      },
+      {
+        "path": "assets/part-00002.jsonl",
+        "record_type": "assets",
+        "count": 1,
+        "size_bytes": 99,
+        "sha256": "5fa1d56f89b2de63778d3e688a8624020b3725eeb6272a9d642b192a33ed3071"
+      }
+    ]
+  }
+}

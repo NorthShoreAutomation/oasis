@@ -18,7 +18,8 @@ from pathlib import Path
 from unittest import mock
 
 from tests.conformance.document import route
-from tests.conformance.semantic import PackageContext, check, check_package, diagnostic, json_equal, resolve
+from tests.conformance.package_check import Context
+from tests.conformance.semantic import check, check_package, diagnostic, json_equal, resolve
 from tests.conformance.strict_json import parse_input
 from tests.conformance.types import Routing
 
@@ -34,7 +35,12 @@ def _parsed(path):
 
 def _valid_fixture_paths():
     manifest = json.loads((FIXTURES / "manifest.json").read_text(encoding="utf-8"))
-    return [FIXTURES / c["path"] for c in manifest["cases"] if c["expected_structural"] == "valid"]
+    # A package case is a folder of member files, not one document.
+    return [
+        FIXTURES / c["path"]
+        for c in manifest["cases"]
+        if c["expected_structural"] == "valid" and c["path"].startswith("records/")
+    ]
 
 
 def _pairs(diagnostics):
@@ -45,7 +51,7 @@ def _package(**lists):
     """A minimal package; the counts match the given record lists."""
     package = {
         "type": "package",
-        "spec_version": "2.0.0-draft.3",
+        "spec_version": "2.0.0-draft.4",
         "id": "pkg-0001",
         "manifest": {
             "producer": {"name": "example-exporter", "version": "0.1.0"},
@@ -253,11 +259,10 @@ class JsonEqualTests(unittest.TestCase):
 
 class ResolveTests(unittest.TestCase):
     def context(self):
-        return PackageContext(
+        return Context(
             storage_locations={"sl-01": {"id": "sl-01"}},
             metadata_definitions={},
             collections={},
-            assets={},
             namespaces=frozenset(),
         )
 

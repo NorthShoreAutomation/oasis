@@ -1,4 +1,4 @@
-"""Semantic checks of the 2.0.0-draft.3 contract that a schema cannot express (Appendix B).
+"""Semantic checks of the 2.0.0-draft.4 contract that a schema cannot express (Appendix B).
 
 The diagnostic catalog lives here and nowhere else. Every check reads the
 exact-number tree from ``strict_json`` and never changes it (``DOC-3``).
@@ -12,7 +12,10 @@ limits (``DOC-4``), and structural validation. The checks rely on the schema
 for field presence and JSON types and do not repeat it.
 
 Only a package is checked (``REC-2``). Every reference resolves inside the
-package (``PKG-6``). An asset holds its information in holders: the asset
+package (``PKG-6``). The record checks here run on one record at a time;
+``package_check`` feeds them records in list order and runs the checks
+that need every asset (asset references and relationship targets) after
+the last asset. An asset holds its information in holders: the asset
 level, each version in array order, and ``unassigned``. A holder has a
 timeline only when its ``timing`` defines one (``TIME-12``): the asset level
 of an asset with no versions, or a version. Absent and empty ``versions``
@@ -22,27 +25,31 @@ Messages are fixed catalog text and never carry an input value, and no
 pointer ever carries an extension key.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from decimal import Decimal
 from fractions import Fraction
 from math import gcd
 
+from tests.conformance import exact_json
 from tests.conformance.formats import check_date, check_date_time
 from tests.conformance.timecode import LABEL_RATES, derive_label, nearest_frame
 from tests.conformance.types import Diagnostic
 
 __all__ = [
     "CATALOG",
-    "PackageContext",
+    "REGISTRIES",
+    "AssetSummary",
     "Timeline",
     "as_int",
     "check",
     "check_package",
+    "check_relationship_target",
     "check_value_shape",
     "diagnostic",
     "json_equal",
     "pointer",
     "resolve",
+    "summarize_asset",
     "timeline_of",
 ]
 
@@ -191,6 +198,30 @@ CATALOG = {
     "DEFINITION_REPEATED": ("MD-5", "error", "A metadata list names the same definition twice."),
     "NAMESPACE_UNDECLARED": ("EXT-2", "error", "An extension namespace is used but not declared in the manifest."),
     "NAMESPACE_DECLARED_TWICE": ("EXT-2", "error", "A namespace token is declared more than once."),
+    # Multi-file package codes. Messages are fixed text: they never carry a path or another input value.
+    "MANIFEST_FILE_NAME": ("MFP-1", "error", "A multi-file manifest file is not named oasis-package.json."),
+    "MEMBER_PATH_DUPLICATE": ("MFP-2", "error", "A member list repeats a member path."),
+    "MEMBER_PATH_CASE_COLLISION": ("MFP-2", "error", "Two member paths differ only in letter case."),
+    "MEMBER_TYPE_MISMATCH": ("MFP-2", "error", "A member record_type differs from the first segment of its path."),
+    "MEMBER_MISSING": ("MFP-3", "error", "A listed member file does not exist."),
+    "MEMBER_NOT_REGULAR": (
+        "MFP-3",
+        "error",
+        "A listed member path is a link, or it is not a regular file in regular folders.",
+    ),
+    "MEMBER_SIZE_MISMATCH": ("MFP-3", "error", "A member file size differs from its size_bytes."),
+    "MEMBER_CHECKSUM_MISMATCH": ("MFP-3", "error", "A member file SHA-256 differs from its sha256."),
+    "MEMBER_UNLISTED": ("MFP-3", "error", "A file in a record folder is not listed in the manifest."),
+    "FILE_UNLISTED": ("MFP-3", "warning", "A file outside the record folders is not listed in the manifest."),
+    "MEMBER_COMPRESSION_MISMATCH": ("MFP-4", "error", "A member file is not compressed as its name says."),
+    "MEMBER_LINE_INVALID": ("MFP-4", "error", "A line of a member file breaks the line rules."),
+    "MEMBER_COUNT_MISMATCH": ("MFP-5", "error", "A member count differs from the number of lines in its file."),
+    "MEMBER_EMPTY_UNEXPECTED": (
+        "MFP-6",
+        "error",
+        "A member file has no records, but its list has records in other member files.",
+    ),
+    "MEMBERS_SMALL": ("MFP-3", "warning", "A list has several member files that hold few records each."),
 }
 
 
@@ -238,10 +269,6 @@ def _items(record, key):
         yield from enumerate(array)
 
 
-def _sorted(diagnostics):
-    return sorted(diagnostics, key=lambda d: (d.path, d.code))
-
-
 def _is_json_number(value):
     return isinstance(value, (int, Decimal)) and not isinstance(value, bool)
 
@@ -287,30 +314,18 @@ def _scalar_key(value):
 
 # Package context.
 
+# The record lists, in the order a package gives them to the checks.
 REGISTRIES = ("storage_locations", "metadata_definitions", "collections", "assets")
-
-
-@dataclass(frozen=True)
-class PackageContext:
-    """What the checks of one package resolve against (``PKG-6``).
-
-    Each registry maps an id to the first record with that id (``ID-1``
-    reports every later one). ``namespaces`` holds the declared extension
-    tokens (``EXT-2``).
-    """
-
-    storage_locations: dict
-    metadata_definitions: dict
-    collections: dict
-    assets: dict
-    namespaces: frozenset
 
 
 def resolve(context, registry: str, target, path: str):
     """PKG-6 and ID-5: resolve the reference ``target`` in ``registry``.
 
-    Returns ``(record, None)`` when found, else ``(None, d)`` where ``d`` is
-    ``REFERENCE_UNRESOLVED`` at ``path``. Ids compare exactly.
+    ``registry`` is ``storage_locations``, ``metadata_definitions``, or
+    ``collections``: the context maps each id to the first record with that
+    id. A reference to an asset is deferred with ``context.require``
+    instead. Returns ``(record, None)`` when found, else ``(None, d)`` where
+    ``d`` is ``REFERENCE_UNRESOLVED`` at ``path``. Ids compare exactly.
     """
     records = getattr(context, registry)
     if isinstance(target, str) and target in records:
@@ -643,7 +658,10 @@ def _check_value_references(definition, value, value_path, context):
     """MD-6: reference-typed values resolve under PKG-6, one diagnostic per unresolved item.
 
     A ``single`` value is reported at ``value``, a ``multiple`` item at
-    ``value/<k>``. Items that are not strings already failed MD-4.
+    ``value/<k>``. Items that are not strings already failed MD-4. An
+    ``asset_reference`` item is deferred with ``context.require``, because
+    the asset it names can come later; a ``collection_reference`` item
+    resolves at once.
     """
     registry = _REFERENCE_REGISTRY.get(definition["value_type"])
     if registry is None:
@@ -656,7 +674,11 @@ def _check_value_references(definition, value, value_path, context):
         items = []
     out = []
     for item_path, item in items:
-        if isinstance(item, str):
+        if not isinstance(item, str):
+            continue
+        if registry == "assets":
+            context.require(registry, item, item_path)
+        else:
             _resolve_into(out, context, registry, item, item_path)
     return out
 
@@ -953,20 +975,51 @@ def _check_relationship_duplicates(holder, holder_path):
     return out
 
 
+@dataclass(frozen=True)
+class AssetSummary:
+    """The parts of an asset that the checks of a relationship to it read (REL-6).
+
+    ``has_versions`` is true when ``versions`` holds an item (``VER-1``).
+    ``versions`` holds ``(id, timing)`` for each version in array order,
+    where ``timing`` is the version ``timing`` value or ``None``. ``timing``
+    is the asset-level ``timing`` value or ``None``. Values are exact-number
+    JSON values, so a summary can be kept as text (``to_text``) and read back
+    (``from_text``) with no change.
+    """
+
+    has_versions: bool
+    versions: tuple[tuple[str, object], ...]
+    timing: object | None
+
+    def to_text(self) -> str:
+        return exact_json.dumps([self.has_versions, [list(v) for v in self.versions], self.timing])
+
+    @classmethod
+    def from_text(cls, text: str) -> "AssetSummary":
+        has_versions, versions, timing = exact_json.loads(text)
+        return cls(has_versions, tuple((version_id, t) for version_id, t in versions), timing)
+
+
+def summarize_asset(asset: dict) -> AssetSummary:
+    """Return the ``AssetSummary`` of an asset."""
+    versions = tuple((v.get("id"), v.get("timing")) for _i, v in _items(asset, "versions"))
+    return AssetSummary(bool(versions), versions, asset.get("timing"))
+
+
 def _target_timeline(target, relationship):
     """REL-6: return ``(known, timeline)`` of the target timeline of a relationship.
 
-    Known when ``target_version`` resolves, or when it is absent and the
-    target has no versions.
+    ``target`` is the ``AssetSummary`` of the target. Known when
+    ``target_version`` resolves, or when it is absent and the target has no
+    versions.
     """
-    versions = [v for _i, v in _items(target, "versions")]
     if "target_version" in relationship:
-        for version in versions:
-            if version.get("id") == relationship["target_version"]:
-                return True, timeline_of(version.get("timing"))
+        for version_id, timing in target.versions:
+            if version_id == relationship["target_version"]:
+                return True, timeline_of(timing)
         return False, None
-    if not versions:
-        return True, timeline_of(target.get("timing"))
+    if not target.has_versions:
+        return True, timeline_of(target.timing)
     return False, None
 
 
@@ -1009,38 +1062,48 @@ def _check_subclip(relationship, rel_path, holder_timeline, target_timeline):
     return []
 
 
-def _check_relationship(asset, relationship, rel_path, holder_timeline, context):
-    """REL-3, REL-4, REL-6, TIME-4, and the target-timeline checks for one relationship.
+def _check_relationship(asset, relationship, rel_path, holder_timing, context):
+    """REL-3 and TIME-4 for one relationship, then defer the checks against its target.
 
-    REL-3: ``target`` is not the asset's own id and resolves under PKG-6.
-    TIME-4: a ``range`` ends after it starts, always. When ``target``
-    resolves: a ``target_version`` names a version of the target
-    (``VERSION_REFERENCE_UNRESOLVED``), and a ``range`` with no
-    ``target_version`` on a target with versions is
-    ``TARGET_VERSION_REQUIRED`` at the relationship. When the target timeline
-    is known (REL-6), a range with frame fields on a timeline not in the
-    frame form gives ``TIMELINE_UNDECLARED`` at the range; otherwise TIME-7,
-    TIME-8, and TIME-9 apply on that timeline, and a ``subclip_of`` with an
-    increasing range gets REL-4.
+    REL-3: ``target`` is not the asset's own id. TIME-4: a ``range`` ends
+    after it starts, always. ``holder_timing`` is the ``timing`` value that
+    defines the holder timeline, or ``None``. The target resolves under
+    PKG-6 only after the last asset, so ``context.defer_relationship`` keeps
+    the relationship for ``check_relationship_target``.
     """
     out = []
-    target_id = relationship.get("target")
-    target_path = pointer(rel_path, "target")
-    if target_id == asset.get("id"):
-        out.append(diagnostic("RELATIONSHIP_SELF", target_path))
-    target = _resolve_into(out, context, "assets", target_id, target_path)
+    if relationship.get("target") == asset.get("id"):
+        out.append(diagnostic("RELATIONSHIP_SELF", pointer(rel_path, "target")))
+    span = relationship.get("range")
+    order = _check_order(span, pointer(rel_path, "range")) if isinstance(span, dict) else []
+    out.extend(order)
+    context.defer_relationship(relationship, rel_path, holder_timing)
+    return out
+
+
+def check_relationship_target(relationship: dict, rel_path: str, holder_timing, target: AssetSummary) -> list:
+    """REL-4, REL-6, and the target-timeline checks for one relationship whose target resolved.
+
+    ``target`` is the ``AssetSummary`` of the first asset with the target
+    id. ``holder_timing`` is the ``timing`` value that defines the holder
+    timeline, or ``None``. A ``target_version`` names a version of the
+    target (``VERSION_REFERENCE_UNRESOLVED``), and a ``range`` with no
+    ``target_version`` on a target with versions is
+    ``TARGET_VERSION_REQUIRED`` at the relationship. When the target
+    timeline is known (REL-6), a range with frame fields on a timeline not
+    in the frame form gives ``TIMELINE_UNDECLARED`` at the range; otherwise
+    TIME-7, TIME-8, and TIME-9 apply on that timeline, and a ``subclip_of``
+    with an increasing range gets REL-4. The REL-4 gate runs the order
+    check of the range here, so no caller passes its result.
+    """
+    out = []
     span = relationship.get("range")
     range_path = pointer(rel_path, "range")
-    order = _check_order(span, range_path) if isinstance(span, dict) else []
-    out.extend(order)
-    if target is None:
-        return out
-    has_versions = any(True for _ in _items(target, "versions"))
     if "target_version" in relationship:
-        version_ids = {v.get("id") for _i, v in _items(target, "versions")}
+        version_ids = {version_id for version_id, _timing in target.versions}
         if relationship["target_version"] not in version_ids:
             out.append(diagnostic("VERSION_REFERENCE_UNRESOLVED", pointer(rel_path, "target_version")))
-    elif isinstance(span, dict) and has_versions:
+    elif isinstance(span, dict) and target.has_versions:
         out.append(diagnostic("TARGET_VERSION_REQUIRED", rel_path))
     if not isinstance(span, dict):
         return out
@@ -1050,24 +1113,26 @@ def _check_relationship(asset, relationship, rel_path, holder_timeline, context)
     timeline_findings = _check_marker(span, range_path, target_timeline, range_path)
     out.extend(timeline_findings)
     undeclared = any(d.code == "TIMELINE_UNDECLARED" for d in timeline_findings)
-    if relationship.get("type") == "subclip_of" and not order and not undeclared:
-        out.extend(_check_subclip(relationship, rel_path, holder_timeline, target_timeline))
+    increasing = not _check_order(span, range_path)
+    if relationship.get("type") == "subclip_of" and increasing and not undeclared:
+        out.extend(_check_subclip(relationship, rel_path, timeline_of(holder_timing), target_timeline))
     return out
 
 
 # Assets.
 
 def _holders(asset, path):
-    """Yield ``(holder, holder path, timeline)`` for each holder of an asset, in holder order.
+    """Yield ``(holder, holder path, timing)`` for each holder of an asset, in holder order.
 
     The asset level, then each version in array order, then ``unassigned``.
-    The asset level has a timeline only when the asset has no versions.
+    ``timing`` is the ``timing`` value that defines the holder timeline, or
+    ``None``: the asset level has a timeline only when the asset has no
+    versions, and ``unassigned`` never has one.
     """
     versions = [(i, v) for i, v in _items(asset, "versions")]
-    asset_timeline = None if versions else timeline_of(asset.get("timing"))
-    yield asset, path, asset_timeline
+    yield asset, path, None if versions else asset.get("timing")
     for i, version in versions:
-        yield version, pointer(path, "versions", i), timeline_of(version.get("timing"))
+        yield version, pointer(path, "versions", i), version.get("timing")
     unassigned = asset.get("unassigned")
     if isinstance(unassigned, dict):
         yield unassigned, pointer(path, "unassigned"), None
@@ -1085,7 +1150,7 @@ def _check_nested_ids(asset, path):
             out.append(diagnostic("NESTED_ID_DUPLICATE", pointer(path, "versions", i, "id")))
         seen.add(version_id)
     seen_by_key = {"files": set(), "file_groups": set(), "annotations": set()}
-    for holder, holder_path, _timeline in _holders(asset, path):
+    for holder, holder_path, _timing in _holders(asset, path):
         for key, seen_ids in seen_by_key.items():
             for i, item in _items(holder, key):
                 nested_id = item.get("id")
@@ -1112,7 +1177,7 @@ def _check_versions(asset, path):
         out.append(diagnostic("VERSION_REFERENCE_UNRESOLVED", pointer(path, "current_version")))
     asset_level = {item.get("definition") for _j, item in _items(asset, "metadata")}
     if asset_level:
-        for holder, holder_path, _timeline in list(_holders(asset, path))[1:]:
+        for holder, holder_path, _timing in list(_holders(asset, path))[1:]:
             for j, item in _items(holder, "metadata"):
                 if item.get("definition") in asset_level:
                     out.append(diagnostic(
@@ -1121,10 +1186,11 @@ def _check_versions(asset, path):
     return out
 
 
-def _check_holder(asset, holder, holder_path, timeline, context):
+def _check_holder(asset, holder, holder_path, timing, context):
     """The checks of one holder: files, file groups, stream facts, metadata,
-    annotations, and relationships."""
+    annotations, and relationships. ``timing`` defines the holder timeline, or is ``None``."""
     out = []
+    timeline = timeline_of(timing)
     files = {}
     for i, file in _items(holder, "files"):
         out.extend(_check_file(file, pointer(holder_path, "files", i), context))
@@ -1140,7 +1206,7 @@ def _check_holder(asset, holder, holder_path, timeline, context):
         out.extend(_check_metadata(annotation, annotation_path, context))
     for i, relationship in _items(holder, "relationships"):
         out.extend(_check_relationship(
-            asset, relationship, pointer(holder_path, "relationships", i), timeline, context
+            asset, relationship, pointer(holder_path, "relationships", i), timing, context
         ))
     out.extend(_check_relationship_duplicates(holder, holder_path))
     return out
@@ -1161,8 +1227,8 @@ def check_asset(asset, path: str, context) -> list:
     for i, version in _items(asset, "versions"):
         if isinstance(version.get("timing"), dict):
             out.extend(_check_timing(version["timing"], pointer(path, "versions", i, "timing")))
-    for holder, holder_path, timeline in _holders(asset, path):
-        out.extend(_check_holder(asset, holder, holder_path, timeline, context))
+    for holder, holder_path, timing in _holders(asset, path):
+        out.extend(_check_holder(asset, holder, holder_path, timing, context))
     return out
 
 
@@ -1198,14 +1264,6 @@ def check_storage_location(record, path: str, context) -> list:
 
 # Packages.
 
-_REGISTRY_CHECKS = {
-    "storage_locations": check_storage_location,
-    "metadata_definitions": check_metadata_definition,
-    "collections": check_collection,
-    "assets": check_asset,
-}
-
-
 def _check_counts(package, path):
     """PKG-3: each declared count equals the length of its array; an absent array counts as 0."""
     out = []
@@ -1214,31 +1272,6 @@ def _check_counts(package, path):
         if registry in counts and as_int(counts[registry]) != len(package.get(registry, ())):
             out.append(diagnostic("COUNT_MISMATCH", pointer(path, "manifest", "counts", registry)))
     return out
-
-
-def _check_ids(package, path):
-    """ID-1 and ID-2: ids are unique within each record list; every repeat after the first is reported."""
-    out = []
-    for registry in REGISTRIES:
-        seen = set()
-        for i, record in _items(package, registry):
-            record_id = record.get("id")
-            if record_id in seen:
-                out.append(diagnostic("ID_DUPLICATE", pointer(path, registry, i, "id")))
-            seen.add(record_id)
-    return out
-
-
-def _build_context(package):
-    """Build the PackageContext from the first record of each id per record list."""
-    registries = {}
-    for registry in REGISTRIES:
-        records = {}
-        for _i, record in _items(package, registry):
-            records.setdefault(record.get("id"), record)
-        registries[registry] = records
-    tokens = frozenset(d.get("token") for _i, d in _items(package["manifest"], "namespaces"))
-    return PackageContext(namespaces=tokens, **registries)
 
 
 def _check_declarations(package, path):
@@ -1253,14 +1286,15 @@ def _check_declarations(package, path):
     return out
 
 
-def _extension_slots(package, path):
-    """Yield ``(slot pointer, extensions object)`` for every ``extensions`` slot of the package (EXT-1).
+def _extension_slots(node, path):
+    """Yield ``(slot pointer, extensions object)`` for every ``extensions`` slot of a tree (EXT-1).
 
-    The walk follows the package tree and never descends into an extension
+    ``node`` is the package root or one record, at the pointer ``path``. The
+    walk follows the package tree and never descends into an extension
     value, which is payload. The schema allows ``extensions`` only at its
     slots, so every ``extensions`` member found is a slot. Explicit stack.
     """
-    stack = [(package, path)]
+    stack = [(node, path)]
     while stack:
         node, node_path = stack.pop()
         if isinstance(node, dict):
@@ -1275,37 +1309,65 @@ def _extension_slots(package, path):
                 stack.append((item, pointer(node_path, index)))
 
 
-def _check_namespaces_used(package, path, context):
-    """EXT-2: every namespace used in a slot is declared.
+def _check_namespaces_used(node, path, context):
+    """EXT-2: every namespace used in a slot of ``node`` is declared.
 
     One ``NAMESPACE_UNDECLARED`` per slot that holds any undeclared token, at
     the slot pointer. The value of a namespace is payload and is never
     descended into.
     """
     out = []
-    for slot_path, extensions in _extension_slots(package, path):
+    for slot_path, extensions in _extension_slots(node, path):
         if any(token not in context.namespaces for token in extensions):
             out.append(diagnostic("NAMESPACE_UNDECLARED", slot_path))
     return out
 
 
-def _member_of_entries(package, path):
-    """Yield ``(owner path, owner id, list key, entry index, entry)`` for every ``member_of`` entry."""
-    for registry in ("assets", "collections"):
-        for i, record in _items(package, registry):
-            record_path = pointer(path, registry, i)
-            for j, entry in _items(record, "member_of"):
-                yield registry, record_path, record.get("id"), j, entry
+def _check_root_namespaces(package, path, context):
+    """EXT-2 for the slots of the package root outside the record lists.
+
+    Each record is checked on its own with ``_check_namespaces_used``.
+    """
+    outside = {key: item for key, item in package.items() if not (key in REGISTRIES and isinstance(item, list))}
+    return _check_namespaces_used(outside, path, context)
 
 
-def _check_membership_references(package, path, context):
-    """PKG-6 and COL-3: each ``member_of/<j>/collection`` resolves."""
+def _check_membership_references(record, path, context):
+    """PKG-6 and COL-3: each ``member_of/<j>/collection`` of one asset or collection resolves."""
     out = []
-    for _registry, record_path, _owner, j, entry in _member_of_entries(package, path):
+    for j, entry in _items(record, "member_of"):
         _resolve_into(
-            out, context, "collections", entry.get("collection"),
-            pointer(record_path, "member_of", j, "collection"),
+            out, context, "collections", entry.get("collection"), pointer(path, "member_of", j, "collection")
         )
+    return out
+
+
+def _membership_positions(record, path):
+    """Yield ``(collection, position, entry pointer)`` for each ``member_of`` entry with a ``position`` (COL-7).
+
+    All entries that name one collection, from assets and collections
+    together, share one position scope. ``position`` is an ``int``, so
+    positions compare by value.
+    """
+    for j, entry in _items(record, "member_of"):
+        if "position" in entry:
+            yield entry.get("collection"), as_int(entry["position"]), pointer(path, "member_of", j)
+
+
+def _check_membership_repeats(record, path):
+    """COL-7 inside one asset or collection.
+
+    When one ``member_of`` names a collection more than once and any of
+    those entries has no ``position``, each entry for it after the first gives
+    ``MEMBERSHIP_DUPLICATE``.
+    """
+    out = []
+    lists = {}
+    for j, entry in _items(record, "member_of"):
+        lists.setdefault(entry.get("collection"), []).append((pointer(path, "member_of", j), entry))
+    for named in lists.values():
+        if len(named) > 1 and any("position" not in e for _p, e in named):
+            out.extend(diagnostic("MEMBERSHIP_DUPLICATE", p) for p, _e in named[1:])
     return out
 
 
@@ -1359,83 +1421,58 @@ def _strongly_connected(graph):
     return component
 
 
-def _check_collection_cycles(package, path):
+def _check_collection_cycles(collections):
     """COL-4: membership among collections forms no cycle.
 
-    Edges run from a collection id to each collection id that its
-    ``member_of`` names. Every entry whose owner and target are one id, or
-    lie in one strongly connected component, is on a cycle and gives
-    ``COLLECTION_CYCLE`` at the entry.
+    ``collections`` is the sequence of ``(collection, path)`` of the
+    collection list, in list order. Edges run from a collection id to each
+    collection id that its ``member_of`` names. Every entry whose owner and
+    target are one id, or lie in one strongly connected component, is on a
+    cycle and gives ``COLLECTION_CYCLE`` at the entry. Returns ``(k, d)``
+    pairs, where ``k`` is the index in ``collections`` of the entry owner.
     """
     graph = {}
     entries = []
-    for i, collection in _items(package, "collections"):
+    for k, (collection, path) in enumerate(collections):
         owner = collection.get("id")
         targets = graph.setdefault(owner, [])
         for j, entry in _items(collection, "member_of"):
             target = entry.get("collection")
             targets.append(target)
-            entries.append((owner, target, pointer(path, "collections", i, "member_of", j)))
+            entries.append((k, owner, target, pointer(path, "member_of", j)))
     component = _strongly_connected(graph)
     out = []
-    for owner, target, entry_path in entries:
+    for k, owner, target, entry_path in entries:
         if owner == target or (
             target in component and component.get(owner) == component[target]
         ):
-            out.append(diagnostic("COLLECTION_CYCLE", entry_path))
-    return out
-
-
-def _check_positions(package, path):
-    """COL-7: positions and repeated entries.
-
-    All entries that name one collection, from assets and collections
-    together, share one position scope. Positions compare by value. Every
-    entry that shares a position with another gives ``POSITION_DUPLICATE``.
-    When one ``member_of`` names a collection more than once and any of
-    those entries has no ``position``, each entry for it after the first gives
-    ``MEMBERSHIP_DUPLICATE``.
-    """
-    out = []
-    scopes = {}
-    lists = {}
-    for _registry, record_path, _owner, j, entry in _member_of_entries(package, path):
-        collection = entry.get("collection")
-        entry_path = pointer(record_path, "member_of", j)
-        if "position" in entry:
-            key = (collection, as_int(entry["position"]))
-            scopes.setdefault(key, []).append(entry_path)
-        lists.setdefault((record_path, collection), []).append((entry_path, entry))
-    for entry_paths in scopes.values():
-        if len(entry_paths) > 1:
-            out.extend(diagnostic("POSITION_DUPLICATE", p) for p in entry_paths)
-    for named in lists.values():
-        if len(named) > 1 and any("position" not in e for _p, e in named):
-            out.extend(diagnostic("MEMBERSHIP_DUPLICATE", p) for p, _e in named[1:])
+            out.append((k, diagnostic("COLLECTION_CYCLE", entry_path)))
     return out
 
 
 def check_package(package, path: str = "") -> list:
-    """Run every semantic check of one package.
+    """Run every semantic check of one package document.
 
-    PKG-3 counts; ID-1 and ID-2 ids per record list; EXT-2 declarations and
-    used namespaces; COL-3 and PKG-6 membership references; COL-4 cycles;
-    COL-7 positions; then each record with the package context. Diagnostics
-    are sorted by ``(path, code)``.
+    The records go through the record-stream engine of ``package_check``
+    in list order, each at its own pointer, with the store in memory. The
+    engine runs the root checks (PKG-3 counts and EXT-2), each record check,
+    and then the checks that need every record. ``path`` is the pointer of
+    the package root. Diagnostics are sorted by ``(path, code)``.
     """
-    out = []
-    out.extend(_check_counts(package, path))
-    out.extend(_check_ids(package, path))
-    context = _build_context(package)
-    out.extend(_check_declarations(package, path))
-    out.extend(_check_namespaces_used(package, path, context))
-    out.extend(_check_membership_references(package, path, context))
-    out.extend(_check_collection_cycles(package, path))
-    out.extend(_check_positions(package, path))
-    for registry, record_check in _REGISTRY_CHECKS.items():
-        for i, record in _items(package, registry):
-            out.extend(record_check(record, pointer(path, registry, i), context))
-    return _sorted(out)
+    # package_check imports this module, so the import waits until the first call.
+    from tests.conformance.package_check import PackageChecker, Where
+
+    checker = PackageChecker(package)
+    try:
+        for registry in REGISTRIES:
+            for i, record in _items(package, registry):
+                checker.add(registry, record, Where(None, None, pointer("", registry, i)))
+        found = checker.finish()
+    finally:
+        checker.close()
+    if path:
+        found = [replace(d, path=path + d.path) for d in found]
+    return found
 
 
 def check(value, routing) -> list:

@@ -34,8 +34,8 @@ class RealManifestTests(unittest.TestCase):
         self.assertIsInstance(manifest, BundleManifest)
         self.assertEqual(len(manifest.schemas), 6)
         self.assertEqual(manifest.document_roots, ("package",))
-        self.assertEqual(manifest.bundle_revision, "2.0.0-draft.3")
-        self.assertEqual(manifest.spec_version, "2.0.0-draft.3")
+        self.assertEqual(manifest.bundle_revision, "2.0.0-draft.4")
+        self.assertEqual(manifest.spec_version, "2.0.0-draft.4")
         self.assertTrue(manifest.id_base.endswith("/"))
         self.assertEqual(manifest.reserved_tokens, ("oasis",))
         for entry in manifest.schemas:

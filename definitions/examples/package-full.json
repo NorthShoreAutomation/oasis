@@ -1,6 +1,6 @@
 {
   "type": "package",
-  "spec_version": "2.0.0-draft.3",
+  "spec_version": "2.0.0-draft.4",
   "id": "pkg-0002",
   "source": {"system": "example-exporter", "instance": "site-north", "id": "export-2026-10-05"},
   "manifest": {
