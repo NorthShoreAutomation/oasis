@@ -1,6 +1,6 @@
 {
   "type": "package",
-  "spec_version": "2.0.0-draft.3",
+  "spec_version": "2.0.0-draft.4",
   "id": "pkg-complete-0001",
   "source": {"system": "example-exporter", "instance": "site-north", "id": "export-0042"},
   "manifest": {

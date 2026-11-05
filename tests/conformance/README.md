@@ -7,6 +7,7 @@ The only exchange document is a package. A bare record, such as a single asset, 
 The bundle manifest `definitions/bundle-manifest.json` lists every schema file, its SHA-256 digest, and its identifier.
 
 For one document, the harness checks strict JSON syntax, the root `type` and version, the number limits, the structure against the schemas, and the semantic rules that the schemas cannot express.
+For a multi-file package, it also checks the member list, the package folder, and each member file, and it runs the same checks on every line (`multifile.py`).
 It reports each finding as a diagnostic with a fixed code.
 
 The harness does not claim more than that.
@@ -20,13 +21,13 @@ Each document goes through six stages, in this order:
 2. Route: the root checks select the package schema (`REC-2`, `UNS-1`, `document.py`).
 3. Number limits: every JSON number meets the limits of RFC 7493 section 2.2 (`DOC-4`, `number_limits.py`).
 4. Structural: the package schema validates the document (`loader.py`).
-5. Semantic: the cross-field and cross-record checks run (`semantic.py`, `timecode.py`).
+5. Semantic: the cross-field and cross-record checks run (`semantic.py`, `package_check.py`, `timecode.py`).
 6. Result: the command builds one result record (`validate.py`).
 
 The route stage runs the root checks in this order:
 
 1. The exchange document test: the root is an object with a `spec_version` member. If not, the result is `NOT_EXCHANGE_DOCUMENT` at the root.
-2. The version check: `spec_version` is exactly `2.0.0-draft.3`, compared character for character. If not, the result is `VERSION_UNSUPPORTED` at `/spec_version` and nothing else.
+2. The version check: `spec_version` is exactly `2.0.0-draft.4`, compared character for character. If not, the result is `VERSION_UNSUPPORTED` at `/spec_version` and nothing else.
 3. The root `type` test: `type` is `package`. If not, the result is `NOT_EXCHANGE_DOCUMENT` at the root, or at `/type` when `type` is present.
 
 The first stage that stops decides the outcome.
@@ -35,9 +36,24 @@ An input problem outranks a routing problem, and a routing problem outranks a nu
 A number limit problem outranks a structural problem.
 Semantic checks run only on a structurally valid document.
 
+## Multi-file package stages
+
+`multifile.evaluate_folder` checks a multi-file package in these stages. The first stage that fails decides the outcome, and only its findings are reported:
+
+1. Manifest file: the stages of a single document, on the manifest file. A manifest root without `manifest.members` is a single document.
+2. Member rules (`check_member_list`): the member list on its own, with no disk access. Errors give `complete`, structure `valid`, semantic `run`.
+3. Folder scan (`scan_folder`): each member path with `os.lstat`, then a walk of the package folder for unlisted files. No file is opened and no link is followed. Errors give `input-invalid`.
+4. The read (`MemberReader`): each member file once, by record list in the order storage locations, metadata definitions, collections, assets, and in manifest order inside each list. The reader computes the SHA-256 and checks the line framing as it reads. Each line runs the record stages: parse, number limits, structure against the record schema of its type, and semantic (`package_check.py`).
+5. Member integrity, at the end of each member file: size, SHA-256, compression, line rules, and line count. Errors give `input-invalid`. After the first integrity failure, later member files are only hashed.
+
+Of the read stages, the earliest one that fails decides: integrity, then line parse, then line number limits, then line structure, then semantic.
+The warnings of the member rules and the scan (`MEMBERS_SMALL`, `FILE_UNLISTED`) appear only when the outcome reaches the semantic stage.
+A setup failure outranks every finding.
+The adopter guide gives the full outcome table.
+
 ## Status
 
-- This is a draft harness for contract version `2.0.0-draft.3`. It supports that version only. It is not a release.
+- This is a draft harness for contract version `2.0.0-draft.4`. It supports that version only. It is not a release.
 - Interoperability between independent implementations is not demonstrated.
 - The fixture corpus in `fixtures/` is small and synthetic. Scale and operational limits are untested.
 
@@ -111,11 +127,28 @@ tmp/oasis-conformance/bin/python -m unittest tests.conformance.test_timecode tes
 
 ## Validate command line
 
-This command checks one JSON document file through all six stages:
+This command checks one JSON document file through all six stages, or one multi-file package:
 
 ```sh
-tmp/oasis-conformance/bin/python -m tests.conformance.validate FILE [--json]
+tmp/oasis-conformance/bin/python -m tests.conformance.validate PATH [--json] [--work-dir DIR] [--max-line-bytes N] [--max-gzip-ratio N]
 ```
+
+`PATH` is a document file, a multi-file manifest file, or a package folder.
+
+- A folder means `PATH/oasis-package.json`. The command opens that manifest file as it opens a member file: never through a symbolic link, and never a pipe or another special file. Such a manifest file gives `setup-failed` with the note `Setup failed: input file cannot be read.`
+- A file whose root has `manifest.members` is a multi-file manifest. Its package folder is the parent of the path as given. A manifest file named directly may be a link, because the path is the caller's own input.
+- A package folder named as `PATH` may be a link, for the same reason.
+- Any other file is a single document. A folder whose `oasis-package.json` has no `manifest.members` is also checked as a single document.
+
+Inside the package folder, the command never follows a link. A member file that is a link, or that sits under a linked folder, gives `MEMBER_NOT_REGULAR`, and nothing behind it is read.
+`multifile.evaluate_folder` checks a multi-file package. Its stage order is in its docstring and in "Multi-file package stages" above.
+The three options apply to a multi-file package only:
+
+- `--work-dir DIR`: the folder for the SQLite working files of the check. They stay there after the run. Without this option, the command uses a new temporary folder and removes it at the end. Do not put this folder inside the package folder: the next check would find its files as unlisted files.
+- `--max-line-bytes N`: the longest member file line that the reader accepts, in bytes, not counting the LF. The default is 67,108,864 (64 MiB).
+- `--max-gzip-ratio N`: how far a gzip member file may expand, as a multiple of its stored bytes read so far, plus 1 MiB. The default is 1000.
+
+A longer line or a larger expansion stops the check as a setup failure with a fixed limitation, not as a finding. These limits are checker settings, not contract rules.
 
 The text output has one status line, then zero or more detail lines:
 
@@ -176,22 +209,43 @@ With `--json`, the command prints one JSON object instead of the text lines. `re
 
 - `harness`: the harness `id`, its `version`, and its direct `dependencies` pins.
 - `file`: the file argument as given.
+- `form`: `single-document` or `multi-file`.
 - `input_sha256`: the SHA-256 of the input bytes, or `null` when the file cannot be read.
 - `bundle_manifest_sha256`: the SHA-256 of the bundle manifest bytes, or `null` when setup stops first.
-- `type` and `spec_version`: the routed values (`package` and `2.0.0-draft.3`), or `null` when routing did not select the package schema. A number limit failure keeps both values.
+- `type` and `spec_version`: the routed values (`package` and `2.0.0-draft.4`), or `null` when routing did not select the package schema. A number limit failure keeps both values.
 - `execution_status`: `complete`, `input-invalid`, `unsupported`, or `setup-failed`.
 - `structural`: `valid`, `invalid`, or `not-run`.
 - `semantic`: `run` or `not-run`.
-- `diagnostics`: objects with `code`, `rule`, `severity`, `path`, and `message`, sorted by path, then code.
-- `structural_errors`: objects with `path` and `keyword`, sorted. A `false` subschema has no keyword of its own, so its keyword is reported as `false`.
+- `diagnostics`: objects with `code`, `rule`, `severity`, `path`, and `message`, sorted by path, then code. A finding in a multi-file package can also have `member`, `line`, and `unlisted_path`. See "Finding locations" below.
+- `structural_errors`: objects with `path` and `keyword`, sorted. A `false` subschema has no keyword of its own, so its keyword is reported as `false`. An error in a multi-file package can also have `member` and `line`.
 - `limitations`: fixed text notes. A setup failure has at least one.
+
+### Finding locations
+
+These keys are absent when unset. A single-document result has none of them.
+
+- `member`: the pointer `/manifest/members/<n>` to the member entry in the manifest file. A finding never names a member file by its path.
+- `line`: the line number in that member file, 1 or more. The `path` of the finding is then a pointer inside the record on that line.
+- `unlisted_path`: for a file that the manifest does not list, its path relative to the package folder. It appears only in the JSON record. The text output shows `(unlisted file)` instead.
+
+The text output shows a located finding as `error ID_DUPLICATE member 17 line 4 /id: message`.
+A finding about a whole member file has no line and the empty path, and shows as `error MEMBER_LINE_INVALID member 3: message`.
+A finding about a member entry has its full pointer into the manifest file, for example `error MEMBER_MISSING member 1 /manifest/members/1/path: message`.
+Findings in a multi-file package sort by member, then line, then path, then code.
+
+Some codes cover several cases:
+
+- `MEMBER_COMPRESSION_MISMATCH` covers a file whose compression does not match its name, and a damaged or cut-off gzip stream. It also covers any byte after the last gzip member, zero padding too (RFC 1952), and a `.jsonl.gz` file of 0 bytes. The line count of such a file is not compared.
+- `MEMBER_LINE_INVALID` covers a CR, a blank line, a byte-order mark, a space or tab before or after the object, and a missing final LF. It is reported once for each member file, with no line number.
+- `MEMBER_SIZE_MISMATCH` comes from the folder scan, or from the read when a file changed after the scan. In the second case, it replaces the checksum finding.
 
 ## Diagnostic catalog
 
 Severity `error` fails the command. Severity `warning` does not.
-This draft defines no warning code. The result format keeps the `warning` severity for later drafts.
+Two codes are warnings: `FILE_UNLISTED` and `MEMBERS_SMALL`. Both apply to multi-file packages only. Every other code is an error.
 Paths are RFC 6901 JSON Pointers to the value that caused the finding; the empty path is the root.
-The codes, rules, and severities are the same as the catalog in `docs/ADOPTION.md`. `test_semantic_records.py` checks that they agree.
+The codes, rules, and severities are the same as the catalog in `docs/ADOPTION.md`, in the same order. `test_semantic_records.py` checks that they agree.
+The multi-file codes use the rules `MFP-1` to `MFP-6`. They come last.
 
 | Code | Rule | Severity | Message |
 | --- | --- | --- | --- |
@@ -249,6 +303,21 @@ The codes, rules, and severities are the same as the catalog in `docs/ADOPTION.m
 | `DEFINITION_REPEATED` | `MD-5` | error | A metadata list names the same definition twice. |
 | `NAMESPACE_UNDECLARED` | `EXT-2` | error | An extension namespace is used but not declared in the manifest. |
 | `NAMESPACE_DECLARED_TWICE` | `EXT-2` | error | A namespace token is declared more than once. |
+| `MANIFEST_FILE_NAME` | `MFP-1` | error | A multi-file manifest file is not named oasis-package.json. |
+| `MEMBER_PATH_DUPLICATE` | `MFP-2` | error | A member list repeats a member path. |
+| `MEMBER_PATH_CASE_COLLISION` | `MFP-2` | error | Two member paths differ only in letter case. |
+| `MEMBER_TYPE_MISMATCH` | `MFP-2` | error | A member record_type differs from the first segment of its path. |
+| `MEMBER_MISSING` | `MFP-3` | error | A listed member file does not exist. |
+| `MEMBER_NOT_REGULAR` | `MFP-3` | error | A listed member path is a link, or it is not a regular file in regular folders. |
+| `MEMBER_SIZE_MISMATCH` | `MFP-3` | error | A member file size differs from its size_bytes. |
+| `MEMBER_CHECKSUM_MISMATCH` | `MFP-3` | error | A member file SHA-256 differs from its sha256. |
+| `MEMBER_UNLISTED` | `MFP-3` | error | A file in a record folder is not listed in the manifest. |
+| `FILE_UNLISTED` | `MFP-3` | warning | A file outside the record folders is not listed in the manifest. |
+| `MEMBER_COMPRESSION_MISMATCH` | `MFP-4` | error | A member file is not compressed as its name says. |
+| `MEMBER_LINE_INVALID` | `MFP-4` | error | A line of a member file breaks the line rules. |
+| `MEMBER_COUNT_MISMATCH` | `MFP-5` | error | A member count differs from the number of lines in its file. |
+| `MEMBER_EMPTY_UNEXPECTED` | `MFP-6` | error | A member file has no records, but its list has records in other member files. |
+| `MEMBERS_SMALL` | `MFP-3` | warning | A list has several member files that hold few records each. |
 
 A semantic code can appear more than once in one result, at different paths.
 `VALUE_OPTION_UNKNOWN` and `VALUE_REPEATED` can both apply to one value item.
@@ -273,12 +342,15 @@ Some of them need no diagnostic code of their own:
 | `MD-2` | Constraints are never executed. The bundle loader checks a `pattern` as ECMA-262 syntax with the `regex` format. |
 | `ANN-3` | The schema rejects an annotation frame field on a holder with no frame-form timing. Relationship ranges report `TIMELINE_UNDECLARED`. |
 | `DT-2` | Format checking is on. A bundle that uses a format the harness cannot check fails setup. |
+| `MFP-7` | It states the scope of other rules across member files. Those rules report their own codes, such as `ID_DUPLICATE` and `REFERENCE_UNRESOLVED`, at the member and line. |
 
 Contract Appendix B also lists rules that state producer, consumer, or checker obligations.
 A document alone cannot show them, so the harness does not check them:
-`SAFE-1`, `PKG-5`, `PKG-9`, `ID-3`, `AST-3`, `TIME-10`, the frame-count obligation of `TIME-11`, the T part of `TIME-14`, `FILE-4`, the producer parts of `FILE-6`, `FILE-7`, `FILE-8`, and `FILE-9`, `STO-2`, the producer part of `STO-3`, `GRP-8`, `GRP-9`, the producer parts of `GRP-10` and `GRP-11`, the producer and reader parts of `VER-4`, `VER-5`, and `VER-6`, the saved-search clause of `COL-2`, the producer part of `MD-7`, the T part of `ANN-4`, `ANN-5`, `EXT-4`, `ACC-2`, `UNS-1`, `UNS-2`.
+`SAFE-1`, `PKG-5`, `PKG-9`, `ID-3`, `AST-3`, `TIME-10`, the frame-count obligation of `TIME-11`, the T part of `TIME-14`, `FILE-4`, the producer parts of `FILE-6`, `FILE-7`, `FILE-8`, and `FILE-9`, `STO-2`, the producer part of `STO-3`, `GRP-8`, `GRP-9`, the producer parts of `GRP-10` and `GRP-11`, the producer and reader parts of `VER-4`, `VER-5`, and `VER-6`, the saved-search clause of `COL-2`, the producer part of `MD-7`, the T part of `ANN-4`, `ANN-5`, `EXT-4`, `ACC-2`, `UNS-1`, `UNS-2`, `MFP-8`, `MFP-9`.
 
 The harness follows `SAFE-1`: validation never opens a file or location named by a value in the document, and never connects to a network or storage system.
+For a multi-file package, it opens only the manifest file and the member files that it lists. It also lists the package folder and writes its own working files in the work folder. It never follows a link inside the package folder.
+`MFP-9` is the equivalence of the two forms. `test_examples.py` checks it for the multi-file example.
 For `UNS-1` and `UNS-2`, the harness supports exactly one version and reports any other as unsupported.
 
 ## Packages only
@@ -286,8 +358,9 @@ For `UNS-1` and `UNS-2`, the harness supports exactly one version and reports an
 The harness routes only a package. A root that is not an object, or has no `spec_version`, gets `NOT_EXCHANGE_DOCUMENT`. When the version is supported, a root with another `type`, or with no `type`, also gets it. A document with an unsupported `spec_version` gets only `VERSION_UNSUPPORTED`, whatever its `type` (the root check order above).
 So every check can see every record of the package, and no check gives a warning for a missing record.
 Most fixtures in `fixtures/records/` are packages. The `input-` fixtures are not strict JSON. The `routing-` fixtures test the root checks, and most of them hold a document that does not route.
+The folders in `fixtures/packages/` are multi-file packages. Each one has a manifest file and its member files, and `test_corpus.py` checks it with the folder form of the check. `fixtures/README.md` describes them.
 
-The three examples in `definitions/examples/` are packages. `test_examples.py` checks that each one passes with no diagnostic.
+The examples in `definitions/examples/` are packages: three single documents and the multi-file package folder `multi-file-complete/`. `test_examples.py` checks that each one passes with no diagnostic. It also checks that `multi-file-complete/` and `package-complete.json` are equivalent (`MFP-9`).
 
 ## Format checking
 
@@ -333,6 +406,18 @@ These limits are operational setup guards. They protect the harness from very la
 They are not the `DOC-4` number limits, and they do not make a document invalid.
 When a document exceeds a guard, the run fails setup. It never reports the document as invalid input.
 
+## Member file reader limits
+
+`MemberReader` reads a member file in blocks of 1 MiB. Two limits stop a member file that is too large to read safely:
+
+| Limit | Option | Default | Limitation text |
+| --- | --- | --- | --- |
+| Line length, in bytes, not counting the LF | `--max-line-bytes` | 67,108,864 | `Setup failed: a member file line is longer than the line length limit.` |
+| Gzip expansion: decompressed bytes at most this multiple of the stored bytes read so far, plus 1 MiB | `--max-gzip-ratio` | 1000 | `Setup failed: a member file expands beyond the decompression ratio limit.` |
+
+A limit failure is a setup failure (exit 2), not a finding. The reader never decompresses more than one byte past the ratio allowance.
+The memory of the reader stays bounded by the read block and the line limit, whatever the size of the file.
+
 ## Nesting depth
 
 - No nesting threshold is approved. The harness enforces no declared nesting limit.
@@ -360,6 +445,8 @@ Only the setup step above uses the network, to install pinned packages.
 
 - The harness runs the validate direction only. It has no producer, consumer, or round-trip adapter.
 - It makes no interoperability claim.
-- It never computes a checksum. A declared checksum is not verified.
+- It never computes the checksum of a media file. A declared file checksum is not verified. It does compute the SHA-256 of each member file of a multi-file package and compares it with the manifest file.
+- For a multi-file package, it keeps its indexes and the findings of each stage in SQLite files in the work folder (`store.sqlite` and `findings.sqlite`). SQLite temporary files also go there.
+- It keeps every reported finding in memory to build the result record. Each finding takes about 324 bytes, so a package with many millions of findings can need several GiB of memory.
 - It does not evaluate access. An access status is read as a value only.
 - A `complete` result does not mean a document is safe or approved to import.

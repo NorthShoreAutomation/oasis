@@ -1,6 +1,6 @@
 {
   "type": "package",
-  "spec_version": "2.0.0-draft.4",
+  "spec_version": "2.0.0-draft.5",
   "id": "pkg-0001",
   "manifest": {
     "producer": {

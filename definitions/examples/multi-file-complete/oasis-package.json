@@ -1,0 +1,67 @@
+{
+  "type": "package",
+  "spec_version": "2.0.0-draft.4",
+  "id": "pkg-complete-0001",
+  "source": {
+    "system": "example-exporter",
+    "instance": "site-north",
+    "id": "export-0042"
+  },
+  "manifest": {
+    "producer": {
+      "name": "example-exporter",
+      "version": "0.1.0"
+    },
+    "produced_at": "2026-10-05T09:00:00Z",
+    "counts": {
+      "storage_locations": 2,
+      "metadata_definitions": 3,
+      "collections": 2,
+      "assets": 5
+    },
+    "namespaces": [
+      {
+        "token": "vendor_a",
+        "owner": "Vendor A",
+        "schema": "https://vendor-a.example/oasis-extensions/1",
+        "description": "Extension data from vendor A."
+      },
+      {
+        "token": "archive_b",
+        "owner": "Example Archive",
+        "description": "Internal fields of the example archive."
+      }
+    ],
+    "members": [
+      {
+        "path": "storage_locations/part-00001.jsonl",
+        "record_type": "storage_locations",
+        "count": 2,
+        "size_bytes": 214,
+        "sha256": "64bb09e4dca16dcad9f6379b281e63ed42974eacf9ffc50ce3985400447167ba"
+      },
+      {
+        "path": "metadata_definitions/part-00001.jsonl",
+        "record_type": "metadata_definitions",
+        "count": 3,
+        "size_bytes": 437,
+        "sha256": "75e523512d5703166e4a1f6b041b7c82c6af0dddbf54f6958b0b3636d512124a"
+      },
+      {
+        "path": "collections/part-00001.jsonl",
+        "record_type": "collections",
+        "count": 2,
+        "size_bytes": 406,
+        "sha256": "bfdc3b45378b906e977a6634a982d33020c22ccdafccc6eac2a90b1aae144fa2"
+      },
+      {
+        "path": "assets/part-00001.jsonl",
+        "record_type": "assets",
+        "count": 5,
+        "size_bytes": 5132,
+        "sha256": "03381a3696dd144766bfb4ba23be3af7ed8e5d5bdb3878dca7dcde2ec65c10a4"
+      }
+    ],
+    "description": "Synthetic package that shows every record list and the main record features."
+  }
+}

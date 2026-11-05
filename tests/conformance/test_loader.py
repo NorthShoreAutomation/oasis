@@ -118,6 +118,40 @@ class BundleLoadTests(unittest.TestCase):
             entry.validate(_example("package-minimal.json"))
 
 
+class RecordEntryPointTests(_CopiedBundleMixin, unittest.TestCase):
+    ASSET = b'{"id": "a-1", "title": "T"}'
+
+    def test_entry_point_kind_is_the_record_type(self):
+        bundle = load_bundle(DEFINITIONS)
+        for record_type in ("storage_locations", "metadata_definitions", "collections", "assets"):
+            with self.subTest(record_type=record_type):
+                self.assertEqual(bundle.record_entry_point(record_type).kind, record_type)
+
+    def test_record_entry_points_are_built_once_with_the_bundle(self):
+        bundle = load_bundle(DEFINITIONS)
+        self.assertIs(bundle.record_entry_point("assets"), bundle.record_entry_point("assets"))
+        self.assertIsNot(bundle.record_entry_point("assets"), bundle.record_entry_point("collections"))
+
+    def test_record_types_are_not_document_roots(self):
+        bundle = load_bundle(DEFINITIONS)
+        with self.assertRaises(SetupFailed):
+            bundle.entry_point("assets")
+        with self.assertRaises(SetupFailed):
+            bundle.record_entry_point("package")
+
+    def test_record_entry_point_uses_the_loaded_bundle(self):
+        root = self.copied_bundle("asset", lambda tree: tree["required"].append("zzz"))
+        errors = load_bundle(root).record_entry_point("assets").validate(parse_input(self.ASSET))
+        self.assertIn("required", _keywords(errors))
+        control = load_bundle(DEFINITIONS).record_entry_point("assets").validate(parse_input(self.ASSET))
+        self.assertEqual(control, [])
+
+    def test_record_validation_does_not_fetch_anything(self):
+        entry = load_bundle(DEFINITIONS).record_entry_point("assets")
+        with mock.patch.object(socket, "socket", side_effect=AssertionError("network used")):
+            self.assertEqual(entry.validate(parse_input(self.ASSET)), [])
+
+
 class SetupAuditTests(_CopiedBundleMixin, unittest.TestCase):
     def test_copied_bundle_control_loads(self):
         root = self.copied_bundle("common", lambda tree: None)

@@ -41,7 +41,7 @@ def _package(*assets):
     """A minimal package around the given assets; counts match."""
     return {
         "type": "package",
-        "spec_version": "2.0.0-draft.3",
+        "spec_version": "2.0.0-draft.4",
         "id": "pkg-0001",
         "manifest": {
             "producer": {"name": "example-exporter", "version": "0.1.0"},
@@ -69,16 +69,21 @@ def _check(package):
 
 class CatalogTests(unittest.TestCase):
     def test_catalog_matches_the_adopter_guide(self):
+        # The guide lists every code in catalog order: the single-document codes,
+        # then the multi-file codes (rules MFP-*).
         rows = _adoption_rows()
-        self.assertEqual(len(rows), 54)
-        self.assertEqual(len(CATALOG), 54)
+        single_document = [code for code, (rule, _s, _m) in CATALOG.items() if not rule.startswith("MFP-")]
+        self.assertEqual(len(rows), 69)
+        self.assertEqual(len(CATALOG), 69)
         self.assertEqual([code for code, _r, _s in rows], list(CATALOG))
+        self.assertEqual(list(CATALOG)[:54], single_document)
         for code, rule, severity in rows:
             with self.subTest(code):
                 self.assertEqual(CATALOG[code][:2], (rule, severity))
 
-    def test_every_code_is_an_error(self):
-        self.assertEqual({severity for _rule, severity, _message in CATALOG.values()}, {"error"})
+    def test_every_single_document_code_is_an_error(self):
+        severities = {severity for _rule, severity, _message in CATALOG.values() if not _rule.startswith("MFP-")}
+        self.assertEqual(severities, {"error"})
 
     def test_messages_are_fixed_sentences(self):
         for code, (_rule, _severity, message) in CATALOG.items():

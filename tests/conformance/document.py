@@ -16,7 +16,7 @@ from tests.conformance.semantic import CATALOG
 from tests.conformance.types import Diagnostic, Routing
 
 # Each supported version, bound to the record types its rule set routes.
-SUPPORTED_VERSIONS = {"2.0.0-draft.3": ("package",)}
+SUPPORTED_VERSIONS = {"2.0.0-draft.4": ("package",)}
 KINDS = ("package",)
 
 # The two routing entries come from the single catalog in semantic.py.

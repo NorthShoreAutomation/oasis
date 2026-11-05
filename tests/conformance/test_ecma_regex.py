@@ -200,7 +200,7 @@ class TranslationTest(unittest.TestCase):
 
         for path in root.glob("*.schema.json"):
             walk(json.loads(path.read_text(encoding="utf-8")))
-        self.assertEqual(len(set(found)), 21)
+        self.assertEqual(len(set(found)), 23)
         for source in set(found):
             with self.subTest(source=source[:40]):
                 re.compile(ecma_regex.to_python(source))

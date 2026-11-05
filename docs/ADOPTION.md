@@ -1,14 +1,14 @@
 # Adopting OASIS 2.0
 
-Status: DRAFT 2.0.0-draft.3, not a final release.
+Status: DRAFT 2.0.0-draft.4, not a final release.
 The rules this guide explains can change before the final release.
 Interoperability between independent implementations is not demonstrated.
 
 OASIS means Open Asset Standard Interchange Schema.
 This guide explains how to produce, validate, and receive OASIS 2.0 documents, and what each result means for your system.
-The [contract](specification/2.0.0-draft.3/CONTRACT.md) is the normative source. If this guide and the contract differ, the contract applies.
-The [glossary](specification/2.0.0-draft.3/GLOSSARY.md) defines the terms used here.
-The [data model](specification/2.0.0-draft.3/DATA-MODEL.md) draws the shapes.
+The [contract](specification/2.0.0-draft.4/CONTRACT.md) is the normative source. If this guide and the contract differ, the contract applies.
+The [glossary](specification/2.0.0-draft.4/GLOSSARY.md) defines the terms used here.
+The [data model](specification/2.0.0-draft.4/DATA-MODEL.md) draws the shapes.
 The [conformance harness README](../tests/conformance/README.md) gives the exact commands, output format, and catalog messages.
 
 This guide makes no claim of certification, production readiness, or endorsement by any organization.
@@ -22,21 +22,28 @@ This guide makes no claim of certification, production readiness, or endorsement
 5. [Outcome order](#outcome-order)
 6. [Diagnostic catalog](#diagnostic-catalog)
 7. [Packages and references](#packages-and-references)
-8. [Collection membership](#collection-membership)
-9. [Time](#time)
-10. [Numbers and versions](#numbers-and-versions)
-11. [Extensions and preservation](#extensions-and-preservation)
-12. [Access summary](#access-summary)
-13. [Validation grants no access](#validation-grants-no-access)
-14. [Numeric resource guards](#numeric-resource-guards)
-15. [Harness limits](#harness-limits)
+8. [Multi-file packages](#multi-file-packages)
+9. [Collection membership](#collection-membership)
+10. [Time](#time)
+11. [Numbers and versions](#numbers-and-versions)
+12. [Extensions and preservation](#extensions-and-preservation)
+13. [Access summary](#access-summary)
+14. [Validation grants no access](#validation-grants-no-access)
+15. [Numeric resource guards](#numeric-resource-guards)
+16. [Member file reader limits](#member-file-reader-limits)
+17. [Harness limits](#harness-limits)
 
 ## What OASIS 2.0 is
 
 OASIS 2.0 is a neutral JSON format for exchanging media asset records between systems.
 It has one core profile.
 
-The package is the only exchange document: one JSON document with a manifest and four record lists.
+The package is the only exchange document. It holds a manifest and four record lists.
+A package has two forms with the same records and the same rules:
+
+- A single-document package is one JSON document.
+- A multi-file package is a package folder with a manifest file and member files. It is for exports that are too large for one document. See [Multi-file packages](#multi-file-packages).
+
 Only the package root carries `type` and `spec_version`. Records inside a package carry neither field (`REC-1`).
 The record list that holds a record states its type.
 A record on its own is not an exchange document (`REC-2`).
@@ -130,6 +137,35 @@ tmp/oasis-conformance/bin/python -m tests.conformance.validate definitions/examp
 
 The command reads `spec_version` and `type` itself. You do not name a schema.
 
+### Validate a multi-file package
+
+Give the command the package folder, or the manifest file in it:
+
+```sh
+tmp/oasis-conformance/bin/python -m tests.conformance.validate definitions/examples/multi-file-complete
+tmp/oasis-conformance/bin/python -m tests.conformance.validate definitions/examples/multi-file-complete/oasis-package.json
+```
+
+The command decides the form from what you give it:
+
+- A folder means the manifest file `oasis-package.json` in that folder. The command refuses a manifest file there that is a symbolic link, a pipe, or another special file. The result is `setup-failed`, with the note `Setup failed: input file cannot be read.`
+- A file whose root has `manifest.members` is a manifest file. Its folder is the package folder: the parent of the path as you gave it. A manifest file that you name directly may be a symbolic link, because the path is your own input.
+- A package folder that you name may be a symbolic link too, for the same reason.
+- Any other file is a single document. The command checks it exactly as before. A folder whose `oasis-package.json` has no `manifest.members` is also checked as a single document.
+
+Inside the package folder, the command never follows a symbolic link (`SAFE-1`).
+A member file that is a link, or that sits under a linked folder, gets `MEMBER_NOT_REGULAR`. The command reads nothing behind the link.
+
+Three options apply to a multi-file package only:
+
+| Option | Default | Meaning |
+| --- | --- | --- |
+| `--work-dir DIR` | a new temporary folder, removed at the end | The folder where the command keeps its SQLite working files. With this option, the files stay there after the run. Do not put this folder inside the package folder. |
+| `--max-line-bytes N` | 67,108,864 (64 MiB) | The longest member file line that the command reads, in bytes. |
+| `--max-gzip-ratio N` | 1000 | How far a gzip member file may expand, as a multiple of its stored size, plus 1 MiB. |
+
+The two limits are settings of the checker, not rules of the contract. See [Member file reader limits](#member-file-reader-limits).
+
 ### Text output
 
 The first line is the status line. Lines after it give the findings.
@@ -147,6 +183,19 @@ Each diagnostic line gives the severity, the code, the path, and a fixed message
 A structural failure lists each schema error by its path and failing keyword.
 A `note:` line gives a fixed limitation text, for example why setup failed.
 
+In a multi-file package, a line also names the member file and the line in it, when they apply:
+
+```text
+FAIL status=complete type=package structural=valid semantic=run
+warning MEMBERS_SMALL /manifest/members: A list has several member files that hold few records each.
+error ID_DUPLICATE member 1 line 1 /id: A record id is repeated within its record list.
+```
+
+- `member 1` is the member entry at `/manifest/members/1`. The member path itself is never printed.
+- `line 1` is the line in that member file. The path after it, `/id`, points inside the record on that line.
+- A finding about a whole member file has no line and no path, for example `error MEMBER_LINE_INVALID member 0: ...`.
+- A finding about a file that the manifest does not list shows `(unlisted file)`. Its path is never printed.
+
 ### JSON output
 
 Add `--json` to get one JSON result record instead of text:
@@ -156,6 +205,13 @@ tmp/oasis-conformance/bin/python -m tests.conformance.validate definitions/examp
 ```
 
 The record names the harness and its pinned packages, the SHA-256 of the input bytes and of the schema bundle manifest, the routed type and version, the three results, the diagnostics, the schema errors, and any limitations.
+Its `form` is `single-document` or `multi-file`. For a multi-file package, the input digest is that of the manifest file bytes.
+A finding in a multi-file package can also carry these keys:
+
+- `member`: the pointer to the member entry, such as `/manifest/members/3`.
+- `line`: the line number in that member file, 1 or more.
+- `unlisted_path`: for a file that the manifest does not list, its path relative to the package folder.
+
 `tests/conformance/result.schema.json` describes it.
 Use the JSON form when a program reads the result.
 
@@ -164,8 +220,8 @@ Use the JSON form when a program reads the result.
 | Exit | Answer | Meaning |
 | --- | --- | --- |
 | 0 | `PASS` | The checks ran, the structure is valid, and no diagnostic has severity `error`. Warnings are allowed. |
-| 1 | `FAIL` | The input is not strict JSON, the document is not an exchange document or is unsupported, a number breaks a number limit, the structure is invalid, or a diagnostic has severity `error`. |
-| 2 | `ERROR` | Setup failed. The document was not judged. Wrong option syntax also exits 2. |
+| 1 | `FAIL` | The input is not strict JSON, or the document is not an exchange document or is unsupported. Or a number breaks a number limit, a member file fails a package check, the structure is invalid, or a diagnostic has severity `error`. |
+| 2 | `ERROR` | Setup failed. The document was not judged. For example, a member file cannot be read, or a member file passes a reader limit. Wrong option syntax also exits 2. |
 
 Exit 2 is a problem with the environment or a resource guard, not a verdict on the document.
 Fix the setup and run the command again.
@@ -175,6 +231,10 @@ Fix the setup and run the command again.
 Messages are fixed catalog text. A path stops before the first key that an author chose.
 So you can share a result without sharing the data in the document.
 The result record still carries the input digest and the file name you gave. Treat the record as being as sensitive as the file name.
+
+A finding in a multi-file package names a member file only by its place in `members`, never by its path.
+The path of a file that the manifest does not list appears only in the JSON record, in `unlisted_path`. The text output never shows it.
+Treat a JSON record as being as sensitive as the names in your package folder.
 
 ## Outcome order
 
@@ -186,7 +246,7 @@ The first stage that stops decides the outcome.
 | The input file cannot be read, a locked package is missing, the schema bundle is bad or declares an unsupported version, a numeric guard is exceeded, or nesting is too deep | `setup-failed` | `not-run` | `not-run` | None. A limitation names the reason. |
 | The bytes break the strict JSON policy | `input-invalid` | `not-run` | `not-run` | `INPUT_INVALID` at the root |
 | The root is not an object, or has no `spec_version` member | `unsupported` | `not-run` | `not-run` | `NOT_EXCHANGE_DOCUMENT` at the root |
-| `spec_version` is not exactly `2.0.0-draft.3` | `unsupported` | `not-run` | `not-run` | `VERSION_UNSUPPORTED` only |
+| `spec_version` is not exactly `2.0.0-draft.4` | `unsupported` | `not-run` | `not-run` | `VERSION_UNSUPPORTED` only |
 | The version is supported, and the root has no `type` or a `type` other than `package` | `unsupported` | `not-run` | `not-run` | `NOT_EXCHANGE_DOCUMENT` at the root, or at `/type` when `type` is present |
 | A number breaks a number limit (`DOC-4`) | `input-invalid` | `not-run` | `not-run` | `NUMBER_OUT_OF_RANGE` or `NUMBER_TOO_PRECISE` for each number that fails |
 | The document does not match the schema bundle | `complete` | `invalid` | `not-run` | None. Schema errors are listed by path and keyword. |
@@ -205,18 +265,56 @@ It refuses a byte-order mark, invalid UTF-8, malformed JSON, duplicate member na
 `complete` means the checks ran. It does not mean the document passed.
 Read the `structural` value and the diagnostics too, or use the exit code.
 
+### Outcome order for a multi-file package
+
+The table above does not change for a single document.
+A multi-file package adds stages for the package itself. They come before the stages for the records.
+The command reads each member file once. It runs the line stages on every line during that read.
+
+| Stage | Condition | Execution status | Structural | Semantic | Diagnostics |
+| --- | --- | --- | --- | --- | --- |
+| Setup | A member file or a folder of the package cannot be read. Or a member file passes a reader limit, or the working files cannot be written. | `setup-failed` | `not-run` | `not-run` | None. A limitation names the reason. |
+| Manifest file | The manifest file fails a stage of the single-document table | as in that table | as in that table | as in that table | as in that table |
+| Manifest file | The folder form finds a link, a pipe, or another special file at `oasis-package.json` | `setup-failed` | `not-run` | `not-run` | None. The note is `Setup failed: input file cannot be read.` |
+| Member rules | The `members` list breaks a rule. For example, a path repeats, or a `counts` value differs from the sum of the member counts. | `complete` | `valid` | `run` | `MANIFEST_FILE_NAME`, `MEMBER_PATH_DUPLICATE`, `MEMBER_PATH_CASE_COLLISION`, `MEMBER_TYPE_MISMATCH`, `MEMBER_EMPTY_UNEXPECTED`, `COUNT_MISMATCH` |
+| Folder scan | Before the read, a listed member file is missing, is not a regular file, or has the wrong size. Or a record folder holds an unlisted file. | `input-invalid` | `not-run` | `not-run` | `MEMBER_MISSING`, `MEMBER_NOT_REGULAR`, `MEMBER_SIZE_MISMATCH`, `MEMBER_UNLISTED` |
+| Member integrity | During the read, a member file fails a check of its own bytes. The checks are: a regular file at open time, size, SHA-256, compression, line rules, and line count. | `input-invalid` | `not-run` | `not-run` | `MEMBER_NOT_REGULAR`, `MEMBER_SIZE_MISMATCH`, `MEMBER_CHECKSUM_MISMATCH`, `MEMBER_COMPRESSION_MISMATCH`, `MEMBER_LINE_INVALID`, `MEMBER_COUNT_MISMATCH` |
+| Line parse | A line breaks the strict JSON policy | `input-invalid` | `not-run` | `not-run` | `INPUT_INVALID` at the member and line, for each such line |
+| Line number limits | A number on a line breaks a number limit (`DOC-4`) | `input-invalid` | `not-run` | `not-run` | `NUMBER_OUT_OF_RANGE` or `NUMBER_TOO_PRECISE` at the member and line |
+| Line structure | A line does not match the record schema of its record type | `complete` | `invalid` | `not-run` | None. Schema errors are listed by member, line, path, and keyword. |
+| Semantic | Every line matches its record schema | `complete` | `valid` | `run` | Every semantic diagnostic, and the warnings `FILE_UNLISTED` and `MEMBERS_SMALL` |
+
+The first stage that fails decides the outcome, and the result reports only the findings of that stage.
+So a missing or damaged member file never gives a flood of reference findings. The records of a damaged package are not trustworthy.
+The member rule and folder scan stages also find warnings: `MEMBERS_SMALL` and `FILE_UNLISTED`. These warnings appear only when the outcome reaches the semantic stage.
+A setup failure outranks every finding.
+
+Some details of the member integrity stage:
+
+- After the first member file that fails an integrity check, the command only computes the size and the SHA-256 of each later member file. So the result lists every damaged member file, and no line stage runs on them.
+- A damaged gzip stream gives `MEMBER_COMPRESSION_MISMATCH`. This includes a cut-off stream, and zero bytes or any other bytes after the last gzip member (RFC 1952). A `.jsonl.gz` file of 0 bytes also gives this code. The command does not compare the line count of such a file, because it could not read every line.
+- A line rule failure gives one `MEMBER_LINE_INVALID` for the member file, with no line number. The line rules forbid a CR, a blank line, a byte-order mark, a space or tab before or after the object, and a last line with no LF.
+
+The command reads storage locations first, then metadata definitions, collections, and assets.
+In each record list, it reads the member files in the order of `members`, and each file from its first line.
+This order decides which repeat is "after the first", for example for `ID_DUPLICATE` (`MFP-7`). File names and the file system order never decide it.
+
 ### Diagnostic paths
 
 Paths are JSON Pointers ([RFC 6901](https://www.rfc-editor.org/rfc/rfc6901.html)). The empty path is the root. Array indexes start at zero.
 Diagnostics are sorted by path, then by code.
+In a multi-file package, a finding about a member entry has its full pointer in the manifest file, such as `/manifest/members/3/sha256`, and `member` set.
+A finding on a line has `member` and `line` set, and its path points inside the record on that line.
+Diagnostics in a multi-file package sort by member, then line, then path, then code. A finding with no member comes first.
 Compare results by code, path, and severity. Do not compare message text.
 A number limit path stops at the first `extensions` member, and before any key that the schema bundle does not define. So the path never repeats a key that an author chose.
 
 ## Diagnostic catalog
 
 Severity `error` fails the command. Severity `warning` does not.
-This draft defines no warning code. The result format keeps the `warning` severity for later drafts.
+Two codes are warnings: `FILE_UNLISTED` and `MEMBERS_SMALL`. Both apply to multi-file packages only. Every other code is an error.
 The rule column names the contract rule that each code enforces.
+The codes with rules `MFP-1` to `MFP-6` apply to multi-file packages only. They come last.
 
 | Code | Rule | Severity | What it means for you |
 | --- | --- | --- | --- |
@@ -225,7 +323,7 @@ The rule column names the contract rule that each code enforces.
 | `VERSION_UNSUPPORTED` | `UNS-1` | error | The `spec_version` is not exactly a version that the checker supports. Never rewrite a version to make it route. |
 | `NUMBER_OUT_OF_RANGE` | `DOC-4` | error | A number has an absolute value greater than 2^53 - 1. Write such a value as a string. |
 | `NUMBER_TOO_PRECISE` | `DOC-4` | error | The value of a number is not the shortest decimal form of its nearest binary64 number. The value is tested, not the spelling: `100.0` and `1e2` pass, `0.10000000000000001` fails. Use a shortest-form number writer. |
-| `COUNT_MISMATCH` | `PKG-3` | error | A manifest count differs from its array length. The package may be truncated. |
+| `COUNT_MISMATCH` | `PKG-3` | error | A manifest count differs from its array length. In a multi-file package, it differs from the sum of the member counts of its list. The package may be truncated. |
 | `REFERENCE_UNRESOLVED` | `PKG-6` | error | A reference names a record that is not in the package. Add the record, or drop the reference. |
 | `ID_DUPLICATE` | `ID-1` | error | Two records in one record list share an id. Reported on each repeat after the first. |
 | `NESTED_ID_DUPLICATE` | `ID-4` | error | Two versions, files, file groups, or annotations of one asset, or two options of one definition, share an id. File, file group, and annotation ids are unique across the asset level, every version, and `unassigned`. |
@@ -274,6 +372,21 @@ The rule column names the contract rule that each code enforces.
 | `DEFINITION_REPEATED` | `MD-5` | error | One `metadata` list names the same metadata definition twice. |
 | `NAMESPACE_UNDECLARED` | `EXT-2` | error | A package uses an extension namespace that its manifest does not declare. |
 | `NAMESPACE_DECLARED_TWICE` | `EXT-2` | error | A manifest declares the same namespace token twice. |
+| `MANIFEST_FILE_NAME` | `MFP-1` | error | A file with `manifest.members` is not named `oasis-package.json`. Rename the manifest file. |
+| `MEMBER_PATH_DUPLICATE` | `MFP-2` | error | The `members` list names one member path twice. Reported on each repeat after the first. |
+| `MEMBER_PATH_CASE_COLLISION` | `MFP-2` | error | Two member paths differ only in letter case. On a file system that ignores letter case, they name one file. |
+| `MEMBER_TYPE_MISMATCH` | `MFP-2` | error | The `record_type` of a member entry is not the first segment of its `path`. |
+| `MEMBER_MISSING` | `MFP-3` | error | A listed member file is not in the package folder. The package is incomplete, for example after a cut-off upload. |
+| `MEMBER_NOT_REGULAR` | `MFP-3` | error | A member path is a symbolic link or passes through a linked folder. Or it names something that is not a regular file, such as a folder or a pipe. The command reads nothing behind it. |
+| `MEMBER_SIZE_MISMATCH` | `MFP-3` | error | The size of a member file differs from its `size_bytes`. The file is cut off or changed, or it changed during the check. |
+| `MEMBER_CHECKSUM_MISMATCH` | `MFP-3` | error | The SHA-256 of a member file differs from its `sha256`. The file changed after the producer wrote the manifest file. |
+| `MEMBER_UNLISTED` | `MFP-3` | error | A record folder holds a file that the manifest does not list. It can be a member file that the manifest lost. Remove stray files, such as macOS `._` and `.DS_Store` files. |
+| `FILE_UNLISTED` | `MFP-3` | warning | A file outside the record folders is not listed in the manifest. The check still passes. |
+| `MEMBER_COMPRESSION_MISMATCH` | `MFP-4` | error | A member file is not compressed as its name says, or its gzip stream is damaged, cut off, or followed by other bytes. A `.jsonl.gz` file of 0 bytes also gets this code. |
+| `MEMBER_LINE_INVALID` | `MFP-4` | error | A member file breaks a line rule. It has a CR, a blank line, a byte-order mark, a space or tab before or after the object, or no LF after the last line. Reported once for the file, with no line number. |
+| `MEMBER_COUNT_MISMATCH` | `MFP-5` | error | The `count` of a member entry differs from the number of lines in its file. |
+| `MEMBER_EMPTY_UNEXPECTED` | `MFP-6` | error | A member entry has `count` 0, but other member files of its list hold records. A member file with no records is allowed only when its whole list is empty. |
+| `MEMBERS_SMALL` | `MFP-3` | warning | A record list has two or more member files that hold fewer than 1,000 records each on average. Write fewer, larger files. The check still passes. |
 
 Some rules have no document check, because a document alone cannot show them.
 The [harness README](../tests/conformance/README.md#rules-with-no-document-check) lists them with the reason for each.
@@ -289,13 +402,177 @@ An unresolved reference is an error: `REFERENCE_UNRESOLVED`. There is no partial
 A package never depends on another package. When two packages need the same storage location or definition, each package holds its own copy.
 Values inside `extensions` are not references, and the checker does not resolve them.
 
-The manifest `counts` must equal the array lengths (`PKG-3`). An absent array counts as 0.
-The count protects against truncation of the one document. It is not a claim about the source system.
+The manifest `counts` must equal the number of records in each record list (`PKG-3`). In a single document, that is the array length, and an absent array counts as 0.
+In a multi-file package, each `counts` value is the sum of the member counts of its list (`MFP-5`).
+The count protects against truncation of the package. It is not a claim about the source system.
 
 A package describes its records as they stood at `produced_at`. It carries no command (`PKG-9`).
 A missing record, field, or value is not an instruction to delete, clear, or replace anything.
 An asset's `deleted` date states that the source reported a deletion. It is not an instruction to delete, hide, or purge anything (`AST-3`).
 Your application decides whether and how to match, merge, replace, or delete its own data.
+
+## Multi-file packages
+
+A multi-file package holds one package in a package folder.
+The manifest file holds the package root. Member files hold the records, one record on each line.
+The records and the rules are the same as in a single document (contract section 16).
+
+### When to use it
+
+Use a multi-file package when an export is too large for one JSON document.
+As a guideline, consider it for more than about 100,000 assets. This guideline is not binding.
+Neither form has a size limit. Small exports keep the single document.
+
+### Folder layout
+
+```text
+<package folder>/
+  oasis-package.json              the manifest file
+  storage_locations/
+    part-00001.jsonl
+  metadata_definitions/
+    part-00001.jsonl
+  collections/
+    part-00001.jsonl
+  assets/
+    part-00001.jsonl
+    part-00002.jsonl
+```
+
+- The manifest file is `oasis-package.json`, at the top of the package folder. The name is fixed (`MFP-1`).
+- Each record folder holds the member files of one record type: `storage_locations/`, `metadata_definitions/`, `collections/`, or `assets/`. A record folder may hold subfolders, such as `assets/source=a/` (`MFP-2`).
+- Member file names are free. Each name ends in `.jsonl` for plain text or `.jsonl.gz` for gzip. The `part-00001` names are an example only.
+- A member path uses only ASCII letters, digits, `.`, `_`, `-`, and `=`, with `/` between segments. Each segment starts with a letter, a digit, or `_`. Two member paths differ in more than letter case.
+- A record folder may be absent when its list is absent.
+
+### The manifest file
+
+The manifest file is a package root with no record arrays. Its manifest adds the `members` list:
+
+```json
+{
+  "type": "package",
+  "spec_version": "2.0.0-draft.4",
+  "id": "pkg-2026-11-02-site-a",
+  "source": {"system": "example-system", "id": "site-a"},
+  "manifest": {
+    "producer": {"name": "example-exporter", "version": "1.4.0"},
+    "produced_at": "2026-11-02T18:00:00Z",
+    "counts": {"storage_locations": 12, "metadata_definitions": 214, "collections": 11105, "assets": 200000},
+    "namespaces": [],
+    "members": [
+      {"path": "assets/part-00001.jsonl", "record_type": "assets", "count": 100000,
+       "size_bytes": 1043288111, "sha256": "<64 lowercase hex digits>"}
+    ]
+  }
+}
+```
+
+The example shows one member entry only. A real manifest file lists every member file.
+
+| Field | Meaning |
+| --- | --- |
+| `path` | The member path, relative to the package folder. Unique in the list. |
+| `record_type` | The record type of every record in the file. It equals the first segment of `path`. |
+| `count` | The number of records in the file, which is its number of lines. |
+| `size_bytes` | The size of the file as stored. For a `.jsonl.gz` file, the compressed size. |
+| `sha256` | The SHA-256 of the file as stored, as 64 lowercase hexadecimal digits. |
+
+- `manifest.counts` gives the total of each list across all its member files (`MFP-5`).
+- `manifest.namespaces` declares every extension namespace that any member file uses (`EXT-2`).
+- The order of `members` has no meaning for the package. The checker uses it only to choose which repeat it reports.
+- The manifest file has no digest of its own (`PKG-5`).
+
+### Member files
+
+A member file is JSON Lines. Each line is one complete record, exactly as an item of the matching array in a single document.
+A line has no `type` and no `spec_version`. An asset is never split across lines or files.
+
+Line rules (`MFP-4`):
+
+- Every line ends with one LF, the last line too.
+- No CR, no blank line, and no byte-order mark.
+- No space or tab before or after the JSON object.
+- Each line is strict JSON on its own and meets the number limits (`DOC-1` to `DOC-4`).
+
+Compression:
+
+- A `.jsonl` file is plain UTF-8 text.
+- A `.jsonl.gz` file is a gzip stream. It may hold several gzip members one after another, as standard tools write them. No byte follows the last gzip member.
+- The line rules apply to the decompressed text.
+- One package may mix plain and gzip member files.
+
+Size guideline: put up to about 100,000 records, or 1 GiB of uncompressed text, in each member file, whichever comes first. A larger list uses several files.
+The guideline is not a limit. The checker warns with `MEMBERS_SMALL` when a list with two or more member files averages fewer than 1,000 records in each.
+
+### Absent and empty lists
+
+A single document keeps an absent list and an empty list apart (`DOC-3`). A multi-file package does the same (`MFP-6`):
+
+- A list is absent when no member entry has its record type.
+- A list is empty when it has member entries and their counts total 0.
+- A member file with 0 records is allowed only in an empty list. A plain one has 0 bytes. A gzip one is a gzip stream with no content.
+
+### Rules across member files
+
+Every rule applies to the whole package, not to each member file (`MFP-7`).
+Identifiers are unique per record type across all member files.
+A reference may point at a record in any member file, earlier or later.
+Collection positions are unique per collection across every member file.
+
+### Write a multi-file package
+
+You can write a package as you read your source. You do not need to hold the whole export, sort identifiers, or read the source twice (`MFP-8`).
+
+1. Make the package folder and the record folders that you need.
+2. Write the records as you read them. Write each record as JSON with no line break inside it, followed by one LF. Put each record in a member file of its record type.
+3. Start a new member file when the current one reaches the size guideline.
+4. Close each member file. Record its path, record type, line count, size, and SHA-256 as stored.
+5. Write the manifest file last, after every member file is complete. List only complete files. Never list a partial or temporary file.
+6. Check the package folder with the `validate` command.
+
+A producer that stops before step 5 leaves no valid package. So a crash cannot produce a package that looks complete.
+
+### Deliver a package folder as a `.tgz` file
+
+A `.tgz` file (tar, then gzip) is a delivery wrapper. It is not part of the contract, and the checker does not read it.
+Recommended practice:
+
+- Put one top-level folder in the archive: the package folder.
+- Use the POSIX pax tar format, so long paths and large files work.
+- Keep member files plain (`.jsonl`) inside a `.tgz` file. Gzip member files inside a gzip archive cost time and save almost nothing.
+
+On Linux, GNU tar adds no extra files:
+
+```sh
+tar --format=pax -czf export.tgz <package folder>
+```
+
+On macOS, leave out the `._` and `.DS_Store` files. The macOS `tar` adds `._` files, which hold file attributes, unless `COPYFILE_DISABLE=1` is set. `--no-mac-metadata` stops the same files, and `--exclude` leaves out the Finder files. Such files inside a record folder fail the check with `MEMBER_UNLISTED`.
+Not yet tried on macOS: run these commands once on a Mac before you rely on them.
+
+```sh
+COPYFILE_DISABLE=1 tar --format=pax --no-mac-metadata --exclude='.DS_Store' -czf export.tgz <package folder>
+tar -tzf export.tgz | grep -E '(^|/)(\._|\.DS_Store$)'
+```
+
+The second command must print nothing.
+
+### Unpack a `.tgz` file safely
+
+Unpack with safe settings: no absolute paths, no `..` segments, no links that point outside the folder, and no device files.
+For example, use Python `tarfile` with the `data` filter:
+
+```sh
+python3 -c 'import sys, tarfile; tarfile.open(sys.argv[1]).extractall(sys.argv[2], filter="data")' export.tgz received
+```
+
+Then check the unpacked package folder. The checker also refuses a link at any member path (`MEMBER_NOT_REGULAR`).
+
+### Other ways to deliver
+
+You can also move a package folder as separate files with no wrapper, for example `.jsonl.gz` member files in object storage. This needs no change to the package.
+The checker reads local files only. Copy the package folder to local disk before you check it.
 
 ## Collection membership
 
@@ -368,7 +645,7 @@ The limits test a copy of the number. Every other rule uses the exact value, so 
 
 ### The version check
 
-The harness supports exactly one version: `2.0.0-draft.3` (`UNS-2`).
+The harness supports exactly one version: `2.0.0-draft.4` (`UNS-2`).
 It compares the root `spec_version` with that string exactly, character for character (`UNS-1`).
 It does no case folding and no trimming, and it applies no Semantic Versioning rule.
 It never applies the rules of one version to a package that declares another, even when the two versions share a major or minor number.
@@ -418,8 +695,11 @@ The harness reads the access status as a value only. It does not evaluate access
 
 ## Validation grants no access
 
-`SAFE-1`: validation never opens any file other than the document and the schema bundle, never opens a file or location named by a value in the document, and never connects to a network or storage system, resolves a credential, or reads media bytes.
-The harness reads the document bytes and the local schema bundle files. Nothing else.
+`SAFE-1`: validation opens only the document, the schema bundle, and, for a multi-file package, the member files that the manifest file lists inside the package folder.
+For a multi-file package, it may also list the package folder to find unlisted files, and it may write its own working files in a work folder.
+It never follows a symbolic link inside the package folder. It never opens a file or location named by a value in the package.
+It never connects to a network or storage system, resolves a credential, or reads media bytes.
+The harness reads the document bytes, or the manifest file and the listed member files, and the local schema bundle files. Nothing else.
 It never retrieves a schema. Schema identifiers are names, not locations.
 
 A validation result does not grant filesystem, network, media, or credential access.
@@ -427,7 +707,8 @@ Your application stays responsible for authorization and for every action it tak
 A passing result does not mean a document is safe or approved to import.
 A storage location record has no connection settings and no credential fields. A producer never writes a secret, a credential, an access token, or a signed or temporary URL in any field of a package (`STO-2`).
 Mounting, connection settings, and local path mapping belong to the receiving application.
-Validation never computes a file checksum. A declared checksum is a claim by the producer (`FILE-4`).
+Validation never computes the checksum of a media file. A declared file checksum is a claim by the producer (`FILE-4`).
+The checker does compute the SHA-256 of each member file of a multi-file package, because the manifest file declares it (`MFP-3`).
 
 ## Numeric resource guards
 
@@ -444,12 +725,32 @@ An input that exceeds a guard is not invalid.
 The result is `setup-failed` and exit 2, with a limitation that names the exceeded limit.
 A few unusual spellings that pass `DOC-4`, such as `0e99999`, can still exceed a guard.
 
+## Member file reader limits
+
+The checker reads a member file in blocks. Two limits protect it from a member file that is too large to read safely:
+
+| Limit | Option | Default |
+| --- | --- | --- |
+| The longest line, in bytes, not counting its LF | `--max-line-bytes N` | 67,108,864 (64 MiB) |
+| How far a gzip member file may expand: decompressed bytes at most this multiple of the stored bytes read so far, plus 1 MiB | `--max-gzip-ratio N` | 1000 |
+
+These limits are settings of the checker. They are not rules of the contract, and the contract sets no maximum line length.
+A member file that passes a limit is not invalid. The result is `setup-failed` and exit 2, with a fixed limitation:
+
+- `Setup failed: a member file line is longer than the line length limit.`
+- `Setup failed: a member file expands beyond the decompression ratio limit.`
+
+With these limits, the memory of the reader stays bounded by its read block and the line limit, whatever the size of the file.
+Raise a limit only for a package that you trust.
+
 ## Harness limits
 
 - The harness validates documents only. It has no producer, consumer, or round-trip adapter.
 - It makes no interoperability claim.
-- It never computes a checksum and does not evaluate access.
+- It never computes the checksum of a media file, and it does not evaluate access.
 - The fixture corpus is small and synthetic. Scale and operational limits are untested.
+- For a multi-file package, the checker keeps its indexes in SQLite working files, so its memory does not grow with the size of the records. `--work-dir DIR` names the work folder. Without it, the checker makes a new temporary folder and removes it at the end. Do not put the work folder inside the package folder: the next check would find its files as unlisted files.
+- The checker keeps every finding that it reports in memory. Each finding takes about 324 bytes. So a package with many millions of findings can need several GiB of memory. A valid package has few findings.
 - No nesting limit is approved. Very deep input fails setup at the interpreter or decoder limit. Ordinary documents are far below it.
 
 The [harness README](../tests/conformance/README.md#limits) gives the details, including nesting depth and regular expression limits.

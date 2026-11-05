@@ -2,11 +2,11 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://www.northshoreautomation.com/schemas/oasis/2/common.schema.json",
   "title": "OASIS 2.0 shared definitions",
-  "description": "Shared definitions for the OASIS 2.0.0-draft.3 schemas. This file is not a document root. Each entity has one definition here or in its record schema.",
+  "description": "Shared definitions for the OASIS 2.0.0-draft.4 schemas. This file is not a document root. Each entity has one definition here or in its record schema.",
   "$defs": {
     "spec_version": {
       "description": "The specification version of this draft.",
-      "const": "2.0.0-draft.3"
+      "const": "2.0.0-draft.4"
     },
     "id": {
       "description": "An identifier: 1 to 256 code points. The first and last code points are not whitespace, as REC-5 defines it.",
@@ -2642,7 +2642,7 @@
       "additionalProperties": false
     },
     "manifest": {
-      "description": "Who produced the package, when, declared counts, and the extension namespaces used.",
+      "description": "Who produced the package, when, declared counts, the extension namespaces used, and, in a multi-file package, the member files.",
       "type": "object",
       "properties": {
         "producer": {
@@ -2660,6 +2660,13 @@
             "$ref": "#/$defs/namespace_declaration"
           }
         },
+        "members": {
+          "description": "The member files of a multi-file package. Present only in the manifest file of a multi-file package. The order has no meaning.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/member_entry"
+          }
+        },
         "description": {
           "type": "string"
         }
@@ -2669,6 +2676,49 @@
         "produced_at",
         "counts",
         "namespaces"
+      ],
+      "additionalProperties": false
+    },
+    "member_entry": {
+      "description": "One member file of a multi-file package: its path under the package folder, the record type it holds, its record count, and its size and SHA-256 digest as stored.",
+      "type": "object",
+      "properties": {
+        "path": {
+          "description": "Path of the member file, relative to the package folder, with / as the separator. It starts with a record folder name and ends in .jsonl or .jsonl.gz.",
+          "type": "string",
+          "pattern": "^(storage_locations|metadata_definitions|collections|assets)(/[A-Za-z0-9_][A-Za-z0-9._=-]*)+\\.jsonl(\\.gz)?$"
+        },
+        "record_type": {
+          "description": "The record list that the file feeds. It names the first segment of the path.",
+          "enum": [
+            "storage_locations",
+            "metadata_definitions",
+            "collections",
+            "assets"
+          ]
+        },
+        "count": {
+          "description": "Number of records in the file.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "size_bytes": {
+          "description": "Size of the file as stored, so the compressed size for a .jsonl.gz file.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "sha256": {
+          "description": "SHA-256 digest of the file as stored: 64 lowercase hexadecimal digits.",
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "path",
+        "record_type",
+        "count",
+        "size_bytes",
+        "sha256"
       ],
       "additionalProperties": false
     }

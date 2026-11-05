@@ -1,19 +1,20 @@
-# OASIS 2.0.0-draft.3 examples
+# OASIS 2.0.0-draft.4 examples
 
-Status: DRAFT 2.0.0-draft.3, not a final release. These examples can change before the final release.
+Status: DRAFT 2.0.0-draft.4, not a final release. These examples can change before the final release.
 Interoperability between independent implementations is not demonstrated.
 
 Every example is synthetic. Names such as "Example Archive" and `vendor_a` are placeholders. No example describes a real organization, product, or person. Checksum values are test values, not checksums of real media.
 
 Only a package is an exchange document. Each example is one package: its root `type` is `package`, and it validates against [`package.schema.json`](../package.schema.json). Records inside a package carry no `type` and no `spec_version`.
 
-There are three examples:
+There are four examples. Three are single-document packages, and one is a multi-file package folder:
 
 | Example | Purpose |
 | --- | --- |
 | `package-minimal.json` | The smallest valid package. |
 | `package-full.json` | Every field of every record type and nested object, at least once. Not a realistic package. |
 | `package-complete.json` | A realistic package with several assets that use the main record features together. |
+| `multi-file-complete/` | `package-complete.json` in the multi-file form, with one plain member file for each record list. |
 
 Each example:
 
@@ -25,6 +26,12 @@ To check one example yourself, run this from the repository root after setup:
 
 ```sh
 python3 -m tests.conformance.validate definitions/examples/package-complete.json
+```
+
+To check the multi-file example, give the command its package folder:
+
+```sh
+python3 -m tests.conformance.validate definitions/examples/multi-file-complete
 ```
 
 ## Minimal package
@@ -116,3 +123,24 @@ Each JSON pointer below names one place where the record or object appears. Some
 - Access: `a-0004` is `restricted`. `a-0002` and `a-0005` carry no `access`, so their access state is unknown. The other assets and both collections are `none`.
 - Deletion: `a-0005` carries `deleted`. The source reported it deleted at that date-time. It is a full record and a fact about the source, not an instruction to a receiving system.
 - Extensions: the manifest declares `vendor_a` and `archive_b`. Both are used on records in the package. `vendor_a` also appears on an enum option.
+
+## Complete multi-file package
+
+`multi-file-complete/` is a package folder. It holds the records of `package-complete.json` in the multi-file form:
+
+```text
+multi-file-complete/
+  oasis-package.json
+  storage_locations/part-00001.jsonl       2 records
+  metadata_definitions/part-00001.jsonl    3 records
+  collections/part-00001.jsonl             2 records
+  assets/part-00001.jsonl                  5 records
+```
+
+- The manifest file `oasis-package.json` has the root fields of `package-complete.json`: `type`, `spec_version`, `id`, `source`, and the manifest with its counts, namespaces, and description. It has no record arrays.
+- Its manifest adds `members`, one member entry for each record list. Each entry gives the path, the record type, the record count, the size, and the SHA-256 of its file.
+- Each member file is plain JSON Lines with LF line endings. Each line is one record, exactly as an item of the matching array in `package-complete.json`, written with no spaces.
+- The `size_bytes` and `sha256` values are the real size and SHA-256 of the member files. The file checksums inside the asset records are test values, as in `package-complete.json`.
+- The two examples are equivalent: they have the same root fields, the same record lists, and the same records (contract rule `MFP-9`).
+
+`test_examples.py` checks that the folder passes with no diagnostic and that the two examples are equivalent.

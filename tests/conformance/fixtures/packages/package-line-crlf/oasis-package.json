@@ -1,0 +1,28 @@
+{
+  "type": "package",
+  "spec_version": "2.0.0-draft.4",
+  "id": "pkg-0001",
+  "manifest": {
+    "producer": {
+      "name": "example-exporter",
+      "version": "0.1.0"
+    },
+    "produced_at": "2026-10-05T09:00:00Z",
+    "counts": {
+      "storage_locations": 0,
+      "metadata_definitions": 0,
+      "collections": 0,
+      "assets": 1
+    },
+    "namespaces": [],
+    "members": [
+      {
+        "path": "assets/part-00001.jsonl",
+        "record_type": "assets",
+        "count": 1,
+        "size_bytes": 40,
+        "sha256": "62e7639dfcb68f36cd832410d8c4e58fc89e2339d925f3850e351bd67040012b"
+      }
+    ]
+  }
+}

@@ -1,6 +1,6 @@
 {
   "type": "clip",
-  "spec_version": "2.0.0-draft.3",
+  "spec_version": "2.0.0-draft.4",
   "id": "pkg-0001",
   "manifest": {
     "producer": {
