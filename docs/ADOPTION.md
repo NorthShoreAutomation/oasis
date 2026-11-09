@@ -408,7 +408,7 @@ The count protects against truncation of the package. It is not a claim about th
 
 A package describes its records as they stood at `produced_at`. It carries no command (`PKG-9`).
 A missing record, field, or value is not an instruction to delete, clear, or replace anything.
-An asset's `deleted` date states that the source reported a deletion. It is not an instruction to delete, hide, or purge anything (`AST-3`).
+An asset's or a collection's `deleted` date states that the source reported a deletion. It is not an instruction to delete, hide, or purge anything (`AST-3`, `COL-8`).
 Your application decides whether and how to match, merge, replace, or delete its own data.
 
 ## Multi-file packages

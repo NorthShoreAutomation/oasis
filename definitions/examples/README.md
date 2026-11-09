@@ -64,7 +64,7 @@ Each JSON pointer below names one place where the record or object appears. Some
 | Constraints for a `string` | `/metadata_definitions/1/constraints` |
 | Constraints for an `integer` | `/metadata_definitions/2/constraints` |
 | Collection of type `logical`, with `metadata`, `access`, `source`, and `extensions` | `/collections/0` |
-| Collection of type `storage` | `/collections/1` |
+| Collection of type `storage`, with `deleted` | `/collections/1` |
 | Collection storage | `/collections/1/storage` |
 | Asset with versions, every asset field except `timing` and `deleted` | `/assets/0` |
 | Asset in the seconds form, with `deleted` | `/assets/1` |

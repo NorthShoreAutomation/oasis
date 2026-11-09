@@ -346,7 +346,7 @@ Some of them need no diagnostic code of their own:
 
 Contract Appendix B also lists rules that state producer, consumer, or checker obligations.
 A document alone cannot show them, so the harness does not check them:
-`SAFE-1`, `PKG-5`, `PKG-9`, `ID-3`, `AST-3`, `TIME-10`, the frame-count obligation of `TIME-11`, the T part of `TIME-14`, `FILE-4`, the producer parts of `FILE-6`, `FILE-7`, `FILE-8`, and `FILE-9`, `STO-2`, the producer part of `STO-3`, `GRP-8`, `GRP-9`, the producer parts of `GRP-10` and `GRP-11`, the producer and reader parts of `VER-4`, `VER-5`, and `VER-6`, the saved-search clause of `COL-2`, the producer part of `MD-7`, the T part of `ANN-4`, `ANN-5`, `EXT-4`, `ACC-2`, `UNS-1`, `UNS-2`, `MFP-8`, `MFP-9`.
+`SAFE-1`, `PKG-5`, `PKG-9`, `ID-3`, `AST-3`, `COL-8`, `TIME-10`, the frame-count obligation of `TIME-11`, the T part of `TIME-14`, `FILE-4`, the producer parts of `FILE-6`, `FILE-7`, `FILE-8`, and `FILE-9`, `STO-2`, the producer part of `STO-3`, `GRP-8`, `GRP-9`, the producer parts of `GRP-10` and `GRP-11`, the producer and reader parts of `VER-4`, `VER-5`, and `VER-6`, the saved-search clause of `COL-2`, the producer part of `MD-7`, the T part of `ANN-4`, `ANN-5`, `EXT-4`, `ACC-2`, `UNS-1`, `UNS-2`, `MFP-8`, `MFP-9`.
 
 The harness follows `SAFE-1`: validation never opens a file or location named by a value in the document, and never connects to a network or storage system.
 For a multi-file package, it opens only the manifest file and the member files that it lists. It also lists the package folder and writes its own working files in the work folder. It never follows a link inside the package folder.

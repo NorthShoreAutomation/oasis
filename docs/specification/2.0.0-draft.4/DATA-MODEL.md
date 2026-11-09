@@ -373,6 +373,7 @@ classDiagram
         member_of : MembershipEntry[]
         created : datetime
         modified : datetime
+        deleted : datetime  the source reported a deletion
         metadata : MetadataValue[]
         access : Access
         extensions : Extensions
@@ -397,6 +398,8 @@ classDiagram
 A storage location record describes one place. It has no connection settings and no credential fields (`STO-2`). `root` and `path` join under the `STO-3` table. Two places on one storage system are two records.
 
 A saved search is not a collection in OASIS (`COL-2`).
+
+A collection may carry `deleted`. As on an asset, it states that the source reported the collection deleted at that date-time. It is a fact about the source, not an instruction to delete the collection or its members (`COL-8`).
 
 ## 4. Membership: the member owns the truth
 

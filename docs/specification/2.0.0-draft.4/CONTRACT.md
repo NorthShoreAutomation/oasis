@@ -104,7 +104,7 @@ Status:
 
 ## Changes in 2.0.0-draft.4
 
-Date: 2026-11-02. Source: the decisions of 2026-11-02 for very large exports. These changes add a second form of the package. They change no record field. Existing rules keep their identifiers.
+Date: 2026-11-02, revised 2026-11-09. Source: the decisions of 2026-11-02 for very large exports, and the decision of 2026-11-09 on deleted collections. These changes add a second form of the package and one optional collection field. Existing rules keep their identifiers.
 
 - A package has two forms. A single-document package is one JSON document, as before. A multi-file package is a package folder that holds a manifest file, `oasis-package.json`, and member files in one folder for each record type (section 16).
 - The manifest gains an optional `members` list (`PKG-2`, `MFP-2`). Each member entry names one member file with its path, record type, record count, size, and SHA-256 digest. `manifest.members` marks the multi-file form. A package root with `manifest.members` has none of the four record arrays (`MFP-1`).
@@ -115,6 +115,7 @@ Date: 2026-11-02. Source: the decisions of 2026-11-02 for very large exports. Th
 - `SAFE-1` lets validation read the member files that the manifest file lists, list the package folder, and use its own working files. Validation never follows a symbolic link inside the package folder.
 - Section 2 states both forms as current. The new section 16 holds the multi-file package. "Status and claims" is now section 17.
 - The word "bundle" keeps one meaning: the schema bundle. The multi-file form is a form of the package, not a bundle.
+- A collection may carry an optional `deleted` date-time (`COL-1`). New rule `COL-8` gives it the meaning that `AST-3` gives to an asset's `deleted`: a fact about the source, never an instruction.
 - `spec_version` is `2.0.0-draft.4`. Schema identifiers are unchanged.
 
 ## 1. Reading this contract
@@ -653,6 +654,7 @@ All arithmetic is exact. The effects:
 | `storage` | object `{storage_location, path}` | no | `COL-2`. `storage_location` resolves under `PKG-6`. `path` follows `STO-3`. |
 | `member_of` | array of membership entries | no | `COL-3`. The collections that this collection belongs to. |
 | `created`, `modified` | date-time | no | |
+| `deleted` | date-time | no | When the source deleted the collection. `COL-8`. |
 | `metadata` | array | no | Section 11. |
 | `access` | object | no | Section 13, `ACC-1`. |
 
@@ -665,6 +667,8 @@ All arithmetic is exact. The effects:
 Informative note: an entry is part of a cycle when its owner and its target lie in one strongly connected component, or when it names its owner. A checker finds these entries in one pass over the collections, for example with Tarjan's method. It needs no recursion.
 
 `COL-7` (S+T). `position` is an integer: negative, zero, or positive (S). It orders the members of the collection that the entry names. Lower positions come first. All entries that name one collection, from assets and collections together, share one position scope. Positions compare by value (`DOC-2`), so `2` and `2.0` are the same position. Within one scope, positions MUST be unique. A checker reports every entry that shares a position with another. Positions need not start at 0 or 1 and need not be consecutive. A producer writes the source positions and does not renumber them for a partial export. A record MAY name one collection in more than one entry only when each of those entries carries a position. When one `member_of` names a collection more than once and any of those entries has no position, every entry for that collection after the first is a duplicate, and a checker reports each one. An entry without `position` has no place in an order. A reader MUST NOT take an order from array order or record order. Within one collection, some entries MAY carry a position and others not: entries with a position are in order, and entries without one are members with no known place.
+
+`COL-8` (T). `deleted` states that the source reported the collection deleted at that date-time, whether or not the source can still restore it. Absence makes no deletion statement. A producer writes `deleted` only when the source states a deletion. It never infers one from a missing record. A deleted collection is a full record, and every other rule applies to it, including `COL-3`, `COL-4`, and `COL-7`. A record MAY name a deleted collection in `member_of`. `deleted` is a fact about the source. It is not an instruction to delete, hide, or purge a collection, its members, or their media in a receiving system (`PKG-9`).
 
 ## 11. Metadata definitions and values
 
@@ -967,7 +971,7 @@ D1 to D6 name the steward's six design decisions for 2.0: D1 one core profile; D
 | Decision | Rules |
 | --- | --- |
 | D1 core profile and exclusions | sections 2, 17; `REL-2`, `ACC-2`, `TIME-10`, `ANN-4` |
-| D2 packages and record lists | `PKG-1` to `PKG-3`, `PKG-5` to `PKG-9`, `ID-5`, `COL-3`, `COL-7`, `MD-1`, `MD-3`, `MD-8`, `AST-3`, `MFP-1` to `MFP-9` |
+| D2 packages and record lists | `PKG-1` to `PKG-3`, `PKG-5` to `PKG-9`, `ID-5`, `COL-3`, `COL-7`, `COL-8`, `MD-1`, `MD-3`, `MD-8`, `AST-3`, `MFP-1` to `MFP-9` |
 | D3 2020-12, identifiers, record type and version | `REC-1`, `REC-2`, `REC-7`, `DOC-4`, `UNS-1`, `UNS-2`, the schema `$id` rule in the schema files |
 | D4 time and media structure | `TIME-1` to `TIME-14`, `FILE-1`, `FILE-3` to `FILE-9`, `STO-3`, `GRP-1` to `GRP-12`, `VER-1`, `VER-2`, `VER-4` to `VER-7`, `REL-1` to `REL-6`, `ANN-1` to `ANN-3`, `ANN-5`, `MD-7` |
 | D5 extensions and access | `EXT-1` to `EXT-4`, `STO-2`, `ACC-1`, `ACC-2` |
@@ -977,7 +981,7 @@ D1 to D6 name the steward's six design decisions for 2.0: D1 one core profile; D
 
 A conformance checker implements these checks on a document: `DOC-1` to `DOC-4`, `REC-2`, `PKG-3`, `PKG-6`, `PKG-8`, `ID-1`, `ID-2`, the T parts of `ID-4` and `ID-5`, `TIME-2` (on time bases, timecode bases, and member `frame_rate` and `capture_frame_rate`), the T parts of `TIME-3`, `TIME-4`, `TIME-5`, `TIME-7`, and `TIME-8`, `TIME-9`, `TIME-12`, the T part of `TIME-13`, `FILE-5`, the T parts of `FILE-6` (one entry per storage location) and `FILE-8` (range, step, pattern, and image numbers), `GRP-2`, `GRP-4`, `GRP-5`, `GRP-6`, the T parts of `GRP-7`, `GRP-10`, `GRP-11`, and `GRP-12`, `VER-2`, the T parts of `VER-5` and `VER-6`, `VER-7`, the T parts of `REL-1` and `REL-2`, `REL-3`, `REL-4`, `REL-5`, `REL-6`, the T part of `COL-3`, `COL-4`, the T part of `COL-7`, the T part of `MD-2` (constraints are never executed; `pattern` is a valid ECMA-262 expression), the T part of `MD-4` (shape against the definition, `date` and `datetime` syntax under `DT-3` and `DT-1`), `MD-5`, `MD-6`, the T part of `MD-7` (a value item on a `fixed` list is an option `id`), `MD-8`, the T part of `ANN-2`, the T part of `ANN-3`, the T part of `EXT-2` (declared and used tokens agree; each token declared at most once), the T part of `DT-1`, `DT-2`, `DT-3`, and, on a multi-file package, the T parts of `MFP-1`, `MFP-2`, and `MFP-4`, and `MFP-3`, `MFP-5`, `MFP-6`, and `MFP-7`.
 
-These rules state producer, consumer, or checker obligations. They are documented and are not checkable on a document alone: `SAFE-1`, `PKG-5`, `PKG-9`, `ID-3`, `AST-3`, `TIME-10`, the frame-count obligation of `TIME-11`, the T part of `TIME-14`, `FILE-4`, the producer parts of `FILE-6`, `FILE-7`, `FILE-8`, and `FILE-9`, `STO-2`, the producer part of `STO-3`, `GRP-8`, `GRP-9`, the producer parts of `GRP-10` and `GRP-11`, the producer and reader parts of `VER-4`, `VER-5`, and `VER-6`, the saved-search clause of `COL-2`, the producer part of `MD-7`, the T part of `ANN-4`, `ANN-5`, `EXT-4`, `ACC-2`, `UNS-1`, `UNS-2`, `MFP-8`, `MFP-9`.
+These rules state producer, consumer, or checker obligations. They are documented and are not checkable on a document alone: `SAFE-1`, `PKG-5`, `PKG-9`, `ID-3`, `AST-3`, `COL-8`, `TIME-10`, the frame-count obligation of `TIME-11`, the T part of `TIME-14`, `FILE-4`, the producer parts of `FILE-6`, `FILE-7`, `FILE-8`, and `FILE-9`, `STO-2`, the producer part of `STO-3`, `GRP-8`, `GRP-9`, the producer parts of `GRP-10` and `GRP-11`, the producer and reader parts of `VER-4`, `VER-5`, and `VER-6`, the saved-search clause of `COL-2`, the producer part of `MD-7`, the T part of `ANN-4`, `ANN-5`, `EXT-4`, `ACC-2`, `UNS-1`, `UNS-2`, `MFP-8`, `MFP-9`.
 
 The schema files express these parts of rules that the body marks T or S+T. A conformance checker does not need to repeat them.
 

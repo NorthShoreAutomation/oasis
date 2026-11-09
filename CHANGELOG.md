@@ -19,10 +19,11 @@ Interoperability between independent implementations is not demonstrated.
 - A checker that accepts a package folder or its manifest file. It checks member integrity and records across files. Working indexes use SQLite files. The options `--work-dir`, `--max-line-bytes`, and `--max-gzip-ratio` control working storage and reader limits.
 - The multi-file example `definitions/examples/multi-file-complete/`, multi-file conformance tests, and adopter guidance for producing, validating, and safely unpacking packages.
 - A separate draft.4 contract, glossary, and data model in `docs/specification/2.0.0-draft.4/`. The published draft.3 specification stays unchanged at its original paths.
+- An optional `deleted` date-time on collections, with new rule `COL-8`. It states that the source reported the collection deleted. Like an asset's `deleted` (`AST-3`), it is a fact about the source, never an instruction.
 
 ### Changed
 
-- The current schema bundle, examples, checker, and guidance now use `2.0.0-draft.4`. The checker supports exactly that version. Record fields are unchanged.
+- The current schema bundle, examples, checker, and guidance now use `2.0.0-draft.4`. The checker supports exactly that version. The only record field change is the optional collection `deleted`.
 - The package schema accepts a manifest member list for the multi-file form. Existing package and safety rules now cover both forms. See [Changes in 2.0.0-draft.4](docs/specification/2.0.0-draft.4/CONTRACT.md#changes-in-200-draft4).
 
 ## [2.0.0-draft.3] - 2026-11-02

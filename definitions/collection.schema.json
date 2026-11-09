@@ -60,6 +60,9 @@
     "modified": {
       "$ref": "common.schema.json#/$defs/date_time"
     },
+    "deleted": {
+      "$ref": "common.schema.json#/$defs/date_time"
+    },
     "metadata": {
       "$ref": "common.schema.json#/$defs/metadata"
     },

@@ -1096,6 +1096,19 @@
       "note": "Four levels. The asset is a member of col-04 and also of col-01 directly."
     },
     {
+      "id": "package-collection-deleted-ok",
+      "path": "records/package-collection-deleted-ok.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "COL-1",
+        "COL-8",
+        "DOC-3"
+      ],
+      "note": "A collection that the source reported deleted, still named by an asset."
+    },
+    {
       "id": "package-collection-self-parent",
       "path": "records/package-collection-self-parent.json",
       "expected_status": "complete",
@@ -3099,6 +3112,22 @@
         "REC-7"
       ],
       "note": "An asset with an unknown key."
+    },
+    {
+      "id": "structural-collection-deleted-boolean",
+      "path": "records/structural-collection-deleted-boolean.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "type",
+        "path": "/collections/0/deleted"
+      },
+      "rules": [
+        "COL-1",
+        "DT-1"
+      ],
+      "note": "A collection's deleted is a date-time, not a flag."
     },
     {
       "id": "structural-collection-members-parent",

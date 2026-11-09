@@ -81,6 +81,7 @@
       "title": "Example Renders Folder",
       "collection_type": "storage",
       "storage": {"storage_location": "sl-01", "path": "projects/project_a/renders"},
+      "deleted": "2026-10-12T14:30:00Z",
       "member_of": [{"collection": "col-01", "position": 1, "extensions": {"vendor_a": {"pinned": true}}}]
     }
   ],

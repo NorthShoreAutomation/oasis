@@ -31,7 +31,7 @@
       "name": "collection",
       "path": "collection.schema.json",
       "$id": "https://www.northshoreautomation.com/schemas/oasis/2/collection.schema.json",
-      "sha256": "0f22ddf5c8a37cd679c8d4173e8ea84cd85bbe392d45c279b5e367c653b3029e"
+      "sha256": "be1ad31393363fa0839fbf4ccba497579a754776b697b75b54a9c901632aaaa9"
     },
     {
       "name": "storage_location",

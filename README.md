@@ -75,7 +75,7 @@ To run the full test suite, see the [conformance harness README](tests/conforman
 ## Version history
 
 - 2.0.0-draft.4 is a draft. It is not a final release.
-- 2.0.0-draft.4 follows 2.0.0-draft.3 and adds the multi-file package. Record fields are unchanged.
+- 2.0.0-draft.4 follows 2.0.0-draft.3. It adds the multi-file package and an optional `deleted` date on collections.
 - The published [draft.3 specification](docs/specification/2.0.0-draft.3/CONTRACT.md) remains at its original paths.
 - Each draft lists its changes in its contract. The current checker supports exactly `2.0.0-draft.4`.
 
