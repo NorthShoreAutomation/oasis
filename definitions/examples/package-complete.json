@@ -89,7 +89,7 @@
             "source_timecode": "01:00:00:00"
           },
           "files": [
-            {"id": "f-video-v1", "locations": [{"storage_location": "sl-01", "path": "interviews/master_v1.mov"}], "size_bytes": 2147483648, "role": "master", "label": "Original upload"}
+            {"id": "f-video-v1", "locations": [{"storage_location": "sl-01", "path": "interviews/master_v1.mov"}], "size_bytes": 2147483648, "role": "original", "label": "Original upload"}
           ],
           "file_groups": [
             {

@@ -104,7 +104,7 @@ Status:
 
 ## Changes in 2.0.0-draft.4
 
-Date: 2026-11-02, revised 2026-11-09. Source: the decisions of 2026-11-02 for very large exports, and the decision of 2026-11-09 on deleted collections. These changes add a second form of the package and one optional collection field. Existing rules keep their identifiers.
+Date: 2026-11-02, revised 2026-11-09. Source: the decisions of 2026-11-02 for very large exports, and the decisions of 2026-11-09 on deleted collections and file roles. These changes add a second form of the package, one optional collection field, and distinct file roles for originals and finished masters. Existing rules keep their identifiers.
 
 - A package has two forms. A single-document package is one JSON document, as before. A multi-file package is a package folder that holds a manifest file, `oasis-package.json`, and member files in one folder for each record type (section 16).
 - The manifest gains an optional `members` list (`PKG-2`, `MFP-2`). Each member entry names one member file with its path, record type, record count, size, and SHA-256 digest. `manifest.members` marks the multi-file form. A package root with `manifest.members` has none of the four record arrays (`MFP-1`).
@@ -112,6 +112,7 @@ Date: 2026-11-02, revised 2026-11-09. Source: the decisions of 2026-11-02 for ve
 - New rules `MFP-1` to `MFP-9` define the multi-file package. They state the form, the manifest file name, the member entries and member paths, and the member files in the package folder. They also state the line and compression rules, the counts, absent and empty lists, and the scope of each rule across member files. The last two rules state the order in which a producer writes and the equivalence of the two forms.
 - `REC-1`, `REC-2`, `PKG-1`, `PKG-2`, `PKG-3`, `PKG-5`, and `PKG-8` are revised for the two forms. The rules for a single document keep their meaning.
 - `FILE-4` states that the digest of a member file is not a file checksum.
+- `FILE-5` adds the file role `original` for an original recording or capture. The role `master` now means a finished master rendition. Both roles remain distinct from `mezzanine`. File group roles are unchanged.
 - `SAFE-1` lets validation read the member files that the manifest file lists, list the package folder, and use its own working files. Validation never follows a symbolic link inside the package folder.
 - Section 2 states both forms as current. The new section 16 holds the multi-file package. "Status and claims" is now section 17.
 - The word "bundle" keeps one meaning: the schema bundle. The multi-file form is a form of the package, not a bundle.
@@ -369,7 +370,7 @@ Files are the recorded content of an asset. A file object describes its content 
 | `checksum` | object `{algorithm, value}` | no | `FILE-3`. It holds for every copy. |
 | `media_type` | string | no | IANA media type, when known. The schema checks the `type/subtype` syntax of RFC 6838, not registration. |
 | `created`, `modified` | date-time | no | Dates of the content as the source states them. Dates of one copy go in extensions on its location entry. |
-| `role` | token | no | `master`, `mezzanine`, `preview`, `thumbnail`, `sidecar`, `other`. `FILE-5`. |
+| `role` | token | no | `original`, `master`, `mezzanine`, `preview`, `thumbnail`, `sidecar`, `other`. `FILE-5`. |
 | `label` | string | no | Short human name. |
 | `reel_name` | nonempty string | no | `FILE-9`. |
 | `duration_seconds`, `bit_rate` | seconds; integer 0 or more, bits per second | no | `FILE-7`. |
@@ -380,7 +381,7 @@ Files are the recorded content of an asset. A file object describes its content 
 
 `FILE-4` (T). Validation never computes the checksum of a file that a file object describes. A declared checksum is a claim by the producer. The SHA-256 digest of a member file of a multi-file package is not a file checksum under this rule: validation computes it (`MFP-3`).
 
-`FILE-5` (T). File roles: `master` is an original recording, or a finished master rendition, at any quality. `mezzanine` is a high-quality intermediate made for further work or delivery. `preview` is a lower-quality copy for viewing. `thumbnail` is a still image representation. `sidecar` is a data file that accompanies media, such as captions or a metadata file. `other` is anything else. A role never ranks files. Several files of one holder MAY have the role `master`. A copy of a file is a location of that file, not another file (`FILE-6`). A file role describes the file on its own. It does not group files; file group membership does that (`GRP-5`). A file's role and the role of a file group that contains it are not required to match.
+`FILE-5` (T). File roles: `original` is an original recording or capture. `master` is a finished master rendition, at any quality. `mezzanine` is a high-quality intermediate made for further work or delivery. `preview` is a lower-quality copy for viewing. `thumbnail` is a still image representation. `sidecar` is a data file that accompanies media, such as captions or a metadata file. `other` is anything else. A role never ranks files. Several files of one holder MAY have the role `original` or `master`. A copy of a file is a location of that file, not another file (`FILE-6`). A file role describes the file on its own. It does not group files; file group membership does that (`GRP-5`). A file's role and the role of a file group that contains it are not required to match.
 
 `FILE-6` (S+T). Copies.
 

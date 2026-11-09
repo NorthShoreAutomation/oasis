@@ -105,8 +105,8 @@
             "duration_frames": 2400
           },
           "files": [
-            {"id": "f-0101", "locations": [{"storage_location": "sl-01", "path": "projects/project_a/camera/clip_a_001.mov"}], "role": "master"},
-            {"id": "f-0102", "locations": [{"storage_location": "sl-01", "path": "projects/project_a/camera/clip_a_002.mov"}], "role": "master"}
+            {"id": "f-0101", "locations": [{"storage_location": "sl-01", "path": "projects/project_a/camera/clip_a_001.mov"}], "role": "original"},
+            {"id": "f-0102", "locations": [{"storage_location": "sl-01", "path": "projects/project_a/camera/clip_a_002.mov"}], "role": "original"}
           ],
           "file_groups": [
             {

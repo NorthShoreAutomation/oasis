@@ -58,8 +58,8 @@
         "path": "assets/part-00001.jsonl",
         "record_type": "assets",
         "count": 5,
-        "size_bytes": 5132,
-        "sha256": "03381a3696dd144766bfb4ba23be3af7ed8e5d5bdb3878dca7dcde2ec65c10a4"
+        "size_bytes": 5134,
+        "sha256": "426e301f47fe4d616b9f532d18c560a2edd79815b8be7cc633659c26d736ab57"
       }
     ],
     "description": "Synthetic package that shows every record list and the main record features."

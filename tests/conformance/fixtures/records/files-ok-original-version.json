@@ -53,7 +53,7 @@
                 }
               ],
               "media_type": "video/mp4",
-              "role": "master"
+              "role": "original"
             }
           ],
           "file_groups": [

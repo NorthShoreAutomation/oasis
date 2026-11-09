@@ -13,7 +13,7 @@
       "name": "common",
       "path": "common.schema.json",
       "$id": "https://www.northshoreautomation.com/schemas/oasis/2/common.schema.json",
-      "sha256": "5182a6aad8a7ba2eeda0f3f34c4453c539a8c1054afe3c1f730a7049f90f5c2c"
+      "sha256": "18d3eb2a7053770c6a6c875f3cb395595796b576718ec87ef899a84dfefdffe8"
     },
     {
       "name": "package",

@@ -65,7 +65,7 @@ Any schema change updates them, until the draft is published.
 The SHA-256 digest of `bundle-manifest.json` is:
 
 ```text
-1e52667ab3e6ead165ee4bc78bf9b67c60633ffd53d2434234dc1d9b840151d1
+4c7e5b3ce2f6a341c06e3c22c8a643af8e33b50e3e737242fb4569a0bcac5673
 ```
 
 The bundle manifest holds the digest of every schema file, so this one digest fixes the whole bundle.

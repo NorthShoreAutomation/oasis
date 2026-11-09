@@ -9,9 +9,9 @@ DEFINITIONS = REPO / "definitions"
 # OASIS 2.0.0-draft.4 bundle.
 FROZEN_DIGESTS = {
     "asset.schema.json": "9909296b1049bb0a6f37948a5d431dae82a4920fbfdc8c260b4289809d123ae6",
-    "bundle-manifest.json": "1e52667ab3e6ead165ee4bc78bf9b67c60633ffd53d2434234dc1d9b840151d1",
+    "bundle-manifest.json": "4c7e5b3ce2f6a341c06e3c22c8a643af8e33b50e3e737242fb4569a0bcac5673",
     "collection.schema.json": "be1ad31393363fa0839fbf4ccba497579a754776b697b75b54a9c901632aaaa9",
-    "common.schema.json": "5182a6aad8a7ba2eeda0f3f34c4453c539a8c1054afe3c1f730a7049f90f5c2c",
+    "common.schema.json": "18d3eb2a7053770c6a6c875f3cb395595796b576718ec87ef899a84dfefdffe8",
     "metadata_definition.schema.json": "a251901b313761a2923adfa6bb16043a6400a5a0ef78ff0b95a8c161648aee2b",
     "package.schema.json": "21a30c79c1bb4dcc86dbf7add5ba1e43d34a73521026d296a4fb9c972d80b3d8",
     "storage_location.schema.json": "42d5f6df84264ac918061613dddd075aa1b5746653d1d2612f6f8b8d9029e56e",

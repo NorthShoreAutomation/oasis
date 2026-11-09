@@ -225,7 +225,7 @@ classDiagram
         media_type : string
         created : datetime
         modified : datetime
-        role : master mezzanine preview thumbnail sidecar other
+        role : original master mezzanine preview thumbnail sidecar other
         label : string
         reel_name : string
         duration_seconds : number

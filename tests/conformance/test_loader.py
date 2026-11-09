@@ -118,6 +118,25 @@ class BundleLoadTests(unittest.TestCase):
             entry.validate(_example("package-minimal.json"))
 
 
+class FileRoleTests(unittest.TestCase):
+    def test_file_roles_in_packages_and_member_records(self):
+        bundle = load_bundle(DEFINITIONS)
+        for role in ("original", "master", "mezzanine", "preview", "thumbnail", "sidecar", "other"):
+            with self.subTest(role=role):
+                asset = {"id": "a-1", "title": "T", "files": [{"id": "f-1", "role": role}]}
+                package = _example("package-minimal.json")
+                package["assets"] = [asset]
+                self.assertEqual(bundle.entry_point("package").validate(_doc(package)), [])
+                self.assertEqual(bundle.record_entry_point("assets").validate(_doc(asset)), [])
+
+    def test_unknown_file_roles_are_rejected(self):
+        entry = load_bundle(DEFINITIONS).record_entry_point("assets")
+        for role in ("source", "Original", "original ", ""):
+            with self.subTest(role=role):
+                asset = {"id": "a-1", "title": "T", "files": [{"id": "f-1", "role": role}]}
+                self.assertIn("enum", _keywords(entry.validate(_doc(asset))))
+
+
 class RecordEntryPointTests(_CopiedBundleMixin, unittest.TestCase):
     ASSET = b'{"id": "a-1", "title": "T"}'
 

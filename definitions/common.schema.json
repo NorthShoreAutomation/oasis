@@ -508,6 +508,7 @@
         },
         "role": {
           "enum": [
+            "original",
             "master",
             "mezzanine",
             "preview",

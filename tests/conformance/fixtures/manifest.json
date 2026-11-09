@@ -234,9 +234,10 @@
         "VER-6",
         "GRP-10",
         "GRP-11",
+        "FILE-5",
         "DOC-3"
       ],
-      "note": "An original version with one file and its two streams."
+      "note": "An original version with one original-role file and its two streams."
     },
     {
       "id": "files-ok-tape-copies",
