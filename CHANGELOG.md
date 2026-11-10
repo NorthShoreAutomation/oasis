@@ -14,7 +14,7 @@ Interoperability between independent implementations is not demonstrated.
 
 ### Added
 
-- File role `original` for an original recording or capture.
+- File role `original` for the original source file, such as a recording or capture.
 - A multi-file package for very large exports: an `oasis-package.json` manifest file and member files in a package folder. Member files use JSON Lines, optionally compressed with gzip. The manifest lists each member's record type, byte size, SHA-256 digest, and record count.
 - Rules `MFP-1` to `MFP-9` for member paths, folder contents, line framing, compression, counts, cross-file references, ordering, and equivalence with a single-document package.
 - A checker that accepts a package folder or its manifest file. It checks member integrity and records across files. Working indexes use SQLite files. The options `--work-dir`, `--max-line-bytes`, and `--max-gzip-ratio` control working storage and reader limits.
@@ -24,8 +24,8 @@ Interoperability between independent implementations is not demonstrated.
 
 ### Changed
 
-- File role `master` now means a finished master rendition. Original recordings use `original`; file group roles are unchanged.
-- The current schema bundle, examples, checker, and guidance now use `2.0.0-draft.4`. The checker supports exactly that version. The optional collection `deleted` is added, and file roles now distinguish original recordings from finished masters.
+- File role `master` now means a finished master rendition. Original source files use `original`. File group roles are unchanged.
+- The current schema bundle, examples, checker, and guidance now use `2.0.0-draft.4`. The checker supports exactly that version. The optional collection `deleted` is added, and file roles now distinguish original source files from finished masters.
 - The package schema accepts a manifest member list for the multi-file form. Existing package and safety rules now cover both forms. See [Changes in 2.0.0-draft.4](docs/specification/2.0.0-draft.4/CONTRACT.md#changes-in-200-draft4).
 
 ## [2.0.0-draft.3] - 2026-11-02
