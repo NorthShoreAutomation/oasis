@@ -447,6 +447,6 @@ Only the setup step above uses the network, to install pinned packages.
 - It makes no interoperability claim.
 - It never computes the checksum of a media file. A declared file checksum is not verified. It does compute the SHA-256 of each member file of a multi-file package and compares it with the manifest file.
 - For a multi-file package, it keeps its indexes and the findings of each stage in SQLite files in the work folder (`store.sqlite` and `findings.sqlite`). SQLite temporary files also go there.
-- It keeps every reported finding in memory to build the result record. Each finding takes about 324 bytes, so a package with many millions of findings can need several GiB of memory.
+- It keeps the reported findings in memory to build the result record, about 1.1 KiB each at peak. It keeps at most 1000 findings of one stage for each member file. When a member file has more, the result lists the first 1000 and adds the limitation `Findings were capped: the result lists at most 1000 findings of each member file, and the rest are not listed.`
 - It does not evaluate access. An access status is read as a value only.
 - A `complete` result does not mean a document is safe or approved to import.

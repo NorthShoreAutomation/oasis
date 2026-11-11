@@ -45,9 +45,11 @@ import errno
 import hashlib
 import os
 import shutil
+import signal
 import sqlite3
 import stat
 import tempfile
+import threading
 import zlib
 from collections.abc import Iterator
 from dataclasses import dataclass, replace
@@ -61,6 +63,7 @@ from tests.conformance.types import Diagnostic, InputInvalid, SetupFailed
 
 __all__ = [
     "FINDINGS_NAME",
+    "FINDINGS_PER_MEMBER",
     "MANIFEST_NAME",
     "RECORD_FOLDERS",
     "STORE_NAME",
@@ -386,6 +389,11 @@ class MemberReader:
         self._inflater = None  # the gzip member being read, or None between members
         self._produced = 0  # decompressed bytes so far
 
+    @property
+    def line_rules_failed(self) -> bool:
+        """True once the lines read so far break a line rule. The member then fails its integrity check."""
+        return not self._found.isdisjoint(_LINE_PROBLEMS)
+
     def _open(self):
         if self.base is None:
             return _open_regular(self.path)
@@ -566,6 +574,13 @@ def has_members(root) -> bool:
 
 _UNREADABLE_MEMBER = "Setup failed: a member file cannot be read."
 _WORK_FILES = "Setup failed: the checker cannot write its working files in the work folder."
+_FINDINGS_CAPPED = (
+    "Findings were capped: the result lists at most 1000 findings of each member file, and the rest are not listed."
+)
+
+# The most findings of one stage kept for one member file. Later ones are left out,
+# so the findings store and the result stay bounded for a small file with many bad lines.
+FINDINGS_PER_MEMBER = 1000
 
 # The stages of the read, in outcome order. The lowest stage with a finding decides.
 _INTEGRITY, _PARSE, _LIMITS, _STRUCTURE, _SEMANTIC = range(5)
@@ -634,7 +649,9 @@ def evaluate_folder(
        (``INPUT_INVALID``), number limits, structure (the record entry point),
        and semantic (``PackageChecker``, with ``Where(member, line, "")``).
        A stage after the earliest failed stage cannot change the outcome, so
-       it is not run. At the end of each member its integrity is checked:
+       it is not run. Once a line of a member breaks a line rule, the member
+       fails its integrity check, so its later lines run no record stage.
+       At the end of each member its integrity is checked:
        size, checksum, compression, line rules, and line count. After the
        first integrity failure every later member is only hashed, so every
        damaged member is reported and no record stage runs.
@@ -647,6 +664,10 @@ def evaluate_folder(
        and of the scan (``MEMBERS_SMALL``, ``FILE_UNLISTED``) are reported
        only then.
 
+    For each member file, at most ``FINDINGS_PER_MEMBER`` findings of one
+    stage are kept. When the deciding stage had more, the result lists the
+    first ones of each member and has the limitation ``_FINDINGS_CAPPED``.
+
     Setup failures outrank every finding. A member file or a folder that
     cannot be read gives the fixed limitation ``Setup failed: a member file
     cannot be read.``; a reader limit gives the text of ``LimitExceeded``.
@@ -656,7 +677,8 @@ def evaluate_folder(
     not grow with the number of lines. SQLite temporary files go there too.
     ``work_dir`` names the work folder; it is made when absent, and the two
     files stay there after the run. When ``work_dir`` is ``None``, a new
-    folder from ``tempfile.mkdtemp`` is used and removed at the end.
+    folder from ``tempfile.mkdtemp`` is used and removed at the end, also
+    when the process gets SIGTERM during the read.
     """
     # validate imports this module, so the import waits until the first call.
     from tests.conformance import validate
@@ -706,7 +728,7 @@ def evaluate_folder(
         return validate.safe_pointer(error), validate.schema_keyword(error)
 
     try:
-        stage, found = _read_package(package_dir, root, bundle, work_dir, limits, reduce_error)
+        stage, found, capped = _read_package(package_dir, root, bundle, work_dir, limits, reduce_error)
     except _Stop as stop:
         return validate._setup_failed(record, stop.limitation)
     except RecursionError:
@@ -724,18 +746,21 @@ def evaluate_folder(
     else:
         record["execution_status"] = "input-invalid"
         record["diagnostics"] = validate._diagnostics(found)
+    if capped:
+        record["limitations"] = [_FINDINGS_CAPPED]
     return record
 
 
 def _read_package(package_dir, root, bundle, work_dir, limits, reduce_error):
-    """Read every member file once; return ``(stage, findings)`` of the earliest failed stage.
+    """Read every member file once; return ``(stage, findings, capped)`` of the earliest failed stage.
 
     For ``_STRUCTURE`` the findings are ``(path, keyword, member, line)``
     items; for any other stage they are diagnostics. ``_SEMANTIC`` means no
-    other stage failed. A setup failure raises ``_Stop``.
+    other stage failed. ``capped`` is true when findings of that stage were
+    left out (``FINDINGS_PER_MEMBER``). A setup failure raises ``_Stop``.
     """
     try:
-        with contextlib.ExitStack() as stack:
+        with _exit_on_sigterm(), contextlib.ExitStack() as stack:
             folder = _work_folder(stack, work_dir)
             findings = _open_findings(stack, folder)
             checker = PackageChecker(root, str(folder / STORE_NAME))
@@ -748,6 +773,28 @@ def _read_package(package_dir, root, bundle, work_dir, limits, reduce_error):
         raise _Stop(f"Setup failed: {error}.") from None
     except (sqlite3.Error, UnicodeError):
         raise _Stop(_WORK_FILES) from None
+
+
+@contextlib.contextmanager
+def _exit_on_sigterm():
+    """Turn SIGTERM into ``SystemExit`` while the block runs, so a temporary work folder is removed.
+
+    Python ends on SIGTERM without running cleanup, which would leave the
+    folder behind. A handler can only be set in the main thread; elsewhere
+    the block runs unchanged.
+    """
+    if not hasattr(signal, "SIGTERM") or threading.current_thread() is not threading.main_thread():
+        yield
+        return
+
+    def stop(signum, _frame):
+        raise SystemExit(128 + signum)
+
+    previous = signal.signal(signal.SIGTERM, stop)
+    try:
+        yield
+    finally:
+        signal.signal(signal.SIGTERM, signal.SIG_DFL if previous is None else previous)
 
 
 def _work_folder(stack: contextlib.ExitStack, work_dir) -> Path:
@@ -790,6 +837,8 @@ class _PackageRead:
     ``failed`` is the earliest stage with a finding so far, or ``_SEMANTIC``
     when there is none. A stage after ``failed`` is not run, and the
     semantic stage gets a record only while no other stage has failed.
+    ``kept`` counts the findings kept for each ``(stage, member)``, and
+    ``capped`` holds the stages that had findings left out.
     """
 
     def __init__(self, findings, checker, bundle, limits, reduce_error):
@@ -799,6 +848,8 @@ class _PackageRead:
         self.limits = limits
         self.reduce_error = reduce_error
         self.failed = _SEMANTIC
+        self.kept: dict[tuple[int, int], int] = {}
+        self.capped: set[int] = set()
 
     def read_members(self, package_dir, members) -> None:
         """Read the members by record list, in manifest order inside each list."""
@@ -815,6 +866,9 @@ class _PackageRead:
         try:
             if whole:
                 for number, line in reader.lines():
+                    if reader.line_rules_failed:
+                        # The member fails integrity, which outranks every record stage.
+                        continue
                     self._read_line(registry, entry_point, index, number, line)
             else:
                 reader.hash_only()
@@ -869,18 +923,26 @@ class _PackageRead:
             self._add(_INTEGRITY, index, None, "", "MEMBER_LINE_INVALID")
 
     def _add(self, stage, member, line, path, code=None, keyword=None) -> None:
+        self.failed = min(self.failed, stage)
+        kept = self.kept.get((stage, member), 0)
+        if kept >= FINDINGS_PER_MEMBER:
+            self.capped.add(stage)
+            return
+        self.kept[(stage, member)] = kept + 1
         row = (stage, member, line, path, code, keyword)
         self.findings.execute("INSERT INTO findings VALUES (?, ?, ?, ?, ?, ?)", row)
-        self.failed = min(self.failed, stage)
 
     def outcome(self):
-        """Return ``(stage, findings)`` for the earliest failed stage; see ``_read_package``."""
+        """Return ``(stage, findings, capped)`` for the earliest failed stage; see ``_read_package``."""
         self.findings.commit()
         if self.failed == _SEMANTIC:
-            return _SEMANTIC, self.checker.finish()
+            return _SEMANTIC, self.checker.finish(), False
+        capped = self.failed in self.capped
         rows = self.findings.execute(_STAGE_FINDINGS, (self.failed,))
         if self.failed == _STRUCTURE:
-            return _STRUCTURE, [(path, keyword, member, line) for member, line, path, _code, keyword in rows]
-        return self.failed, [
-            replace(diagnostic(code, path), member=member, line=line) for member, line, path, code, _keyword in rows
-        ]
+            return _STRUCTURE, [(path, keyword, member, line) for member, line, path, _code, keyword in rows], capped
+        return (
+            self.failed,
+            [replace(diagnostic(code, path), member=member, line=line) for member, line, path, code, _keyword in rows],
+            capped,
+        )

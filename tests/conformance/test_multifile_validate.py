@@ -12,6 +12,7 @@ import hashlib
 import io
 import json
 import os
+import signal
 import sqlite3
 import stat
 import tempfile
@@ -858,6 +859,24 @@ class WorkFolderTests(PackageTest):
                 self.assertEqual(made.call_count, 2)
                 self.assertEqual(list(system_temp.iterdir()), [])
 
+    @unittest.skipUnless(hasattr(signal, "SIGTERM"), "no SIGTERM on this platform")
+    def test_default_work_folder_is_removed_on_sigterm(self):
+        system_temp = self.base / "system-temp"
+        system_temp.mkdir()
+        self.write({"assets/a.jsonl": _lines(_asset("a-1"))})
+        before = signal.getsignal(signal.SIGTERM)
+
+        def terminate(read, package_dir, members):
+            os.kill(os.getpid(), signal.SIGTERM)
+
+        with mock.patch.object(tempfile, "tempdir", str(system_temp)):
+            with mock.patch.object(multifile._PackageRead, "read_members", terminate):
+                with self.assertRaises(SystemExit) as stop:
+                    multifile.evaluate_folder(self.folder / MANIFEST_NAME, DEFINITIONS, None, LIMITS)
+        self.assertEqual(stop.exception.code, 128 + signal.SIGTERM)
+        self.assertEqual(list(system_temp.iterdir()), [])
+        self.assertEqual(signal.getsignal(signal.SIGTERM), before)
+
     def test_unusable_work_dir_is_a_setup_failure(self):
         self.write({"assets/a.jsonl": _lines(_asset("a-1"))})
         blocker = self.base / "file"
@@ -885,6 +904,78 @@ class WorkFolderTests(PackageTest):
         self.assertEqual(record["execution_status"], "complete")
         self.assertEqual(seen, [[(str(work),)]])
         self.assertEqual(probe.execute("PRAGMA temp_store_directory").fetchall(), [])
+
+
+class FindingBoundTests(PackageTest):
+    """A small member file with many bad lines must not fill the disk or the memory of the checker."""
+
+    CAPPED = (
+        "Findings were capped: the result lists at most 1000 findings of each member file, and the rest are not listed."
+    )
+
+    def _stored_rows(self, work):
+        db = sqlite3.connect(work / multifile.FINDINGS_NAME)
+        self.addCleanup(db.close)
+        return db.execute("SELECT count(*) FROM findings").fetchone()[0]
+
+    def test_blank_lines_in_a_gzip_member_store_one_finding(self):
+        data = gzip.compress(b"\n" * 5000)
+        self.write({"assets/a.jsonl.gz": data})
+        work = self.base / "work"
+        record = self.check(work_dir=work)
+        self.assertEqual(_outcome(record), ("input-invalid", "not-run", "not-run"))
+        self.assertEqual(_found(record), [("MEMBER_LINE_INVALID", _m(0), None, "")])
+        self.assertEqual(record["limitations"], [])
+        # The first blank line fails the line rules, so no later line is parsed.
+        self.assertEqual(self._stored_rows(work), 1)
+
+    def test_line_rule_failure_hides_parse_errors_of_later_lines(self):
+        self.write({"assets/a.jsonl": _lines(_asset("a-1")) + b"\n" + b"[1,]\n" * 3})
+        record = self.check()
+        self.assertEqual(_found(record), [("MEMBER_LINE_INVALID", _m(0), None, "")])
+
+    def test_parse_findings_are_capped_per_member(self):
+        cap = multifile.FINDINGS_PER_MEMBER
+        self.write({"assets/a.jsonl": b"[1,]\n" * (cap + 5), "assets/b.jsonl": b"[1,]\n" * 3})
+        work = self.base / "work"
+        record = self.check(work_dir=work)
+        self.assertEqual(_outcome(record), ("input-invalid", "not-run", "not-run"))
+        found = [d for d in _found(record) if d[0] == "INPUT_INVALID"]
+        self.assertEqual(len(found), cap + 3)
+        self.assertEqual(found[cap - 1], ("INPUT_INVALID", _m(0), cap, ""))
+        self.assertEqual(found[cap:], [("INPUT_INVALID", _m(1), line, "") for line in (1, 2, 3)])
+        self.assertEqual(record["limitations"], [self.CAPPED])
+        self.assertEqual(self._stored_rows(work), cap + 3)
+        code, out, _ = run(self.folder)
+        self.assertEqual(code, 1, out)
+        self.assertIn(f"note: {self.CAPPED}", out)
+
+    def test_structural_errors_are_capped_per_member(self):
+        cap = multifile.FINDINGS_PER_MEMBER
+        records = [{"id": f"a-{n}", "title": 1} for n in range(cap + 2)]
+        self.write({"assets/a.jsonl": _lines(*records)})
+        record = self.check()
+        self.assertEqual(_outcome(record), ("complete", "invalid", "not-run"))
+        self.assertEqual(len(record["structural_errors"]), cap)
+        self.assertEqual(record["limitations"], [self.CAPPED])
+
+    def test_no_limitation_at_the_cap(self):
+        cap = multifile.FINDINGS_PER_MEMBER
+        self.write({"assets/a.jsonl": b"[1,]\n" * cap})
+        record = self.check()
+        self.assertEqual(len([d for d in _found(record) if d[0] == "INPUT_INVALID"]), cap)
+        self.assertEqual(record["limitations"], [])
+
+    def test_capped_findings_of_a_later_stage_add_no_limitation(self):
+        # The parse error decides the outcome, so the capped structural errors are not mentioned.
+        cap = multifile.FINDINGS_PER_MEMBER
+        records = [{"id": f"a-{n}", "title": 1} for n in range(cap + 2)]
+        self.write({"collections/c.jsonl": _lines(_collection("c-1")), "assets/a.jsonl": _lines(*records) + b"[1,]\n"})
+        record = self.check()
+        self.assertEqual(_outcome(record), ("input-invalid", "not-run", "not-run"))
+        found = [d for d in _found(record) if d[0] != "MEMBERS_SMALL"]
+        self.assertEqual(found, [("INPUT_INVALID", _m(1), cap + 3, "")])
+        self.assertEqual(record["limitations"], [])
 
 
 if __name__ == "__main__":

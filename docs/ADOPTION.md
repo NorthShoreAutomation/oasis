@@ -750,7 +750,9 @@ Raise a limit only for a package that you trust.
 - It never computes the checksum of a media file, and it does not evaluate access.
 - The fixture corpus is small and synthetic. Scale and operational limits are untested.
 - For a multi-file package, the checker keeps its indexes in SQLite working files, so its memory does not grow with the size of the records. `--work-dir DIR` names the work folder. Without it, the checker makes a new temporary folder and removes it at the end. Do not put the work folder inside the package folder: the next check would find its files as unlisted files.
-- The checker keeps every finding that it reports in memory. Each finding takes about 324 bytes. So a package with many millions of findings can need several GiB of memory. A valid package has few findings.
+- The checker keeps the findings that it reports in memory, about 1.1 KiB each at peak. For each member file it keeps at most 1000 findings of one stage. When a member file has more, the result lists its first 1000 and adds the limitation `Findings were capped: the result lists at most 1000 findings of each member file, and the rest are not listed.` So memory grows with the number of member files with findings, not with the number of bad lines. A valid package has few findings.
+- Once a line of a member file breaks a line rule, the member file fails its integrity check, so the checker runs no record stage on its later lines.
+- Without `--work-dir`, the checker also removes its temporary work folder when it gets SIGTERM during the read.
 - No nesting limit is approved. Very deep input fails setup at the interpreter or decoder limit. Ordinary documents are far below it.
 
 The [harness README](../tests/conformance/README.md#limits) gives the details, including nesting depth and regular expression limits.
