@@ -60,6 +60,7 @@ The adopter guide gives the full outcome table.
 ## Setup
 
 Run all commands from the repository root.
+The harness needs Python 3.12 or newer. Continuous integration runs 3.12.
 
 ### Scripted setup
 
@@ -449,5 +450,6 @@ Only the setup step above uses the network, to install pinned packages.
 - For a multi-file package, it keeps its indexes and the findings of each stage in SQLite files in the work folder (`store.sqlite` and `findings.sqlite`). SQLite temporary files also go there.
 - It keeps the reported findings in memory to build the result record, about 1.1 KiB each at peak. It keeps at most 1000 findings of one stage for each member file. When a member file has more, the result lists the first 1000 and adds the limitation `Findings were capped: the result lists at most 1000 findings of each member file, and the rest are not listed.`
 - The result itself lists at most 10000 findings and at most 10000 schema errors. The member cap above bounds one stage of one member file; this one bounds the result, so a single document is bounded too: one fault that every record repeats, such as an unresolved reference that every asset names, would otherwise grow the result with the record count. When the cap drops an entry, the result adds the limitation `Findings were capped: the result lists at most 10000 findings and at most 10000 schema errors, and the rest are not listed.`
+- It needs Python 3.12 or newer. On 3.11 one nesting test fails: it holds a depth that the CPython C decoder accepts from 3.12 on and refuses before it, so the test's own premise does not hold there. The checker refuses that depth on either version.
 - It does not evaluate access. An access status is read as a value only.
 - A `complete` result does not mean a document is safe or approved to import.
