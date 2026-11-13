@@ -1,6 +1,6 @@
 {
   "type": "package",
-  "spec_version": "2.0.0-draft.3",
+  "spec_version": "2.0.0-draft.4",
   "id": "pkg-complete-0001",
   "source": {"system": "example-exporter", "instance": "site-north", "id": "export-0042"},
   "manifest": {
@@ -89,7 +89,7 @@
             "source_timecode": "01:00:00:00"
           },
           "files": [
-            {"id": "f-video-v1", "locations": [{"storage_location": "sl-01", "path": "interviews/master_v1.mov"}], "size_bytes": 2147483648, "role": "master", "label": "Original upload"}
+            {"id": "f-video-v1", "locations": [{"storage_location": "sl-01", "path": "interviews/master_v1.mov"}], "size_bytes": 2147483648, "role": "original", "label": "Original upload"}
           ],
           "file_groups": [
             {

@@ -41,13 +41,24 @@ class ParsedInput:
 
 @dataclass(frozen=True)
 class Diagnostic:
-    """One finding: a catalog code, its rule, severity, JSON Pointer, and text."""
+    """One finding: a catalog code, its rule, severity, JSON Pointer, and text.
+
+    The three optional fields locate a finding in a multi-file package.
+    ``member`` is the index of the member file in the manifest member list,
+    and ``line`` is the 1-based line in that file; ``path`` is then a pointer
+    inside the record on that line. ``unlisted_path`` is the path, relative
+    to the package folder, of a file that the manifest does not list. A
+    finding in a single document has none of them.
+    """
 
     code: str
     rule: str
     severity: str
     path: str
     message: str
+    member: int | None = None
+    line: int | None = None
+    unlisted_path: str | None = None
 
 
 @dataclass(frozen=True)

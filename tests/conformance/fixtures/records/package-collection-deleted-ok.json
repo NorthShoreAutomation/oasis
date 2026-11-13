@@ -1,0 +1,38 @@
+{
+  "type": "package",
+  "spec_version": "2.0.0-draft.4",
+  "id": "pkg-0001",
+  "manifest": {
+    "producer": {
+      "name": "example-exporter",
+      "version": "0.1.0"
+    },
+    "produced_at": "2026-10-05T09:00:00Z",
+    "counts": {
+      "storage_locations": 0,
+      "metadata_definitions": 0,
+      "collections": 1,
+      "assets": 1
+    },
+    "namespaces": []
+  },
+  "collections": [
+    {
+      "id": "col-0001",
+      "title": "Example Project",
+      "collection_type": "logical",
+      "deleted": "2026-03-01T10:00:00Z"
+    }
+  ],
+  "assets": [
+    {
+      "id": "a-0001",
+      "title": "Example Clip",
+      "member_of": [
+        {
+          "collection": "col-0001"
+        }
+      ]
+    }
+  ]
+}

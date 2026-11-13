@@ -334,6 +334,8 @@ class Bundle:
     _entry_points: dict = field(repr=False, compare=False)
     # Every key of every ``properties`` keyword in the bundle schemas (DOC-4 paths).
     property_names: frozenset = field(default=frozenset(), repr=False, compare=False)
+    # One validator per record list name, each for a single record of that list.
+    _record_entry_points: dict = field(default_factory=dict, repr=False, compare=False)
 
     def entry_point(self, kind: str) -> EntryPoint:
         """Select a document root by kind, or raise SetupFailed."""
@@ -341,6 +343,28 @@ class Bundle:
             return self._entry_points[kind]
         except (KeyError, TypeError):
             raise SetupFailed("kind is not a document root of the bundle") from None
+
+    def record_entry_point(self, record_type: str) -> EntryPoint:
+        """Select the validator for one record of a record list, or raise SetupFailed.
+
+        ``record_type`` is a record list name: ``storage_locations``,
+        ``metadata_definitions``, ``collections``, or ``assets``. The validator
+        checks one record against the schema of that record type. It is not a
+        document root.
+        """
+        try:
+            return self._record_entry_points[record_type]
+        except (KeyError, TypeError):
+            raise SetupFailed("record type is not a record list of the bundle") from None
+
+
+# The record list names of a package and the schema file of one record of each.
+_RECORD_SCHEMAS = {
+    "storage_locations": "storage_location",
+    "metadata_definitions": "metadata_definition",
+    "collections": "collection",
+    "assets": "asset",
+}
 
 
 @functools.lru_cache(maxsize=None)
@@ -371,10 +395,19 @@ def _build(root: Path, manifest_sha256: str, manifest: BundleManifest) -> Bundle
         if entry.name in manifest.document_roots:
             validator = _Validator({"$ref": entry.id}, registry=registry, format_checker=checker)
             entry_points[entry.name] = EntryPoint(entry.name, validator)
+    ids = {entry.name: entry.id for entry in manifest.schemas}
+    record_entry_points = {}
+    for record_type, schema_name in _RECORD_SCHEMAS.items():
+        if schema_name not in ids:
+            raise SetupFailed("bundle has no schema for a record list")
+        validator = _Validator({"$ref": ids[schema_name]}, registry=registry, format_checker=checker)
+        record_entry_points[record_type] = EntryPoint(record_type, validator)
     names = set()
     for tree in schemas.values():
         _collect_property_names(tree, names)
-    return Bundle(root, manifest_sha256, manifest, schemas, registry, entry_points, frozenset(names))
+    return Bundle(
+        root, manifest_sha256, manifest, schemas, registry, entry_points, frozenset(names), record_entry_points
+    )
 
 
 def _collect_property_names(node, names: set) -> None:

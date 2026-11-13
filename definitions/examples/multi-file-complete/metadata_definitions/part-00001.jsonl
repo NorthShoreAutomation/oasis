@@ -1,0 +1,3 @@
+{"id":"md-approval","label":"Approval state","value_type":"enum","cardinality":"single","list_type":"fixed","options":[{"id":"appr","label":"Approved","extensions":{"vendor_a":{"colour":"green"}}},{"id":"rej","label":"Rejected"}]}
+{"id":"md-keywords","label":"Keywords","value_type":"string","cardinality":"multiple","constraints":{"max_length":64}}
+{"id":"md-shoot-date","label":"Shoot date","value_type":"date","cardinality":"single"}

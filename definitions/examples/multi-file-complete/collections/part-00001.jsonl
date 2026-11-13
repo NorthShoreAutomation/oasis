@@ -1,0 +1,2 @@
+{"id":"col-01","title":"Example Project","collection_type":"logical","metadata":[{"definition":"md-keywords","value":["project"]}],"access":{"status":"none"}}
+{"id":"col-02","title":"Example Volume Folder","collection_type":"storage","storage":{"storage_location":"sl-01","path":"projects/example/renders"},"member_of":[{"collection":"col-01"}],"created":"2026-01-10T08:00:00Z","access":{"status":"none"}}

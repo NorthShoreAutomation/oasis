@@ -1,7 +1,7 @@
 {
   "manifest_version": "2.0.0",
-  "bundle_revision": "2.0.0-draft.3",
-  "spec_version": "2.0.0-draft.3",
+  "bundle_revision": "2.0.0-draft.4",
+  "spec_version": "2.0.0-draft.4",
   "json_schema_dialect": "https://json-schema.org/draft/2020-12/schema",
   "id_base": "https://www.northshoreautomation.com/schemas/oasis/2/",
   "id_base_note": "Final host, decided 2026-10-14. Identifiers are never fetched. Load every schema from this bundle.",
@@ -13,13 +13,13 @@
       "name": "common",
       "path": "common.schema.json",
       "$id": "https://www.northshoreautomation.com/schemas/oasis/2/common.schema.json",
-      "sha256": "f4bf65a6c214d0782250300a53201a390832a8d0fe7f2bd97af84aafcad3defd"
+      "sha256": "18d3eb2a7053770c6a6c875f3cb395595796b576718ec87ef899a84dfefdffe8"
     },
     {
       "name": "package",
       "path": "package.schema.json",
       "$id": "https://www.northshoreautomation.com/schemas/oasis/2/package.schema.json",
-      "sha256": "3ad4d94baf5d6bb1d2d1deff729598cf63a06368a53fb485cddadd42cc16929f"
+      "sha256": "21a30c79c1bb4dcc86dbf7add5ba1e43d34a73521026d296a4fb9c972d80b3d8"
     },
     {
       "name": "asset",
@@ -31,7 +31,7 @@
       "name": "collection",
       "path": "collection.schema.json",
       "$id": "https://www.northshoreautomation.com/schemas/oasis/2/collection.schema.json",
-      "sha256": "0f22ddf5c8a37cd679c8d4173e8ea84cd85bbe392d45c279b5e367c653b3029e"
+      "sha256": "be1ad31393363fa0839fbf4ccba497579a754776b697b75b54a9c901632aaaa9"
     },
     {
       "name": "storage_location",

@@ -1,19 +1,20 @@
-# OASIS 2.0.0-draft.3 examples
+# OASIS 2.0.0-draft.4 examples
 
-Status: DRAFT 2.0.0-draft.3, not a final release. These examples can change before the final release.
+Status: DRAFT 2.0.0-draft.4, not a final release. These examples can change before the final release.
 Interoperability between independent implementations is not demonstrated.
 
 Every example is synthetic. Names such as "Example Archive" and `vendor_a` are placeholders. No example describes a real organization, product, or person. Checksum values are test values, not checksums of real media.
 
 Only a package is an exchange document. Each example is one package: its root `type` is `package`, and it validates against [`package.schema.json`](../package.schema.json). Records inside a package carry no `type` and no `spec_version`.
 
-There are three examples:
+There are four examples. Three are single-document packages, and one is a multi-file package folder:
 
 | Example | Purpose |
 | --- | --- |
 | `package-minimal.json` | The smallest valid package. |
 | `package-full.json` | Every field of every record type and nested object, at least once. Not a realistic package. |
 | `package-complete.json` | A realistic package with several assets that use the main record features together. |
+| `multi-file-complete/` | `package-complete.json` in the multi-file form, with one plain member file for each record list. |
 
 Each example:
 
@@ -25,6 +26,12 @@ To check one example yourself, run this from the repository root after setup:
 
 ```sh
 python3 -m tests.conformance.validate definitions/examples/package-complete.json
+```
+
+To check the multi-file example, give the command its package folder:
+
+```sh
+python3 -m tests.conformance.validate definitions/examples/multi-file-complete
 ```
 
 ## Minimal package
@@ -57,7 +64,7 @@ Each JSON pointer below names one place where the record or object appears. Some
 | Constraints for a `string` | `/metadata_definitions/1/constraints` |
 | Constraints for an `integer` | `/metadata_definitions/2/constraints` |
 | Collection of type `logical`, with `metadata`, `access`, `source`, and `extensions` | `/collections/0` |
-| Collection of type `storage` | `/collections/1` |
+| Collection of type `storage`, with `deleted` | `/collections/1` |
 | Collection storage | `/collections/1/storage` |
 | Asset with versions, every asset field except `timing` and `deleted` | `/assets/0` |
 | Asset in the seconds form, with `deleted` | `/assets/1` |
@@ -109,10 +116,31 @@ Each JSON pointer below names one place where the record or object appears. Some
 - Metadata: an `enum` definition on a `fixed` list with two options, a `multiple` string definition with a constraint, and a `date` definition. Asset `a-0001` carries an enum value, a multiple string value, and a date value.
 - Collections: `col-01` is a `logical` collection. `col-02` is a `storage` collection that mirrors a folder on `sl-01`. It is a member of `col-01`. Assets `a-0001`, `a-0002`, and `a-0003` are members of `col-01`, and `a-0004` is a member of `col-02`. Membership is recorded on the member in `member_of`.
 - Versions: `a-0001` has versions `v1` (ordinal 0) and `v2` (ordinal 1). Each version has its own timing, files, and file groups. Version `v2` also holds the web proxy, its preview group, and both annotations. Asset metadata stays at the asset level.
-- File groups: version `v2` of `a-0001` has a primary group with one video track and two stereo audio tracks, and a labelled preview group. Its files carry the roles `master`, `mezzanine`, and `preview`. `a-0002` has a primary group for one recording split across two files: both members are video track 0, with `segment_index` 0 and 1. `a-0004` has a primary group whose member is an image sequence with images 1000 to 1249.
+- File groups: version `v2` of `a-0001` has a primary group with one video track and two stereo audio tracks, and a labelled preview group. Its files carry the roles `mezzanine` and `preview`. Version `v1` uses `original` for the original recording. The two files of `a-0002` use `master` for the finished program. `a-0002` has a primary group for one recording split across two files: both members are video track 0, with `segment_index` 0 and 1. `a-0004` has a primary group whose member is an image sequence with images 1000 to 1249.
 - Timing at `24000/1001`: annotation `ann-1` in version `v2` of `a-0001` is a `private` review comment that covers frames 100 to 150. The seconds 4.170833 and 6.25625 name frames 100 and 150 under the nearest-frame rule. The labels `01:00:04:04` and `01:00:06:06` are the anchor `01:00:00:00` plus 100 and 150 frames. Annotation `ann-2` is a chapter point at frame 0.
 - Drop-frame at `30000/1001`: asset `a-0002` has anchor `01:00:59;00`. Frame 30 crosses into minute 01, where labels `;00` and `;01` are skipped, so its label is `01:01:00;02`. Frame 60 is `01:01:01;02`. The seconds 1.001 and 2.002 are exact.
 - Relationships: `a-0003` is a `subclip_of` `a-0001`. The range 240 to 480 is on the timeline of version `v2`, which `target_version` names. The subclip has 240 frames at the same rate, so the lengths agree. Asset `a-0005` is `derived_from` `a-0001`.
 - Access: `a-0004` is `restricted`. `a-0002` and `a-0005` carry no `access`, so their access state is unknown. The other assets and both collections are `none`.
 - Deletion: `a-0005` carries `deleted`. The source reported it deleted at that date-time. It is a full record and a fact about the source, not an instruction to a receiving system.
 - Extensions: the manifest declares `vendor_a` and `archive_b`. Both are used on records in the package. `vendor_a` also appears on an enum option.
+
+## Complete multi-file package
+
+`multi-file-complete/` is a package folder. It holds the records of `package-complete.json` in the multi-file form:
+
+```text
+multi-file-complete/
+  oasis-package.json
+  storage_locations/part-00001.jsonl       2 records
+  metadata_definitions/part-00001.jsonl    3 records
+  collections/part-00001.jsonl             2 records
+  assets/part-00001.jsonl                  5 records
+```
+
+- The manifest file `oasis-package.json` has the root fields of `package-complete.json`: `type`, `spec_version`, `id`, `source`, and the manifest with its counts, namespaces, and description. It has no record arrays.
+- Its manifest adds `members`, one member entry for each record list. Each entry gives the path, the record type, the record count, the size, and the SHA-256 of its file.
+- Each member file is plain JSON Lines with LF line endings. Each line is one record, exactly as an item of the matching array in `package-complete.json`, written with no spaces.
+- The `size_bytes` and `sha256` values are the real size and SHA-256 of the member files. The file checksums inside the asset records are test values, as in `package-complete.json`.
+- The two examples are equivalent: they have the same root fields, the same record lists, and the same records (contract rule `MFP-9`).
+
+`test_examples.py` checks that the folder passes with no diagnostic and that the two examples are equivalent.

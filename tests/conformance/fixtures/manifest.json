@@ -1,6 +1,6 @@
 {
   "manifest_version": "2.0.0",
-  "contract": "2.0.0-draft.3",
+  "contract": "2.0.0-draft.4",
   "provenance": {
     "kind": "synthetic",
     "source": "Newly authored OASIS conformance examples",
@@ -234,9 +234,10 @@
         "VER-6",
         "GRP-10",
         "GRP-11",
+        "FILE-5",
         "DOC-3"
       ],
-      "note": "An original version with one file and its two streams."
+      "note": "An original version with one original-role file and its two streams."
     },
     {
       "id": "files-ok-tape-copies",
@@ -1096,6 +1097,19 @@
       "note": "Four levels. The asset is a member of col-04 and also of col-01 directly."
     },
     {
+      "id": "package-collection-deleted-ok",
+      "path": "records/package-collection-deleted-ok.json",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "COL-1",
+        "COL-8",
+        "DOC-3"
+      ],
+      "note": "A collection that the source reported deleted, still named by an asset."
+    },
+    {
       "id": "package-collection-self-parent",
       "path": "records/package-collection-self-parent.json",
       "expected_status": "complete",
@@ -1214,6 +1228,31 @@
       "note": "A value names a definition that the package holds."
     },
     {
+      "id": "package-id-duplicate-across-members",
+      "path": "packages/package-id-duplicate-across-members/",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "MEMBERS_SMALL",
+          "/manifest/members",
+          null,
+          null
+        ],
+        [
+          "ID_DUPLICATE",
+          "/id",
+          1,
+          1
+        ]
+      ],
+      "rules": [
+        "MFP-7",
+        "ID-1"
+      ],
+      "note": "Two member files in the assets list hold an asset with the id a-0001."
+    },
+    {
       "id": "package-id-duplicate-assets",
       "path": "records/package-id-duplicate-assets.json",
       "expected_status": "complete",
@@ -1256,6 +1295,150 @@
         "DOC-3"
       ],
       "note": "An asset and a collection share one id string."
+    },
+    {
+      "id": "package-line-crlf",
+      "path": "packages/package-line-crlf/",
+      "expected_status": "input-invalid",
+      "expected_structural": "not-run",
+      "expected_diagnostics": [
+        [
+          "MEMBER_LINE_INVALID",
+          "",
+          0,
+          null
+        ]
+      ],
+      "rules": [
+        "MFP-4"
+      ],
+      "note": "The line of the member file ends with CR and LF."
+    },
+    {
+      "id": "package-line-no-final-lf",
+      "path": "packages/package-line-no-final-lf/",
+      "expected_status": "input-invalid",
+      "expected_structural": "not-run",
+      "expected_diagnostics": [
+        [
+          "MEMBER_LINE_INVALID",
+          "",
+          0,
+          null
+        ]
+      ],
+      "rules": [
+        "MFP-4"
+      ],
+      "note": "The last line of the member file has no LF."
+    },
+    {
+      "id": "package-member-checksum",
+      "path": "packages/package-member-checksum/",
+      "expected_status": "input-invalid",
+      "expected_structural": "not-run",
+      "expected_diagnostics": [
+        [
+          "MEMBER_CHECKSUM_MISMATCH",
+          "/manifest/members/0/sha256",
+          0,
+          null
+        ]
+      ],
+      "rules": [
+        "MFP-3"
+      ],
+      "note": "The sha256 of the member entry is not the digest of the file."
+    },
+    {
+      "id": "package-member-count",
+      "path": "packages/package-member-count/",
+      "expected_status": "input-invalid",
+      "expected_structural": "not-run",
+      "expected_diagnostics": [
+        [
+          "MEMBER_COUNT_MISMATCH",
+          "/manifest/members/0/count",
+          0,
+          null
+        ]
+      ],
+      "rules": [
+        "MFP-5"
+      ],
+      "note": "The member entry says 2 records. The file has 1 line."
+    },
+    {
+      "id": "package-member-missing",
+      "path": "packages/package-member-missing/",
+      "expected_status": "input-invalid",
+      "expected_structural": "not-run",
+      "expected_diagnostics": [
+        [
+          "MEMBER_MISSING",
+          "/manifest/members/1/path",
+          1,
+          null
+        ]
+      ],
+      "rules": [
+        "MFP-3"
+      ],
+      "note": "The manifest lists a second member file that is not in the folder."
+    },
+    {
+      "id": "package-member-size",
+      "path": "packages/package-member-size/",
+      "expected_status": "input-invalid",
+      "expected_structural": "not-run",
+      "expected_diagnostics": [
+        [
+          "MEMBER_SIZE_MISMATCH",
+          "/manifest/members/0/size_bytes",
+          0,
+          null
+        ]
+      ],
+      "rules": [
+        "MFP-3"
+      ],
+      "note": "The size_bytes of the member entry is one byte more than the file."
+    },
+    {
+      "id": "package-member-type",
+      "path": "packages/package-member-type/",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "MEMBER_TYPE_MISMATCH",
+          "/manifest/members/0/record_type",
+          0,
+          null
+        ]
+      ],
+      "rules": [
+        "MFP-2"
+      ],
+      "note": "The path starts with assets, and the record_type of the entry is collections."
+    },
+    {
+      "id": "package-member-unlisted",
+      "path": "packages/package-member-unlisted/",
+      "expected_status": "input-invalid",
+      "expected_structural": "not-run",
+      "expected_diagnostics": [
+        [
+          "MEMBER_UNLISTED",
+          "",
+          null,
+          null
+        ]
+      ],
+      "rules": [
+        "MFP-3"
+      ],
+      "note": "The assets folder holds a second member file that the manifest does not list."
     },
     {
       "id": "package-membership-duplicate",
@@ -1385,6 +1568,57 @@
       "note": "A declared token need not be used."
     },
     {
+      "id": "package-ok-empty-list",
+      "path": "packages/package-ok-empty-list/",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [],
+      "rules": [
+        "MFP-6"
+      ],
+      "note": "The assets list has one member file with 0 bytes and a count of 0."
+    },
+    {
+      "id": "package-ok-gzip-member",
+      "path": "packages/package-ok-gzip-member/",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "MEMBERS_SMALL",
+          "/manifest/members",
+          null,
+          null
+        ]
+      ],
+      "rules": [
+        "MFP-3",
+        "MFP-4"
+      ],
+      "note": "One plain member file and one gzip member file in the assets list."
+    },
+    {
+      "id": "package-ok-two-asset-members",
+      "path": "packages/package-ok-two-asset-members/",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "MEMBERS_SMALL",
+          "/manifest/members",
+          null,
+          null
+        ]
+      ],
+      "rules": [
+        "MFP-2",
+        "MFP-3",
+        "MFP-5",
+        "MFP-7"
+      ],
+      "note": "Two asset member files with one record each. The warning says the list has many small files."
+    },
+    {
       "id": "package-pattern-ok",
       "path": "records/package-pattern-ok.json",
       "expected_status": "complete",
@@ -1417,6 +1651,37 @@
         "DOC-3"
       ],
       "note": "Two members of col-01 share position 2, written 2 and 2.0."
+    },
+    {
+      "id": "package-position-duplicate-across-members",
+      "path": "packages/package-position-duplicate-across-members/",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "MEMBERS_SMALL",
+          "/manifest/members",
+          null,
+          null
+        ],
+        [
+          "POSITION_DUPLICATE",
+          "/member_of/0",
+          1,
+          1
+        ],
+        [
+          "POSITION_DUPLICATE",
+          "/member_of/0",
+          2,
+          1
+        ]
+      ],
+      "rules": [
+        "MFP-7",
+        "COL-7"
+      ],
+      "note": "Two assets in two member files take position 1 in the same collection."
     },
     {
       "id": "package-position-mixed-ok",
@@ -1453,6 +1718,46 @@
         "DOC-3"
       ],
       "note": "One asset at two positions of one collection. Positions need not be consecutive."
+    },
+    {
+      "id": "package-records-with-arrays",
+      "path": "packages/package-records-with-arrays/",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "false",
+        "path": ""
+      },
+      "rules": [
+        "MFP-1"
+      ],
+      "note": "The manifest file lists a member and also holds an assets array."
+    },
+    {
+      "id": "package-reference-across-members",
+      "path": "packages/package-reference-across-members/",
+      "expected_status": "complete",
+      "expected_structural": "valid",
+      "expected_diagnostics": [
+        [
+          "MEMBERS_SMALL",
+          "/manifest/members",
+          null,
+          null
+        ],
+        [
+          "REFERENCE_UNRESOLVED",
+          "/relationships/0/target",
+          1,
+          1
+        ]
+      ],
+      "rules": [
+        "MFP-7",
+        "PKG-6"
+      ],
+      "note": "Asset a-0001 refers to a-0002 in a later member file, and that resolves. Asset a-0002 refers to a-0003, which is nowhere."
     },
     {
       "id": "package-relationship-distinct-ok",
@@ -2808,6 +3113,22 @@
         "REC-7"
       ],
       "note": "An asset with an unknown key."
+    },
+    {
+      "id": "structural-collection-deleted-boolean",
+      "path": "records/structural-collection-deleted-boolean.json",
+      "expected_status": "complete",
+      "expected_structural": "invalid",
+      "expected_diagnostics": [],
+      "expected_schema_error": {
+        "keyword": "type",
+        "path": "/collections/0/deleted"
+      },
+      "rules": [
+        "COL-1",
+        "DT-1"
+      ],
+      "note": "A collection's deleted is a date-time, not a flag."
     },
     {
       "id": "structural-collection-members-parent",
