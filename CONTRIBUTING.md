@@ -43,7 +43,7 @@ If you are not sure which kind your change is, open an issue and ask.
 
 - A short description of the problem and the change.
 - Updated or new synthetic examples or conformance fixtures when behavior changes. Use invented values only. Never include real customer data, credentials, or personal information.
-- A passing conformance run. From the repository root:
+- A passing conformance run, on Python 3.12 or newer. From the repository root:
 
 ```sh
 python3 -W error -m unittest discover -s tests/conformance -t . -p 'test_*.py'

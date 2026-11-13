@@ -37,7 +37,7 @@ The asset, collection, storage location, and metadata definition schemas describ
 ## Quick start
 
 The conformance harness checks both OASIS package forms.
-It needs Python 3 and works offline after the packages are installed.
+It needs Python 3.12 or newer and works offline after the packages are installed.
 Run these commands from the repository root.
 
 ```sh

@@ -77,7 +77,7 @@ The reference harness checks documents only. It gives no evidence about how any 
 ## Set up offline validation
 
 Run every command in this guide from the root of a Git checkout of the repository.
-The commands were checked with Python 3.12 on Linux.
+The commands need Python 3.12 or newer. They were checked with Python 3.12 on Linux.
 
 Only setup uses the network. It installs pinned Python packages.
 After setup, validation reads only local files.
