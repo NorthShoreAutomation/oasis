@@ -26,6 +26,7 @@ Interoperability between independent implementations is not demonstrated.
 
 - File role `master` now means a finished master rendition. Original source files use `original`. File group roles are unchanged.
 - The current schema bundle, examples, checker, and guidance now use `2.0.0-draft.4`. The checker supports exactly that version. The optional collection `deleted` is added, and file roles now distinguish original source files from finished masters.
+- The conformance result record gains a required `form`, `single-document` or `multi-file`. A finding and a schema error may also carry `member`, the pointer to the member entry, and `line`, the line number in that member file; a finding may carry `unlisted_path`. The diagnostic code enum gains the `MFP` codes, and `harness.version` and the `spec_version` enum are now `2.0.0-draft.4`. A program that reads the record and checks it against the draft.3 `result.schema.json` needs that schema replaced: `form` is required, so a draft.4 result does not pass the older one.
 - The package schema accepts a manifest member list for the multi-file form. Existing package and safety rules now cover both forms. See [Changes in 2.0.0-draft.4](docs/specification/2.0.0-draft.4/CONTRACT.md#changes-in-200-draft4).
 
 ## [2.0.0-draft.3] - 2026-11-02
