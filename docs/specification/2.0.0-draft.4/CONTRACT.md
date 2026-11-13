@@ -924,6 +924,8 @@ Informative note: a file that a transfer cut off usually ends without its final 
 - Under the line rules of `MFP-4`, a plain member file with 0 records has 0 bytes. A gzip member file with 0 records is a gzip stream with no content.
 - A record folder MAY be absent when its list is absent. A folder that holds no file states nothing.
 
+Informative note: a `count` 0 entry beside entries of the same record type that hold records is also what a lost or truncated member file looks like, which is why it is rejected rather than ignored. A producer that opens its member files ahead of the records, and closes an empty last file, writes exactly that shape. Such a producer leaves the empty file out of `members` and off the disk, or opens no member file until it has a record to put in it. An empty list is the one case where `count` 0 is right, and there every member entry of that record type has `count` 0.
+
 `MFP-7` (T). Scope across member files. Every rule of this contract applies to the whole package. A rule that compares records inside one document compares records across all member files. A member file does not need to be complete by itself. A record MAY reference a record in any member file, earlier or later. These rules need the most care:
 
 | Rule | Scope in a multi-file package |

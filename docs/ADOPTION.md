@@ -512,6 +512,7 @@ A single document keeps an absent list and an empty list apart (`DOC-3`). A mult
 - A list is absent when no member entry has its record type.
 - A list is empty when it has member entries and their counts total 0.
 - A member file with 0 records is allowed only in an empty list. A plain one has 0 bytes. A gzip one is a gzip stream with no content.
+- So in an empty list, every member entry of that record type has `count` 0. One `count` 0 entry beside entries that hold records is rejected: `MEMBER_EMPTY_UNEXPECTED`.
 
 ### Rules across member files
 
@@ -527,7 +528,7 @@ You can write a package as you read your source. You do not need to hold the who
 1. Make the package folder and the record folders that you need.
 2. Write the records as you read them. Write each record as JSON with no line break inside it, followed by one LF. Put each record in a member file of its record type.
 3. Start a new member file when the current one reaches the size guideline.
-4. Close each member file. Record its path, record type, line count, size, and SHA-256 as stored.
+4. Close each member file. Record its path, record type, line count, size, and SHA-256 as stored. Leave out a file that got no record, and delete it: a `count` 0 entry beside entries that hold records is rejected (`MFP-6`, `MEMBER_EMPTY_UNEXPECTED`), because that is also what a lost member file looks like. A writer that opens its parts ahead of the records hits this on an empty last part.
 5. Write the manifest file last, after every member file is complete. List only complete files. Never list a partial or temporary file.
 6. Check the package folder with the `validate` command.
 
