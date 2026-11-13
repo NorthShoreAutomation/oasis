@@ -223,6 +223,61 @@ class _FolderCase(unittest.TestCase):
             self.skipTest(f"symbolic links are not available: {error}")
 
 
+class ExactSpellingTest(_FolderCase):
+    """`MFP-3`. A member path must match the name stored on disk, code point for code point.
+
+    ``os.lstat`` resolves a name through the file system's folding, so on macOS
+    and Windows a path that differs only in letter case still opens. Without this
+    check the same package folder passes there and fails on Linux. Letter case is
+    the only such difference a schema-valid path can hold, because `MFP-2` limits
+    a segment to ASCII; the comparison is by code point all the same, so a path
+    that reaches the check another way is treated the same way.
+    """
+
+    def test_exact_spelling_is_accepted(self):
+        self.package({"assets/part-00001.jsonl": DATA})
+        self.assertTrue(multifile._spelled_exactly(str(self.dir), ["assets", "part-00001.jsonl"], {}))
+
+    def test_folder_differing_in_case_is_not_exact(self):
+        self.package({"assets/part-00001.jsonl": DATA})
+        self.assertFalse(multifile._spelled_exactly(str(self.dir), ["Assets", "part-00001.jsonl"], {}))
+
+    def test_file_differing_in_case_is_not_exact(self):
+        self.package({"assets/part-00001.jsonl": DATA})
+        self.assertFalse(multifile._spelled_exactly(str(self.dir), ["assets", "Part-00001.jsonl"], {}))
+
+    def test_other_unicode_form_is_not_exact(self):
+        """The comparison is by code point, not by Unicode form.
+
+        `MFP-2` keeps such a path out of a schema-valid manifest, so this is the
+        property of the comparison, not a package state a checker meets.
+        """
+        self.package({"assets/café.jsonl": DATA})
+        self.assertFalse(multifile._spelled_exactly(str(self.dir), ["assets", "café.jsonl"], {}))
+
+    def test_case_folding_file_system_reports_not_exact(self):
+        """A folded ``os.lstat``, as on macOS, must not turn a mismatch into a pass."""
+        root = self.package({"assets/part-00001.jsonl": DATA})
+        root["manifest"]["members"][0]["path"] = "Assets/part-00001.jsonl"
+        real = os.lstat
+
+        def folded(path, *args, **kwargs):
+            try:
+                return real(path, *args, **kwargs)
+            except FileNotFoundError:
+                return real(os.fspath(path).replace("Assets", "assets"))
+
+        with mock.patch("os.lstat", side_effect=folded):
+            found = multifile._check_member(str(self.dir), 0, root["manifest"]["members"][0], {})
+        self.assertEqual(_codes(found), ["MEMBER_PATH_NOT_EXACT"])
+        self.assertEqual(found[0].rule, "MFP-3")
+        self.assertEqual(found[0].path, "/manifest/members/0/path")
+
+    def test_catalog_entry_matches(self):
+        self.assertEqual(CATALOG["MEMBER_PATH_NOT_EXACT"][0], "MFP-3")
+        self.assertEqual(CATALOG["MEMBER_PATH_NOT_EXACT"][1], "error")
+
+
 class ScanFolderTest(_FolderCase):
     def test_clean_package_has_no_finding(self):
         root = self.package(

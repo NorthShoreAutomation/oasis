@@ -890,6 +890,7 @@ Member path rules:
 `MFP-3` (T). Member files in the package folder.
 
 - Each member path names a regular file. Each folder on the way to it is a real folder. A missing member file is rejected (reported at `path`).
+- Each member path matches the name stored in its folder, code point for code point. A path that differs from the stored name only in letter case is rejected (reported at `path`), even on a file system that opens it anyway. `MFP-2` limits a segment to ASCII, so letter case is the only such difference a schema-valid path can hold. A checker compares the name it reads from the folder rather than asking the file system to resolve the path, so one package folder gets one verdict on every host.
 - A symbolic link at a member path, or at a folder on the way to it, is rejected (reported at `path`). Validation reads nothing behind such a link (`SAFE-1`).
 - A member path that names a folder, a device, a pipe, or any other entry that is not a regular file is rejected (reported at `path`). So is a folder on the way that is not a real folder.
 - The size of each member file, as stored, MUST equal its `size_bytes` (reported at `size_bytes`).

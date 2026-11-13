@@ -269,6 +269,7 @@
             "MEMBER_NOT_REGULAR",
             "MEMBER_PATH_CASE_COLLISION",
             "MEMBER_PATH_DUPLICATE",
+            "MEMBER_PATH_NOT_EXACT",
             "MEMBER_SIZE_MISMATCH",
             "MEMBER_TYPE_MISMATCH",
             "MEMBER_UNLISTED",

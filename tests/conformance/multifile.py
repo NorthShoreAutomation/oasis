@@ -175,6 +175,42 @@ def _folder_state(package_dir: str, relative: str, cache: dict) -> str:
     return state
 
 
+def _entry_names(package_dir: str, relative: str, cache: dict) -> frozenset:
+    """The exact names that ``relative`` holds, read once with ``os.scandir``.
+
+    ``relative`` is the empty string for the package folder itself. An absent or
+    unreadable folder gives an empty set; the caller has already classified it.
+    """
+    key = ("names", relative)
+    names = cache.get(key)
+    if names is None:
+        folder = os.path.join(package_dir, *relative.split("/")) if relative else package_dir
+        try:
+            with os.scandir(folder) as entries:
+                names = frozenset(entry.name for entry in entries)
+        except (FileNotFoundError, NotADirectoryError, PermissionError):
+            names = frozenset()
+        cache[key] = names
+    return names
+
+
+def _spelled_exactly(package_dir: str, segments: list, cache: dict) -> bool:
+    """True when every segment of the path is stored under that exact name.
+
+    ``os.lstat`` resolves a name through whatever folding the file system
+    applies, so a path that differs from the stored name only in letter case or
+    in Unicode form still opens on macOS and Windows while it fails on Linux.
+    The package would then pass on one host and fail on another. Comparing each
+    segment against the names that ``os.scandir`` reports makes the verdict the
+    same everywhere, and keeps `DOC-3`: a name is never normalized, only read.
+    """
+    for depth, segment in enumerate(segments):
+        parent = "/".join(segments[:depth])
+        if segment not in _entry_names(package_dir, parent, cache):
+            return False
+    return True
+
+
 def _check_member(package_dir: str, index: int, member: dict, cache: dict) -> list[Diagnostic]:
     """Check one member entry against the disk. No link is followed."""
     segments = member["path"].split("/")
@@ -188,6 +224,8 @@ def _check_member(package_dir: str, index: int, member: dict, cache: dict) -> li
         info = os.lstat(os.path.join(package_dir, *segments))
     except (FileNotFoundError, NotADirectoryError):
         return [_located("MEMBER_MISSING", index, "path")]
+    if not _spelled_exactly(package_dir, segments, cache):
+        return [_located("MEMBER_PATH_NOT_EXACT", index, "path")]
     if not stat.S_ISREG(info.st_mode):
         return [_located("MEMBER_NOT_REGULAR", index, "path")]
     if info.st_size != as_int(member["size_bytes"]):

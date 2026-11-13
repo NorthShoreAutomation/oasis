@@ -73,8 +73,8 @@ class CatalogTests(unittest.TestCase):
         # then the multi-file codes (rules MFP-*).
         rows = _adoption_rows()
         single_document = [code for code, (rule, _s, _m) in CATALOG.items() if not rule.startswith("MFP-")]
-        self.assertEqual(len(rows), 69)
-        self.assertEqual(len(CATALOG), 69)
+        self.assertEqual(len(rows), 70)
+        self.assertEqual(len(CATALOG), 70)
         self.assertEqual([code for code, _r, _s in rows], list(CATALOG))
         self.assertEqual(list(CATALOG)[:54], single_document)
         for code, rule, severity in rows:

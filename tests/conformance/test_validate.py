@@ -253,7 +253,7 @@ class CommandTests(TempFiles, unittest.TestCase):
         schema = load(RESULT_SCHEMA)
         codes = schema["$defs"]["diagnostic"]["properties"]["code"]["enum"]
         self.assertEqual(codes, sorted(CATALOG))
-        self.assertEqual(len(codes), 69)
+        self.assertEqual(len(codes), 70)
         self.assertEqual(schema["$defs"]["diagnostic"]["properties"]["severity"]["enum"], ["error", "warning"])
         self.assertEqual(schema["properties"]["harness"]["properties"]["version"]["const"], validate.HARNESS_VERSION)
         self.assertEqual(schema["properties"]["spec_version"]["enum"], ["2.0.0-draft.4", None])
@@ -334,6 +334,7 @@ MULTI_FILE_CODES = {
     "MEMBER_NOT_REGULAR": ("MFP-3", "error"),
     "MEMBER_SIZE_MISMATCH": ("MFP-3", "error"),
     "MEMBER_CHECKSUM_MISMATCH": ("MFP-3", "error"),
+    "MEMBER_PATH_NOT_EXACT": ("MFP-3", "error"),
     "MEMBER_UNLISTED": ("MFP-3", "error"),
     "FILE_UNLISTED": ("MFP-3", "warning"),
     "MEMBER_COMPRESSION_MISMATCH": ("MFP-4", "error"),

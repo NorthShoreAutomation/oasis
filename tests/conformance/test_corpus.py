@@ -60,6 +60,10 @@ MFP_NAMED_TESTS = {
         "test_multifile_folder",
         "CheckMemberListTest.test_paths_that_differ_only_in_case_collide",
     ),
+    "MEMBER_PATH_NOT_EXACT": (
+        "test_multifile_folder",
+        "ExactSpellingTest.test_case_folding_file_system_reports_not_exact",
+    ),
     "MEMBER_NOT_REGULAR": ("test_multifile_folder", "ScanFolderTest.test_member_that_is_a_link_is_not_regular"),
     "FILE_UNLISTED": (
         "test_multifile_folder",

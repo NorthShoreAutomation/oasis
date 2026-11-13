@@ -204,6 +204,11 @@ CATALOG = {
     "MEMBER_PATH_CASE_COLLISION": ("MFP-2", "error", "Two member paths differ only in letter case."),
     "MEMBER_TYPE_MISMATCH": ("MFP-2", "error", "A member record_type differs from the first segment of its path."),
     "MEMBER_MISSING": ("MFP-3", "error", "A listed member file does not exist."),
+    "MEMBER_PATH_NOT_EXACT": (
+        "MFP-3",
+        "error",
+        "A member path does not match the name stored on disk by exact code points.",
+    ),
     "MEMBER_NOT_REGULAR": (
         "MFP-3",
         "error",
