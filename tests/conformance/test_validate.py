@@ -7,11 +7,12 @@ import os
 import shutil
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
 from jsonschema import Draft202012Validator
 
-from tests.conformance import validate
+from tests.conformance import multifile, validate
 from tests.conformance.corpus import load_manifest
 from tests.conformance.loader import load_bundle
 from tests.conformance.semantic import CATALOG
@@ -598,6 +599,107 @@ class MultiFileCatalogTests(unittest.TestCase):
     def test_schema_enum_lists_the_new_codes(self):
         codes = load(RESULT_SCHEMA)["$defs"]["diagnostic"]["properties"]["code"]["enum"]
         self.assertLessEqual(set(MULTI_FILE_CODES), set(codes))
+
+
+def _outcome_of(record):
+    return (record["execution_status"], record["structural"], record["semantic"])
+
+
+class ResultBoundTests(unittest.TestCase):
+    """One fault that every record repeats must not grow the result with the record count."""
+
+    def _package(self, count, asset):
+        return json.dumps(
+            {
+                "type": "package",
+                "spec_version": "2.0.0-draft.4",
+                "id": "pkg-0001",
+                "manifest": {
+                    "producer": {"name": "example-exporter", "version": "0.1.0"},
+                    "produced_at": "2026-10-05T09:00:00Z",
+                    "counts": {
+                        "storage_locations": 0,
+                        "metadata_definitions": 0,
+                        "collections": 0,
+                        "assets": count,
+                    },
+                    "namespaces": [],
+                },
+                "assets": [asset(n) for n in range(count)],
+            }
+        ).encode("utf-8")
+
+    def _evaluate(self, count, asset, cap):
+        # The real cap holds 10000 entries, and a document of that many assets takes
+        # too long to validate in this suite. A small cap exercises the same code.
+        with mock.patch.object(validate, "MAX_RESULT_ENTRIES", cap):
+            return validate.evaluate(self._package(count, asset), DEFINITIONS)
+
+    def test_cap_entries_keeps_a_list_at_the_cap(self):
+        record = validate._blank_record(b"{}")
+        entries = [{"path": "/assets/%d" % n} for n in range(validate.MAX_RESULT_ENTRIES)]
+        self.assertEqual(validate.cap_entries(record, entries), entries)
+        self.assertEqual(record["limitations"], [])
+
+    def test_cap_entries_cuts_a_longer_list_and_declares_the_cut(self):
+        record = validate._blank_record(b"{}")
+        entries = [{"path": "/assets/%d" % n} for n in range(validate.MAX_RESULT_ENTRIES + 1)]
+        kept = validate.cap_entries(record, entries)
+        self.assertEqual(kept, entries[: validate.MAX_RESULT_ENTRIES])
+        self.assertEqual(record["limitations"], [validate._RESULT_CAPPED])
+
+    def test_the_cut_is_declared_once_for_both_lists(self):
+        record = validate._blank_record(b"{}")
+        entries = [{"path": "/assets/%d" % n} for n in range(validate.MAX_RESULT_ENTRIES + 1)]
+        validate.cap_entries(record, entries)
+        validate.cap_entries(record, entries)
+        self.assertEqual(record["limitations"], [validate._RESULT_CAPPED])
+
+    def test_add_limitation_keeps_the_ones_already_there(self):
+        record = validate._blank_record(b"{}")
+        validate.add_limitation(record, "first.")
+        validate.add_limitation(record, "second.")
+        validate.add_limitation(record, "first.")
+        self.assertEqual(record["limitations"], ["first.", "second."])
+
+    def test_findings_of_one_document_are_capped(self):
+        def asset(n):
+            return {"id": f"a-{n}", "title": "t", "relationships": [{"type": "derived_from", "target": f"a-{n}"}]}
+
+        record = self._evaluate(5, asset, cap=3)
+        self.assertEqual(_outcome_of(record), ("complete", "valid", "run"))
+        self.assertEqual([d["code"] for d in record["diagnostics"]], ["RELATIONSHIP_SELF"] * 3)
+        self.assertEqual([d["path"] for d in record["diagnostics"]], ["/assets/%d/relationships/0/target" % n for n in range(3)])
+        self.assertEqual(record["limitations"], [validate._RESULT_CAPPED])
+        self.assertEqual(validate.exit_code(record), 1)
+
+    def test_schema_errors_of_one_document_are_capped(self):
+        record = self._evaluate(5, lambda n: {"id": f"a-{n}", "title": 1}, cap=3)
+        self.assertEqual(_outcome_of(record), ("complete", "invalid", "not-run"))
+        self.assertEqual(len(record["structural_errors"]), 3)
+        self.assertEqual(record["limitations"], [validate._RESULT_CAPPED])
+
+    def test_an_uncapped_document_declares_nothing(self):
+        def asset(n):
+            return {"id": f"a-{n}", "title": "t", "relationships": [{"type": "derived_from", "target": f"a-{n}"}]}
+
+        record = self._evaluate(3, asset, cap=3)
+        self.assertEqual(len(record["diagnostics"]), 3)
+        self.assertEqual(record["limitations"], [])
+
+    def test_the_capped_result_still_matches_the_result_schema(self):
+        record = self._evaluate(5, lambda n: {"id": f"a-{n}", "title": 1}, cap=3)
+        Draft202012Validator(load(RESULT_SCHEMA)).validate(record)
+
+    def test_the_cap_is_above_the_member_cap(self):
+        # The member cap bounds one stage of one member file; this one bounds the
+        # result. A result cap at or below the member cap would cut a package of two
+        # capped member files, so the per-member number would no longer hold.
+        self.assertGreater(validate.MAX_RESULT_ENTRIES, multifile.FINDINGS_PER_MEMBER)
+
+    def test_the_declared_text_names_the_cap(self):
+        self.assertIn(str(validate.MAX_RESULT_ENTRIES), validate._RESULT_CAPPED)
+        self.assertTrue(validate._RESULT_CAPPED.endswith("."))
 
 
 class SafePointerTests(unittest.TestCase):
