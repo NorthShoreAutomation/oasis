@@ -711,7 +711,7 @@ def evaluate_folder(
         record["execution_status"] = "complete"
         record["structural"] = "valid"
         record["semantic"] = "run"
-        record["diagnostics"] = validate._diagnostics(_errors(rules))
+        validate.assign_diagnostics(record, _errors(rules))
         return record
 
     package_dir = manifest_path.parent
@@ -721,7 +721,7 @@ def evaluate_folder(
         return validate._setup_failed(record, _UNREADABLE_MEMBER)
     if _errors(scanned):
         record["execution_status"] = "input-invalid"
-        record["diagnostics"] = validate._diagnostics(_errors(scanned))
+        validate.assign_diagnostics(record, _errors(scanned))
         return record
 
     def reduce_error(error):
@@ -738,16 +738,16 @@ def evaluate_folder(
         record["structural"] = "valid"
         record["semantic"] = "run"
         # Only warnings are left in the member rules and the scan here.
-        record["diagnostics"] = validate._diagnostics(rules + scanned + found)
+        validate.assign_diagnostics(record, rules + scanned + found)
     elif stage == _STRUCTURE:
         record["execution_status"] = "complete"
         record["structural"] = "invalid"
-        record["structural_errors"] = validate._structural_records(found)
+        record["structural_errors"] = validate.cap_entries(record, validate._structural_records(found))
     else:
         record["execution_status"] = "input-invalid"
-        record["diagnostics"] = validate._diagnostics(found)
+        validate.assign_diagnostics(record, found)
     if capped:
-        record["limitations"] = [_FINDINGS_CAPPED]
+        validate.add_limitation(record, _FINDINGS_CAPPED)
     return record
 
 

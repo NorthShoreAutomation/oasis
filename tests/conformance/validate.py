@@ -239,6 +239,46 @@ def _structural_errors(errors, locations=None) -> list:
     )
 
 
+# The most entries that one result lists, counted for the findings and for the schema
+# errors on their own. One fault that many records repeat, such as an unresolved
+# reference that every asset names, would otherwise grow the result with the record
+# count: a document of 32000 assets would list 32000 findings.
+# ``multifile.FINDINGS_PER_MEMBER`` bounds one stage of one member file; this bounds
+# the result itself, so a single document and a package of many member files are both
+# bounded. The cap is far above the count that a reader works through by hand.
+MAX_RESULT_ENTRIES = 10000
+
+_RESULT_CAPPED = (
+    "Findings were capped: the result lists at most 10000 findings and at most 10000 schema errors, "
+    "and the rest are not listed."
+)
+
+
+def add_limitation(record: dict, limitation: str) -> None:
+    """Append ``limitation`` to ``record`` once, keeping the ones already there."""
+    if limitation not in record["limitations"]:
+        record["limitations"].append(limitation)
+
+
+def cap_entries(record: dict, entries: list) -> list:
+    """Return ``entries`` cut to ``MAX_RESULT_ENTRIES``, declaring the cut on ``record``.
+
+    The caller sorts before it caps, so the entries that remain are the first ones
+    in result order and the cap is the same on every run. When the cap drops an
+    entry, the result declares ``_RESULT_CAPPED``, so a reader never takes a capped
+    list for a complete one.
+    """
+    if len(entries) <= MAX_RESULT_ENTRIES:
+        return entries
+    add_limitation(record, _RESULT_CAPPED)
+    return entries[:MAX_RESULT_ENTRIES]
+
+
+def assign_diagnostics(record: dict, diagnostics) -> None:
+    """Set the result findings from ``diagnostics``, capped at ``MAX_RESULT_ENTRIES``."""
+    record["diagnostics"] = cap_entries(record, _diagnostics(diagnostics))
+
+
 def _diagnostics(diagnostics) -> list:
     """Return result entries, sorted by member, line, path, code, then unlisted path.
 
@@ -309,7 +349,7 @@ def _document_stages(record: dict, data: bytes, root: Path):
         parsed = parse_input(data)
     except InputInvalid:
         record["execution_status"] = "input-invalid"
-        record["diagnostics"] = _diagnostics([diagnostic("INPUT_INVALID", "")])
+        assign_diagnostics(record, [diagnostic("INPUT_INVALID", "")])
         return None
     except SetupFailed as error:
         # NumericResourceRefused and the nesting limit: fixed text naming the limit.
@@ -321,13 +361,13 @@ def _document_stages(record: dict, data: bytes, root: Path):
     record["spec_version"] = routing.spec_version
     if routing.status != "selected":
         record["execution_status"] = "unsupported"
-        record["diagnostics"] = _diagnostics(routing.diagnostics)
+        assign_diagnostics(record, routing.diagnostics)
         return None
 
     limits = check_number_limits(parsed.value, bundle.property_names)
     if limits:
         record["execution_status"] = "input-invalid"
-        record["diagnostics"] = _diagnostics(limits)
+        assign_diagnostics(record, limits)
         return None
 
     try:
@@ -338,7 +378,7 @@ def _document_stages(record: dict, data: bytes, root: Path):
     if errors:
         record["execution_status"] = "complete"
         record["structural"] = "invalid"
-        record["structural_errors"] = _structural_errors(errors)
+        record["structural_errors"] = cap_entries(record, _structural_errors(errors))
         return None
     return bundle, parsed, routing
 
@@ -364,7 +404,7 @@ def evaluate(data: bytes, root: Path) -> dict:
     record["execution_status"] = "complete"
     record["structural"] = "valid"
     record["semantic"] = "run"
-    record["diagnostics"] = _diagnostics(diagnostics)
+    assign_diagnostics(record, diagnostics)
     return record
 
 
