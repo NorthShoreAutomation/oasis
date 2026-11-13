@@ -22,16 +22,17 @@ This guide makes no claim of certification, production readiness, or endorsement
 5. [Outcome order](#outcome-order)
 6. [Diagnostic catalog](#diagnostic-catalog)
 7. [Packages and references](#packages-and-references)
-8. [Multi-file packages](#multi-file-packages)
-9. [Collection membership](#collection-membership)
-10. [Time](#time)
-11. [Numbers and versions](#numbers-and-versions)
-12. [Extensions and preservation](#extensions-and-preservation)
-13. [Access summary](#access-summary)
-14. [Validation grants no access](#validation-grants-no-access)
-15. [Numeric resource guards](#numeric-resource-guards)
-16. [Member file reader limits](#member-file-reader-limits)
-17. [Harness limits](#harness-limits)
+8. [File roles](#file-roles)
+9. [Multi-file packages](#multi-file-packages)
+10. [Collection membership](#collection-membership)
+11. [Time](#time)
+12. [Numbers and versions](#numbers-and-versions)
+13. [Extensions and preservation](#extensions-and-preservation)
+14. [Access summary](#access-summary)
+15. [Validation grants no access](#validation-grants-no-access)
+16. [Numeric resource guards](#numeric-resource-guards)
+17. [Member file reader limits](#member-file-reader-limits)
+18. [Harness limits](#harness-limits)
 
 ## What OASIS 2.0 is
 
@@ -411,6 +412,32 @@ A package describes its records as they stood at `produced_at`. It carries no co
 A missing record, field, or value is not an instruction to delete, clear, or replace anything.
 An asset's or a collection's `deleted` date states that the source reported a deletion. It is not an instruction to delete, hide, or purge anything (`AST-3`, `COL-8`).
 Your application decides whether and how to match, merge, replace, or delete its own data.
+
+## File roles
+
+A file's `role` says what one file is on its own (`FILE-5`). It is optional.
+A role never ranks files, and it never groups them: file group membership does that (`GRP-5`).
+A file's role and the role of a file group that holds it are not required to match.
+
+| Role | What it is |
+| --- | --- |
+| `original` | The file as the holder received it, before any transcode or conformance step. |
+| `master` | A finished master rendition, at any quality. |
+| `mezzanine` | A high-quality intermediate made for further work or delivery. |
+| `preview` | A lower-quality copy for viewing. |
+| `thumbnail` | A still image representation. |
+| `sidecar` | A data file that accompanies media, such as captions or a metadata file. |
+| `other` | Anything else. |
+
+`original` and `master` are told apart by how the file came to be, not by quality.
+Nothing made from an `original` is itself `original`, so a transcode is `mezzanine` or `master` even when the received file is no longer held.
+Several files of one asset or version may carry `original`, and several may carry `master`: a recording split across three tapes is three `original` files, not one.
+A copy of a file is a location of that file, not another file (`FILE-6`), so two tapes holding the same part are two locations of one `original`.
+
+A producer that wrote `2.0.0-draft.3` used `master` for a source recording and for a finished rendition alike.
+In `2.0.0-draft.4` the source recordings become `original`, and `master` stays on the finished renditions only.
+The enum still accepts `master` on any file, and `FILE-5` is a checker-level rule with no diagnostic code, so a document that keeps the older reading still validates, and so does one that leaves `role` off every file.
+Only a consumer that reads roles sees the difference, which is why the choice is worth making once, at the producer.
 
 ## Multi-file packages
 

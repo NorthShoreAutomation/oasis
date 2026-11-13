@@ -58,7 +58,7 @@
             }
           ],
           "media_type": "application/mxf",
-          "role": "master"
+          "role": "original"
         },
         {
           "id": "f-2",
@@ -73,7 +73,7 @@
             }
           ],
           "media_type": "application/mxf",
-          "role": "master"
+          "role": "original"
         },
         {
           "id": "f-3",
@@ -88,7 +88,7 @@
             }
           ],
           "media_type": "application/mxf",
-          "role": "master"
+          "role": "original"
         }
       ],
       "file_groups": [
